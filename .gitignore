@@ -33,3 +33,5 @@
 
 # Cube
 Debug/
+Drivers/
+.settings/
