@@ -6,16 +6,18 @@
 #include "StateMachine.h"
 #include "string.h"
 
+#define SEPAR_2_PWM_CHANNEL TIM_CHANNEL_2
+
 char uartRxTab[4];
 _Bool uartRxFlag;
 
 void initLoop(void);
+
 void armedLoop(void);
+
 void flightLoop(void);
 
-_Bool firstSeparationRequirements(void);
-
-_Bool secondSeparationRequirements(void);
+void stopAll(void);
 
 void doFirstSeparation(int emergencyTimeout);
 

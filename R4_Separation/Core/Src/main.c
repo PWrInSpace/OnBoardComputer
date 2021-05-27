@@ -93,6 +93,10 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 
 	HAL_UART_Receive_IT(&huart2, (uint8_t*) uartRxTab, 4);
+	HAL_TIM_PWM_Start(&htim3, SEPAR_2_PWM_CHANNEL);
+
+	// Tutaj dodać odpowiednie ustawienie serwa
+	//__HAL_TIM_SET_COMPARE(&htim3, SEPAR_2_PWM_CHANNEL, valu);
 
 	currentState = INIT;
 
@@ -108,7 +112,7 @@ int main(void) {
 		flightLoop();
 	}
 
-	HAL_SuspendTick();
+	stopAll();
 
 	/* USER CODE END 2 */
 

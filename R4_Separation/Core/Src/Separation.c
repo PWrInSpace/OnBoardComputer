@@ -2,6 +2,13 @@
 
 void initLoop(void) {
 
+	uint32_t timer = uwTick;
+
+	if (uwTick - timer > 500) {
+		timer = uwTick;
+		LED_GPIO_Port->ODR ^= LED_Pin;
+	}
+
 	if (uartRxFlag) {
 
 		uartRxFlag = 0;
@@ -23,6 +30,11 @@ void initLoop(void) {
 
 void armedLoop(void) {
 
+	if (uwTick - timer > 250) {
+		timer = uwTick;
+		LED_GPIO_Port->ODR ^= LED_Pin;
+	}
+
 	if (uartRxFlag) {
 
 		uartRxFlag = 0;
@@ -37,15 +49,19 @@ void armedLoop(void) {
 
 void flightLoop(void) {
 
-	if(!(AltiAP_GPIO_Port->IDR & AltiAP_Pin))
+	if (uwTick - timer > 100) {
+		timer = uwTick;
+		LED_GPIO_Port->ODR ^= LED_Pin;
+	}
+
+	if (!(AltiAP_GPIO_Port->IDR & AltiAP_Pin))
 		doFirstSeparation(1000);
 
-	if(!(AltiMA_GPIO_Port->IDR & AltiMA_Pin)) {
+	if (!(AltiMA_GPIO_Port->IDR & AltiMA_Pin)) {
 
 		doSecondSeparation(1000);
 		currentState = END;
 	}
-
 
 	if (uartRxFlag) {
 
@@ -66,13 +82,52 @@ void flightLoop(void) {
 
 /*****************************************************************/
 
-void doFirstSeparation(int emergencyTimeout) {
+void stopAll(void) {
+
+	LED_GPIO_Port->ODR |= LED_Pin;
+
 
 }
 
 /*****************************************************************/
 
+void doFirstSeparation(int emergencyTimeout) {
+
+	uint32_t timer = uwTick;
+
+	Separ1A_GPIO_Port->ODR |= Separ1A_Pin;
+	Separ1B_GPIO_Port->ODR |= Separ1B_Pin;
+
+	while (P1Test_GPIO_Port->IDR & P1Test_Pin) {
+
+		if (uwTick - timer > emergencyTimeout)
+			break;
+	}
+
+	Separ1A_GPIO_Port->ODR &= ~Separ1A_Pin;
+	Separ1B_GPIO_Port->ODR &= ~Separ1B_Pin;
+}
+
+/*****************************************************************/
+
 void doSecondSeparation(int emergencyTimeout) {
+
+	uint32_t timer = uwTick;
+
+	// Tutaj dodać odpowiednie ustawienie serwa
+	//__HAL_TIM_SET_COMPARE(&htim3, SEPAR_2_PWM_CHANNEL, valu);
+
+	while (P2Test_GPIO_Port->IDR & P2Test_Pin) {
+
+		if (uwTick - timer > emergencyTimeout) {
+
+			Separ2AW_GPIO_Port->ODR |= Separ2AW_Pin;
+			HAL_Delay(2000);
+			Separ2AW_GPIO_Port->ODR &= Separ2AW_Pin;
+
+			break;
+		}
+	}
 
 }
 
