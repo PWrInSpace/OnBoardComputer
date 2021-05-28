@@ -30,6 +30,8 @@ void initLoop(void) {
 
 void armedLoop(void) {
 
+	uint32_t timer = uwTick;
+
 	if (uwTick - timer > 250) {
 		timer = uwTick;
 		LED_GPIO_Port->ODR ^= LED_Pin;
@@ -48,6 +50,8 @@ void armedLoop(void) {
 /*****************************************************************/
 
 void flightLoop(void) {
+
+	uint32_t timer = uwTick;
 
 	if (uwTick - timer > 100) {
 		timer = uwTick;
@@ -138,5 +142,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	if (huart->Instance == USART2) {
 
 		uartRxFlag = 1;
+
+		HAL_UART_Receive_IT(&huart2, (uint8_t*) uartRxTab, 4);
 	}
 }
