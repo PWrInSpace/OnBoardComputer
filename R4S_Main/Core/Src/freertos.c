@@ -27,6 +27,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "usart.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,6 +117,33 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN StartDefaultTask */
+
+	int wait = 5000;
+	LED_GPIO_Port->ODR &= ~LED_Pin;
+	HAL_UART_Transmit(&huart2, (uint8_t*)"A1A", 4, 1000);
+	LED_GPIO_Port->ODR |= LED_Pin;
+
+	osDelay(wait);
+
+	LED_GPIO_Port->ODR &= ~LED_Pin;
+	HAL_UART_Transmit(&huart2, (uint8_t*)"A1F", 4, 1000);
+	LED_GPIO_Port->ODR |= LED_Pin;
+
+	osDelay(wait);
+
+	LED_GPIO_Port->ODR &= ~LED_Pin;
+	HAL_UART_Transmit(&huart2, (uint8_t*)"A1G", 4, 1000);
+	LED_GPIO_Port->ODR |= LED_Pin;
+
+	osDelay(wait);
+
+	LED_GPIO_Port->ODR &= ~LED_Pin;
+	HAL_UART_Transmit(&huart2, (uint8_t*)"A1M", 4, 1000);
+	LED_GPIO_Port->ODR |= LED_Pin;
+
+	LED_GPIO_Port->ODR &= ~LED_Pin;
+
+
   /* Infinite loop */
   for(;;)
   {

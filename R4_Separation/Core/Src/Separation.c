@@ -2,8 +2,6 @@
 
 void initLoop(void) {
 
-	uint32_t timer = uwTick;
-
 	if (uwTick - timer > 500) {
 		timer = uwTick;
 		LED_GPIO_Port->ODR ^= LED_Pin;
@@ -30,8 +28,6 @@ void initLoop(void) {
 
 void armedLoop(void) {
 
-	uint32_t timer = uwTick;
-
 	if (uwTick - timer > 250) {
 		timer = uwTick;
 		LED_GPIO_Port->ODR ^= LED_Pin;
@@ -50,8 +46,6 @@ void armedLoop(void) {
 /*****************************************************************/
 
 void flightLoop(void) {
-
-	uint32_t timer = uwTick;
 
 	if (uwTick - timer > 100) {
 		timer = uwTick;
@@ -89,7 +83,7 @@ void flightLoop(void) {
 void stopAll(void) {
 
 	LED_GPIO_Port->ODR |= LED_Pin;
-
+	HAL_SuspendTick();
 
 }
 
@@ -97,7 +91,7 @@ void stopAll(void) {
 
 void doFirstSeparation(int emergencyTimeout) {
 
-	uint32_t timer = uwTick;
+	timer = uwTick;
 
 	Separ1A_GPIO_Port->ODR |= Separ1A_Pin;
 	Separ1B_GPIO_Port->ODR |= Separ1B_Pin;
@@ -116,7 +110,7 @@ void doFirstSeparation(int emergencyTimeout) {
 
 void doSecondSeparation(int emergencyTimeout) {
 
-	uint32_t timer = uwTick;
+	timer = uwTick;
 
 	// Tutaj dodać odpowiednie ustawienie serwa
 	//__HAL_TIM_SET_COMPARE(&htim3, SEPAR_2_PWM_CHANNEL, valu);

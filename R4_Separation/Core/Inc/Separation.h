@@ -11,6 +11,8 @@
 char uartRxTab[4];
 _Bool uartRxFlag;
 
+uint32_t timer;
+
 void initLoop(void);
 
 void armedLoop(void);
