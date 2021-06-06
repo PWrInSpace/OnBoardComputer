@@ -15,7 +15,7 @@ void loraInit(void) {
 
 	SX1278_begin(&SX1278, 868000000, SX1278_POWER_20DBM, SX1278_LORA_SF_7, SX1278_LORA_BW_125KHZ, 10);
 
-	SX1278_LoRaEntryRx(&SX1278, 16, 2000);
+	SX1278_LoRaEntryRx(&SX1278, BUFFER_SIZE, 2000);
 
 }
 
@@ -28,7 +28,7 @@ void loraSendData(uint8_t *data, int len) {
 	loraRet = SX1278_LoRaTxPacket(&SX1278, data, len, 2000);
 
 
-	SX1278_LoRaEntryRx(&SX1278, 16, 2000);
+	SX1278_LoRaEntryRx(&SX1278, BUFFER_SIZE, 2000);
 }
 
 /****************************************************************************************/
