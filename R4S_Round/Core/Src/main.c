@@ -19,15 +19,15 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "dma.h"
-#include "tim.h"
+#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "Separation.h"
+#include "LoraRFM.h"
+#include <string.h>
 
 /* USER CODE END Includes */
 
@@ -49,11 +49,12 @@
 
 /* USER CODE BEGIN PV */
 
+char wiad[10];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -91,41 +92,37 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_TIM3_Init();
+  MX_SPI1_Init();
+  MX_USART1_UART_Init();
   MX_USART2_UART_Init();
-
-  /* Initialize interrupts */
-  MX_NVIC_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-	HAL_UART_Receive_IT(&huart2, (uint8_t*) uartRxTab, 4);
-	HAL_TIM_PWM_Start(&htim3, SEPAR_2_PWM_CHANNEL);
-
-	// Tutaj dodać odpowiednie ustawienie serwa
-	//__HAL_TIM_SET_COMPARE(&htim3, SEPAR_2_PWM_CHANNEL, valu);
-
-	currentState = INIT;
-
-	while (currentState == INIT) {
-		initLoop();
-	}
-
-	while (currentState == ARMED) {
-		armedLoop();
-	}
-
-	while (currentState == FLIGHT) {
-		flightLoop();
-	}
-
-	stopAll();
+	loraInit();
+	_Bool sent = 0;
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
+
+		loraLoop();
+
+		if (loraBuffer[0] == 'T' && !sent) {
+
+			sent = 1;
+			strcpy(wiad, "Gaaa\n");
+			loraSendData((uint8_t*) wiad, strlen(wiad));
+		}
+
+		if (loraBuffer[0] == 'N' && sent) {
+
+			sent = 0;
+			strcpy(wiad, "Xoooo\n");
+			loraSendData((uint8_t*) wiad, strlen(wiad));
+		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -166,23 +163,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief NVIC Configuration.
-  * @retval None
-  */
-static void MX_NVIC_Init(void)
-{
-  /* DMA1_Channel6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
-  /* DMA1_Channel7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel7_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel7_IRQn);
-  /* USART2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(USART2_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(USART2_IRQn);
 }
 
 /* USER CODE BEGIN 4 */
