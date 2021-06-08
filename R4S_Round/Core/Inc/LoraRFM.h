@@ -8,7 +8,7 @@
 SX1278_hw_t SX1278_hw;
 SX1278_t SX1278;
 
-#define BUFFER_SIZE 64
+#define BUFFER_SIZE 250
 
 int loraRet;
 char loraBuffer[BUFFER_SIZE];

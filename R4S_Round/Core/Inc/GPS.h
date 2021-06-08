@@ -5,6 +5,7 @@
 #define _GPS_H_
 
 #include <stdint.h>
+#include "usart.h"
 
 #define	_GPS_USART					huart3
 #define	_GPS_DEBUG					0
