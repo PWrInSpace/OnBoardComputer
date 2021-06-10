@@ -104,6 +104,7 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 
 	initAll();
+	rocketState = IDLE;
 
 	/* USER CODE END 2 */
 
@@ -134,17 +135,16 @@ int main(void) {
 			logDataLoop();
 		}
 
-		if (rocketState == READY && uwTick - timers.oneSecondTimer > 1000) {
+		if (!ignitionConfirmation && rocketState == READY && uwTick - timers.tenSecondTimer > 10000) {
 
-			timers.oneSecondTimer = uwTick;
+			timers.tenSecondTimer = uwTick;
 
-			timers.launchTimer--;
+			timers.launchTimer -= 10;
 
-			if(timers.launchTimer % 10 == 5) {
-				char tempString[40];
-				sprintf(tempString, "ASTR;Pozostalo do startu: %d", timers.launchTimer);
-				loraSendData((uint8_t*) tempString, strlen(tempString));
-			}
+			char tempString[40];
+			sprintf(tempString, "ASTR;Pozostalo do startu: %d",
+					timers.launchTimer);
+			loraSendData((uint8_t*) tempString, strlen(tempString));
 
 			if (timers.launchTimer <= 0)
 				doLaunch();
@@ -195,10 +195,10 @@ void SystemClock_Config(void) {
  */
 static void MX_NVIC_Init(void) {
 	/* DMA1_Channel5_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 1, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 	/* DMA1_Channel6_IRQn interrupt configuration */
-	HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 0, 0);
+	HAL_NVIC_SetPriority(DMA1_Channel6_IRQn, 1, 0);
 	HAL_NVIC_EnableIRQ(DMA1_Channel6_IRQn);
 	/* USART1_IRQn interrupt configuration */
 	HAL_NVIC_SetPriority(USART1_IRQn, 1, 0);

@@ -1,7 +1,6 @@
 #include "Funkcje.h"
 
 _Bool cmeaSent;
-_Bool ignitionConfirmation;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
@@ -18,6 +17,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		if (xbee_rx.data_flag) {
 
 			if (strstr(xbee_rx.data_array, "DDAT") != NULL) {
+
+				strcat(xbee_rx.data_array, "\n");
 				loraSendData((uint8_t*) xbee_rx.data_array,
 						strlen(xbee_rx.data_array));
 			} else if (strstr(xbee_rx.data_array, "AME1")) {
@@ -56,7 +57,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 void initAll(void) {
 
-	timers.launchTimer = 48;
+	timers.launchTimer = 40;
 	rocketState = INIT;
 	loraInit();
 	GPS_Init();
@@ -76,14 +77,14 @@ void initAll(void) {
 
 	timers.logDataTimer = uwTick;
 	timers.sendDataTimer = uwTick;
-	timers.oneSecondTimer = uwTick;
+	timers.tenSecondTimer = uwTick;
 }
 
 /*******************************************************************************************/
 
 void testPrandl(void) {
 
-	xbee_transmit_char(xbeePrandl, "CME1");
+	//xbee_transmit_char(xbeePrandl, "CME1");
 }
 
 /*******************************************************************************************/
@@ -105,7 +106,7 @@ void logAndSendDataLoop(void) {
 void logDataLoop(void) {
 
 	sprintf(bufferLoraTx,
-			"ADAT;%d;%.5f;%.5f;%.1f;%d:%d:%d;%.3f;%d;%d;%.2f;%.2f;%d;%d;%d;%d",
+			"ADAT;%d;%.5f;%.5f;%.1f;%d:%d:%d;%.3f;%d;%d;%.2f;%.2f;%d;%d;%d;%d\n",
 			(int) rocketState, GPS.GPGGA.LatitudeDecimal,
 			GPS.GPGGA.LongitudeDecimal, GPS.GPGGA.MSL_Altitude,
 			GPS.GPGGA.UTC_Hour, GPS.GPGGA.UTC_Min, GPS.GPGGA.UTC_Sec,
@@ -150,17 +151,17 @@ void setPeriods(void) {
 
 	case READY:
 
-		timers.sendDataPeriod = 2000;
+		timers.sendDataPeriod = 2500;
 		break;
 
 	case FLIGHT:
 
-		timers.sendDataPeriod = 1000;
+		timers.sendDataPeriod = 2000;
 		timers.logDataPeriod = 50;
 
 		if (!cmeaSent) {
 
-			xbee_transmit_char(xbeePrandl, "CMEA");
+			//xbee_transmit_char(xbeePrandl, "CMEA");
 		}
 		break;
 

@@ -45,8 +45,8 @@ typedef struct {
 	uint16_t sendDataPeriod;
 	uint16_t logDataPeriod;
 
-	uint32_t oneSecondTimer;
-	int8_t launchTimer;
+	uint32_t tenSecondTimer;
+	int launchTimer;
 
 } Timers;
 
@@ -62,6 +62,7 @@ char separationBufferRx[10];
 
 OtherDataToSend otherData;
 Timers timers;
+_Bool ignitionConfirmation;
 
 Xbee xbeePrandl;
 Xbee xbeeIgnition;
