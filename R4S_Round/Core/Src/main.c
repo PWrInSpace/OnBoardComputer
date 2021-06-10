@@ -124,6 +124,7 @@ int main(void) {
 
 			timers.sendDataTimer = uwTick;
 			logAndSendDataLoop();
+			testPrandl();
 		}
 
 		if (timers.logDataPeriod > 0
@@ -131,6 +132,22 @@ int main(void) {
 
 			timers.logDataPeriod = uwTick;
 			logDataLoop();
+		}
+
+		if (rocketState == READY && uwTick - timers.oneSecondTimer > 1000) {
+
+			timers.oneSecondTimer = uwTick;
+
+			timers.launchTimer--;
+
+			if(timers.launchTimer % 10 == 5) {
+				char tempString[40];
+				sprintf(tempString, "ASTR;Pozostalo do startu: %d", timers.launchTimer);
+				loraSendData((uint8_t*) tempString, strlen(tempString));
+			}
+
+			if (timers.launchTimer <= 0)
+				doLaunch();
 		}
 
 		/* USER CODE END WHILE */

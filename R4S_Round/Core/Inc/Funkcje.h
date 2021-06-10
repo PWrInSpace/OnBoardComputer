@@ -45,6 +45,9 @@ typedef struct {
 	uint16_t sendDataPeriod;
 	uint16_t logDataPeriod;
 
+	uint32_t oneSecondTimer;
+	int8_t launchTimer;
+
 } Timers;
 
 /******************************/
@@ -55,6 +58,7 @@ FRESULT fres;
 UINT bytesWrote;
 
 char bufferLoraTx[BUFFER_SIZE];
+char separationBufferRx[10];
 
 OtherDataToSend otherData;
 Timers timers;
@@ -68,6 +72,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void initAll(void);
 
+void testPrandl(void);
+
 void logAndSendDataLoop(void);
 
 void logDataLoop(void);
@@ -75,5 +81,7 @@ void logDataLoop(void);
 void setPeriods(void);
 
 void loraReaction(void);
+
+void doLaunch(void);
 
 #endif /* INC_FUNKCJE_H_ */

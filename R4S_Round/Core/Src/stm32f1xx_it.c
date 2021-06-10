@@ -241,7 +241,7 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
-
+  if(__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE)) HAL_UART_RxCpltCallback(&huart1);
   /* USER CODE END USART1_IRQn 1 */
 }
 
