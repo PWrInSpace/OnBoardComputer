@@ -56,6 +56,7 @@ typedef struct {
 FIL file;
 FRESULT fres;
 UINT bytesWrote;
+uint64_t allWrittenBytes;
 
 char bufferLoraTx[BUFFER_SIZE];
 char separationBufferRx[10];

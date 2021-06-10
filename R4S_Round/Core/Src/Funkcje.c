@@ -115,15 +115,18 @@ void logDataLoop(void) {
 			otherData.computedAltitude, otherData.computedSpeed,
 			otherData.separationTest1, otherData.separationTest2);
 
-	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND);
-	fres = f_write(&file, (BYTE*) bufferLoraTx, strlen(bufferLoraTx),
-			&bytesWrote);
+	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND | FA_READ);
+	//fres = f_write(&file, (BYTE*) bufferLoraTx, strlen(bufferLoraTx), &bytesWrote);
 
-	if (fres != 0)
-		otherData.sdState = 0;
-	else
+	f_lseek(&file, allWrittenBytes);
+	int bytWrot = f_puts(bufferLoraTx, &file);
+
+	if (bytWrot > 0)
 		otherData.sdState = 1;
+	else
+		otherData.sdState = 0;
 
+	allWrittenBytes += bytWrot;
 	f_close(&file);
 }
 
@@ -142,6 +145,9 @@ void setPeriods(void) {
 		break;
 
 	case IDLE:
+
+		timers.sendDataPeriod = 5000;
+		timers.logDataPeriod = 0;
 		break;
 	case ARMED_HARD:
 		break;
