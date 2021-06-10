@@ -103,6 +103,7 @@ int main(void) {
 	MX_NVIC_Init();
 	/* USER CODE BEGIN 2 */
 
+	HAL_Delay(8000);
 	initAll();
 	rocketState = IDLE;
 

@@ -116,7 +116,6 @@ void logDataLoop(void) {
 			otherData.separationTest1, otherData.separationTest2);
 
 	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND | FA_READ);
-	//fres = f_write(&file, (BYTE*) bufferLoraTx, strlen(bufferLoraTx), &bytesWrote);
 
 	f_lseek(&file, allWrittenBytes);
 	int bytWrot = f_puts(bufferLoraTx, &file);
