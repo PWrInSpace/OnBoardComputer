@@ -2,44 +2,11 @@
 
 void initLoop(void) {
 
-	if (uwTick - timer > 500) {
+	if (uwTick - timer > 5000) {
 		timer = uwTick;
-		LED_GPIO_Port->ODR ^= LED_Pin;
+		sendTestData();
 	}
 
-	if (uartRxFlag) {
-
-		uartRxFlag = 0;
-
-		if (strcmp(uartRxTab, "A1A") == 0)
-			currentState = ARMED;
-
-		else if (strcmp(uartRxTab, "A1I") == 0) {
-
-			char mess[4] = "AIN";
-			HAL_UART_Transmit(&huart2, (uint8_t*) mess, strlen(mess), 100);
-		}
-
-	}
-	HAL_Delay(1);
-}
-
-/*****************************************************************/
-
-void armedLoop(void) {
-
-	if (uwTick - timer > 250) {
-		timer = uwTick;
-		LED_GPIO_Port->ODR ^= LED_Pin;
-	}
-
-	if (uartRxFlag) {
-
-		uartRxFlag = 0;
-
-		if (strcmp(uartRxTab, "A1F") == 0)
-			currentState = FLIGHT;
-	}
 	HAL_Delay(1);
 }
 
@@ -47,34 +14,22 @@ void armedLoop(void) {
 
 void flightLoop(void) {
 
-	if (uwTick - timer > 100) {
+	LED_GPIO_Port->ODR &= ~LED_Pin;
+
+	if (uwTick - timer > 250) {
 		timer = uwTick;
-		LED_GPIO_Port->ODR ^= LED_Pin;
+		sendTestData();
 	}
 
-	if (!(AltiAP_GPIO_Port->IDR & AltiAP_Pin))
-		doFirstSeparation(1000);
+	if (AltiAP_GPIO_Port->IDR & AltiAP_Pin)
+		doFirstSeparation();
 
-	if (!(AltiMA_GPIO_Port->IDR & AltiMA_Pin)) {
+	if (AltiMA_GPIO_Port->IDR & AltiMA_Pin) {
 
-		doSecondSeparation(1000);
+		doSecondSeparation(3000);
 		currentState = END;
 	}
 
-	if (uartRxFlag) {
-
-		uartRxFlag = 0;
-
-		if (strcmp(uartRxTab, "A1G") == 0)
-			doFirstSeparation(1000);
-
-		if (strcmp(uartRxTab, "A1M") == 0) {
-
-			doSecondSeparation(1000);
-			currentState = END;
-		}
-
-	}
 	HAL_Delay(1);
 }
 
@@ -89,21 +44,24 @@ void stopAll(void) {
 
 /*****************************************************************/
 
-void doFirstSeparation(int emergencyTimeout) {
+void doFirstSeparation() {
 
 	timer = uwTick;
 
 	Separ1A_GPIO_Port->ODR |= Separ1A_Pin;
 	Separ1B_GPIO_Port->ODR |= Separ1B_Pin;
 
+	HAL_Delay(500);
 	while (P1Test_GPIO_Port->IDR & P1Test_Pin) {
 
-		if (uwTick - timer > emergencyTimeout)
+		if (uwTick - timer > 2000)
 			break;
 	}
 
 	Separ1A_GPIO_Port->ODR &= ~Separ1A_Pin;
 	Separ1B_GPIO_Port->ODR &= ~Separ1B_Pin;
+
+	sendTestData();
 }
 
 /*****************************************************************/
@@ -115,7 +73,7 @@ void doSecondSeparation(int emergencyTimeout) {
 	// Tutaj dodać odpowiednie ustawienie serwa
 	//__HAL_TIM_SET_COMPARE(&htim3, SEPAR_2_PWM_CHANNEL, valu);
 
-	while (P2Test_GPIO_Port->IDR & P2Test_Pin) {
+	while (1/*P2Test_GPIO_Port->IDR & P2Test_Pin*/) {
 
 		if (uwTick - timer > emergencyTimeout) {
 
@@ -127,6 +85,7 @@ void doSecondSeparation(int emergencyTimeout) {
 		}
 	}
 
+	sendTestData();
 }
 
 /*****************************************************************/
@@ -135,8 +94,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	if (huart->Instance == USART2) {
 
-		uartRxFlag = 1;
+		__HAL_UART_CLEAR_IDLEFLAG(&huart2);
+		HAL_UART_DMAStop(&huart2);
 
-		HAL_UART_Receive_IT(&huart2, (uint8_t*) uartRxTab, 4);
+		if(strstr(uartRxTab, "LECI") != NULL) currentState = FLIGHT;
+		else if(strstr(uartRxTab, "END") != NULL) currentState = END;
+
+		HAL_UART_Receive_DMA(&huart2, (uint8_t*) uartRxTab, ARRAY_SIZE);
 	}
+}
+
+/*****************************************************************/
+
+void sendTestData(void) {
+
+	char mess[30];
+	P1Test = P1Test_GPIO_Port->IDR & P1Test_Pin;
+	P2Test = P2Test_GPIO_Port->IDR & P2Test_Pin;
+
+	sprintf(mess, "A1DAT%d%d", P1Test, P2Test);
+
+	LED_GPIO_Port->ODR ^= LED_Pin;
+	HAL_UART_Transmit_DMA(&huart2, (uint8_t*) mess, strlen(mess));
 }

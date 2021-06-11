@@ -5,23 +5,26 @@
 #include "usart.h"
 #include "StateMachine.h"
 #include "string.h"
+#include <stdio.h>
 
 #define SEPAR_2_PWM_CHANNEL TIM_CHANNEL_2
+#define ARRAY_SIZE 10
+_Bool P1Test;
+_Bool P2Test;
 
-char uartRxTab[4];
-_Bool uartRxFlag;
+char uartRxTab[ARRAY_SIZE];
 
 uint32_t timer;
 
-void initLoop(void);
+void sendTestData(void);
 
-void armedLoop(void);
+void initLoop(void);
 
 void flightLoop(void);
 
 void stopAll(void);
 
-void doFirstSeparation(int emergencyTimeout);
+void doFirstSeparation(void);
 
 void doSecondSeparation(int emergencyTimeout);
 

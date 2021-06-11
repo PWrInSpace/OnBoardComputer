@@ -3,7 +3,7 @@
 
 enum StateMachine {
 
-	INIT, ARMED, FLIGHT, END
+	INIT, FLIGHT, END
 };
 
 enum StateMachine currentState;

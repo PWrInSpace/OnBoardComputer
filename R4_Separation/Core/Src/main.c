@@ -99,7 +99,9 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
-	HAL_UART_Receive_IT(&huart2, (uint8_t*) uartRxTab, 4);
+	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
+	HAL_UART_Receive_DMA(&huart2, (uint8_t*) uartRxTab, ARRAY_SIZE);
+
 	HAL_TIM_PWM_Start(&htim3, SEPAR_2_PWM_CHANNEL);
 
 	// Tutaj dodać odpowiednie ustawienie serwa
@@ -109,10 +111,6 @@ int main(void)
 
 	while (currentState == INIT) {
 		initLoop();
-	}
-
-	while (currentState == ARMED) {
-		armedLoop();
 	}
 
 	while (currentState == FLIGHT) {
