@@ -45,7 +45,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		// TODO!!! odbieranie danych z odzysku
+		if (strstr(separationBufferRx, "A1DAT") != NULL) {
+
+			otherData.separationTest1 = separationBufferRx[5] - '0';
+			otherData.separationTest2 = separationBufferRx[6] - '0';
+		}
+		else if (rocketState == FLIGHT && strstr(separationBufferRx, "A1S1") != NULL) {
+
+			rocketState = FIRST_SEPAR;
+		}
+		else if (rocketState == FLIGHT && strstr(separationBufferRx, "A1S2") != NULL) {
+
+			rocketState = SECOND_SEPAR;
+		}
 
 		memset(separationBufferRx, 0, 10);
 		HAL_UART_Receive_DMA(&huart1, (uint8_t*) separationBufferRx, 10);
@@ -166,7 +178,8 @@ void setPeriods(void) {
 
 		if (!cmeaSent) {
 
-			//xbee_transmit_char(xbeePrandl, "CMEA");
+			xbee_transmit_char(xbeePrandl, "CMEA");
+			HAL_Delay(200);
 		}
 		break;
 
@@ -187,6 +200,7 @@ void setPeriods(void) {
 
 		timers.sendDataPeriod = 5000;
 		timers.logDataPeriod = 500;
+		if(GPS.GPGGA.MSL_Altitude < 100) rocketState = END;
 		break;
 
 	case END:
@@ -209,6 +223,13 @@ void loraReaction(void) {
 		}
 	}
 
+	else if (strstr(loraBuffer, "ABRT") != NULL) {
+
+		rocketState = ABORT;
+		HAL_UART_Transmit(&huart1, (uint8_t*) "END", 3, 500);
+		xbee_transmit_char(xbeeIgnition, "STAT;-;7");
+	}
+
 	memset(loraBuffer, 0, BUFFER_SIZE);
 }
 
@@ -218,6 +239,8 @@ void doLaunch(void) {
 
 	rocketState = FLIGHT;
 	setPeriods();
+	char mess[] = "LECI";
+	HAL_UART_Transmit(&huart1, (uint8_t*) mess, strlen(mess), 500);
 
 	if (!ignitionConfirmation)
 		xbee_transmit_char(xbeeIgnition, "DSTA");
