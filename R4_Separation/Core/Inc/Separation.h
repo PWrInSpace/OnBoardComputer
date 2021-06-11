@@ -11,6 +11,8 @@
 #define ARRAY_SIZE 10
 _Bool P1Test;
 _Bool P2Test;
+_Bool Sep1Done;
+_Bool Sep2Done;
 
 char uartRxTab[ARRAY_SIZE];
 

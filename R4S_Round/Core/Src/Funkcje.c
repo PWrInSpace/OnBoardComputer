@@ -22,9 +22,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 				loraSendData((uint8_t*) xbee_rx.data_array,
 						strlen(xbee_rx.data_array));
 			} else if (strstr(xbee_rx.data_array, "AME1")) {
+
 				// Zapis danych z pitota do zmiennnych TODO!!!
+				sscanf(xbee_rx.data_array ,"AME1;%f;%f", &otherData.pitotDynamic, &otherData.pitotStatic);
+
+
 			} else if (strstr(xbee_rx.data_array, "AMEA")) {
+
 				// Zapis danych z pitota do zmiennnych TODO!!!
+				sscanf(xbee_rx.data_array ,"AME1;%f;%f", &otherData.pitotDynamic, &otherData.pitotStatic);
+
 				cmeaSent = 1;
 				if (rocketState == FIRST_SEPAR)
 					xbee_transmit_char(xbeePrandl, "CSTP");

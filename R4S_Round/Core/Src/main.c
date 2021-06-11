@@ -143,7 +143,7 @@ int main(void) {
 			timers.launchTimer -= 10;
 
 			char tempString[40];
-			sprintf(tempString, "ASTR;Pozostalo do startu: %d",
+			sprintf(tempString, "ASTR;Pozostalo do startu: %d\n",
 					timers.launchTimer);
 			loraSendData((uint8_t*) tempString, strlen(tempString));
 
