@@ -30,9 +30,7 @@ typedef struct {
 	float pitotStatic;
 	float pitotDynamic;
 	int computedAltitude;
-	int computedSpeed;
-	_Bool separationTest1;
-	_Bool separationTest2;
+	int ignitionState;
 
 } OtherDataToSend;
 
@@ -47,6 +45,7 @@ typedef struct {
 
 	uint32_t tenSecondTimer;
 	int launchTimer;
+	int checkConnectionTimer;
 
 } Timers;
 
@@ -74,8 +73,6 @@ Xbee xbeeIgnition;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void initAll(void);
-
-void testPrandl(void);
 
 void logAndSendDataLoop(void);
 

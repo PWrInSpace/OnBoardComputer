@@ -6,6 +6,7 @@
 #include "StateMachine.h"
 #include "string.h"
 #include <stdio.h>
+#include "tim.h"
 
 #define SEPAR_2_PWM_CHANNEL TIM_CHANNEL_2
 #define ARRAY_SIZE 10

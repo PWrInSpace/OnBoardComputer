@@ -113,12 +113,9 @@ int main(void) {
 	/* USER CODE BEGIN WHILE */
 	while (1) {
 
-		if (rocketState != FLIGHT) {
-
-			loraLoop();
-			if (loraBuffer[0] != 0)
-				loraReaction();
-		}
+		loraLoop();
+		if (loraBuffer[0] != 0)
+			loraReaction();
 
 		setPeriods();
 
@@ -126,7 +123,6 @@ int main(void) {
 
 			timers.sendDataTimer = uwTick;
 			logAndSendDataLoop();
-			testPrandl();
 		}
 
 		if (timers.logDataPeriod > 0
@@ -136,7 +132,8 @@ int main(void) {
 			logDataLoop();
 		}
 
-		if (!ignitionConfirmation && rocketState == READY && uwTick - timers.tenSecondTimer > 10000) {
+		if (!ignitionConfirmation && rocketState == READY
+				&& uwTick - timers.tenSecondTimer > 10000) {
 
 			timers.tenSecondTimer = uwTick;
 

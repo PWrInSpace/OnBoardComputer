@@ -2,6 +2,7 @@
 
 void initLoop(void) {
 
+	htim3.Instance->CCR2 = 50;
 	if (uwTick - timer > 5000) {
 		timer = uwTick;
 		sendTestData();
@@ -49,12 +50,7 @@ void doFirstSeparation() {
 	Separ1A_GPIO_Port->ODR |= Separ1A_Pin;
 	Separ1B_GPIO_Port->ODR |= Separ1B_Pin;
 
-	HAL_Delay(500);
-	while (P1Test_GPIO_Port->IDR & P1Test_Pin) {
-
-		if (uwTick - timer > 2000)
-			break;
-	}
+	HAL_Delay(2000);
 
 	Separ1A_GPIO_Port->ODR &= ~Separ1A_Pin;
 	Separ1B_GPIO_Port->ODR &= ~Separ1B_Pin;
@@ -71,19 +67,10 @@ void doSecondSeparation(int emergencyTimeout) {
 	timer = uwTick;
 
 	// Tutaj dodać odpowiednie ustawienie serwa
-	//__HAL_TIM_SET_COMPARE(&htim3, SEPAR_2_PWM_CHANNEL, valu);
-
-	while (1/*P2Test_GPIO_Port->IDR & P2Test_Pin*/) {
-
-		if (uwTick - timer > emergencyTimeout) {
-
-			Separ2AW_GPIO_Port->ODR |= Separ2AW_Pin;
-			HAL_Delay(2000);
-			Separ2AW_GPIO_Port->ODR &= Separ2AW_Pin;
-
-			break;
-		}
-	}
+	htim3.Instance->CCR2 = 40;
+	Separ2AW_GPIO_Port->ODR |= Separ2AW_Pin;
+	HAL_Delay(2000);
+	Separ2AW_GPIO_Port->ODR &= Separ2AW_Pin;
 
 	sendTestData();
 	HAL_Delay(150);
@@ -103,6 +90,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			currentState = FLIGHT;
 		else if (strstr(uartRxTab, "END") != NULL)
 			currentState = END;
+		else if (currentState == FLIGHT && strstr(uartRxTab, "FORCE1") != NULL)
+			doFirstSeparation();
+		else if (currentState == FLIGHT && strstr(uartRxTab, "FORCE2") != NULL)
+			doSecondSeparation(3000);
 
 		HAL_UART_Receive_DMA(&huart2, (uint8_t*) uartRxTab, ARRAY_SIZE);
 	}

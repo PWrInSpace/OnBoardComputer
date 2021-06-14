@@ -18,23 +18,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 			if (strstr(xbee_rx.data_array, "DDAT") != NULL) {
 
-				strcat(xbee_rx.data_array, "\n");
+				/*strcat(xbee_rx.data_array, "\n");
 				loraSendData((uint8_t*) xbee_rx.data_array,
-						strlen(xbee_rx.data_array));
+						strlen(xbee_rx.data_array));*/
+				int notUsed = 0;
+				sscanf(xbee_rx.data_array, "DDAT;%d;%d", &otherData.ignitionState, &notUsed);
+				timers.checkConnectionTimer = uwTick;
+
+
 			} else if (strstr(xbee_rx.data_array, "AME1")) {
 
 				// Zapis danych z pitota do zmiennnych TODO!!!
-				sscanf(xbee_rx.data_array ,"AME1;%f;%f", &otherData.pitotDynamic, &otherData.pitotStatic);
+				sscanf(xbee_rx.data_array, "AME1;%f;%f", &otherData.pitotDynamic, &otherData.pitotStatic);
 
 
-			} else if (strstr(xbee_rx.data_array, "AMEA")) {
-
-				// Zapis danych z pitota do zmiennnych TODO!!!
-				sscanf(xbee_rx.data_array ,"AME1;%f;%f", &otherData.pitotDynamic, &otherData.pitotStatic);
-
-				cmeaSent = 1;
-				if (rocketState == FIRST_SEPAR)
-					xbee_transmit_char(xbeePrandl, "CSTP");
 			} else if (strstr(xbee_rx.data_array, "ASTB")) {
 				ignitionConfirmation = 1;
 			}
@@ -52,12 +49,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		if (strstr(separationBufferRx, "A1DAT") != NULL) {
-
-			otherData.separationTest1 = separationBufferRx[5] - '0';
-			otherData.separationTest2 = separationBufferRx[6] - '0';
-		}
-		else if (rocketState == FLIGHT && strstr(separationBufferRx, "A1S1") != NULL) {
+		if (rocketState == FLIGHT && strstr(separationBufferRx, "A1S1") != NULL) {
 
 			rocketState = FIRST_SEPAR;
 		}
@@ -97,13 +89,7 @@ void initAll(void) {
 	timers.logDataTimer = uwTick;
 	timers.sendDataTimer = uwTick;
 	timers.tenSecondTimer = uwTick;
-}
-
-/*******************************************************************************************/
-
-void testPrandl(void) {
-
-	//xbee_transmit_char(xbeePrandl, "CME1");
+	timers.checkConnectionTimer = uwTick;
 }
 
 /*******************************************************************************************/
@@ -112,11 +98,11 @@ void logAndSendDataLoop(void) {
 
 	GPS_Process();
 
-	//otherData.sdState = !otherData.sdState;
-
 	logDataLoop();
 
 	loraSendData((uint8_t*) bufferLoraTx, strlen(bufferLoraTx));
+
+	if (uwTick - timers.checkConnectionTimer > 5500) otherData.ignitionState = 0;
 
 }
 
@@ -125,14 +111,13 @@ void logAndSendDataLoop(void) {
 void logDataLoop(void) {
 
 	sprintf(bufferLoraTx,
-			"ADAT;%d;%.5f;%.5f;%.1f;%d:%d:%d;%.3f;%d;%d;%.2f;%.2f;%d;%d;%d;%d\n",
+			"ADAT;%d;%.5f;%.5f;%.1f;%d:%d:%d;%.3f;%d;%d;%.2f;%.2f;%d;%d\n",
 			(int) rocketState, GPS.GPGGA.LatitudeDecimal,
 			GPS.GPGGA.LongitudeDecimal, GPS.GPGGA.MSL_Altitude,
 			GPS.GPGGA.UTC_Hour, GPS.GPGGA.UTC_Min, GPS.GPGGA.UTC_Sec,
 			GPS.GPGGA.HDOP, GPS.GPGGA.SatellitesUsed, otherData.sdState,
 			otherData.pitotStatic, otherData.pitotDynamic,
-			otherData.computedAltitude, otherData.computedSpeed,
-			otherData.separationTest1, otherData.separationTest2);
+			otherData.computedAltitude, otherData.ignitionState);
 
 	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND | FA_READ);
 
@@ -158,13 +143,13 @@ void setPeriods(void) {
 
 	case INIT:
 
-		timers.sendDataPeriod = 5000;
+		timers.sendDataPeriod = 2800;
 		timers.logDataPeriod = 0;
 		break;
 
 	case IDLE:
 
-		timers.sendDataPeriod = 5000;
+		timers.sendDataPeriod = 2800;
 		timers.logDataPeriod = 0;
 		break;
 	case ARMED_HARD:
@@ -182,12 +167,6 @@ void setPeriods(void) {
 
 		timers.sendDataPeriod = 2000;
 		timers.logDataPeriod = 50;
-
-		if (!cmeaSent) {
-
-			xbee_transmit_char(xbeePrandl, "CMEA");
-			HAL_Delay(200);
-		}
 		break;
 
 	case ABORT:
@@ -200,7 +179,6 @@ void setPeriods(void) {
 
 		timers.sendDataPeriod = 2000;
 		timers.logDataPeriod = 200;
-		xbee_transmit_char(xbeePrandl, "CSTP");
 		break;
 
 	case SECOND_SEPAR:
@@ -224,9 +202,11 @@ void loraReaction(void) {
 
 	if (strstr(loraBuffer, "STAT") != NULL && strlen(loraBuffer) >= 8) {
 
-		if (rocketState == (loraBuffer[5] - '0') && (loraBuffer[5] - '0') < 6) {
+		if (rocketState == (loraBuffer[5] - '0')) {
 			rocketState = loraBuffer[7] - '0';
 			xbee_transmit_char(xbeeIgnition, loraBuffer);
+			if (rocketState == FIRST_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE1", 6, 500);
+			else if (rocketState == SECOND_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE2", 6, 500);
 		}
 	}
 
