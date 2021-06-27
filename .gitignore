@@ -35,3 +35,6 @@
 Debug/
 Drivers/
 .settings/
+
+.pio
+.vscode/*
