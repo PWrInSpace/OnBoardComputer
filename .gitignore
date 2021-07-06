@@ -37,4 +37,4 @@ Drivers/
 .settings/
 
 .pio
-.vscode/*
+.vscode
