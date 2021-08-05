@@ -1,5 +1,5 @@
-#ifndef DATA_STRUCT_H
-#define DATA_STRUCT_H
+#ifndef DATA_STRUCTS_H
+#define DATA_STRUCTS_H
 
 #include <cstdint>
 

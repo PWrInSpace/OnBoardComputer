@@ -3,8 +3,8 @@
 #include "now.h"
 
 PitotData pitotdata;
+
 float initialPressure = 1013;
-uint16_t pitotDelayTime = 3000;
 
 void setup(){
   
@@ -15,15 +15,8 @@ void setup(){
   Serial.println();
   Serial.println("Mac adress:" + WiFi.macAddress());
 
-  //nowAddPeer(adressPitot, 0); // Tylko dla maina
-  nowAddPeer(adressMain, 0); // Tylko dla pitota
-
-
-  // Kod tylko dla pitota:
-  pitotdata.staticPressure = 21.37;
-  pitotdata.dynamicPressure = 69.69;
-  pitotdata.altitude = 44330.0 * (1.0 - pow(pitotdata.staticPressure / (initialPressure * 100), 0.1903));
-  pitotdata.speed = 37.21;
+  nowAddPeer(adressPitot, 0);
+  nowAddPeer(adressMValve, 0);
 }
 
 void loop() {
