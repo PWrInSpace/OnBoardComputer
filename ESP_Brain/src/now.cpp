@@ -41,7 +41,7 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
   Serial.println("Wysokosc: " + String(pitotdata.altitude));
   Serial.println("Predkosc: " + String(pitotdata.speed));*/
 
-  memcpy(&pitotDelayTime, (uint16_t*) incomingData, sizeof(pitotDelayTime));
+  //memcpy(&pitotDelayTime, (uint16_t*) incomingData, sizeof(pitotDelayTime));
 
-  Serial.println(pitotDelayTime);
+  //Serial.println(pitotDelayTime);
 }

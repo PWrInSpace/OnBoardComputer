@@ -40,7 +40,7 @@ void loop() {
   if (!result) Serial.println("Wyslano dane pitota");
   else Serial.println("Blad wysylania danych pitota");
   
-  delay(pitotDelayTime);
+  //delay(pitotDelayTime);
 
   // Kod tylko dla maina:
   /*if (Serial.available() > 0) {
