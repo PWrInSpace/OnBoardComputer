@@ -15,24 +15,3 @@ void loop() {
   separationMonitoringLoop(); // Monitoruj zachowanie Altimaxa i telemetrum.
 
 }
-
-/*******************************************************/
-
-void initSeparationSystem() {
-
-  
-}
-
-/*******************************************************/
-
-void i2cLoop() {
-
-  
-}
-
-/*******************************************************/
-
-void separationMonitoringLoop() {
-
-  
-}
