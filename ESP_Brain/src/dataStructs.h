@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+// Struktury pomocnicze:
+
 struct PitotData {
 
     float staticPressure;
@@ -20,6 +22,15 @@ struct GPSData {
 
 };
 
+struct UpustData {
+
+    bool endStop1;
+    bool endStop2;
+    uint16_t potentiometer;
+};
+
+// Główna struktura na przechowywanie danych całej rakiety:
+
 struct MainDataFrame {
 
     uint32_t timer_ms;
@@ -27,6 +38,7 @@ struct MainDataFrame {
 
     PitotData pitotData = {};
     GPSData gps = {};
+    UpustData upust = {};
 
     uint16_t halSensor[5];
     float tankPressure;
@@ -38,6 +50,21 @@ struct MainDataFrame {
 
     uint16_t espNowErrorCounter;
     uint16_t sdErrorCounter;
+};
+
+// Stany maszyny stanów:
+
+enum States {
+
+    INIT = 0,
+    IDLE,
+    FUELING,
+    COUNTDOWN,
+    ABORT,
+    FLIGHT,
+    FIRST_SEPAR,
+    SECOND_SEPAR,
+    GROUND
 };
 
 #endif

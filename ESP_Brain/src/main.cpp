@@ -3,6 +3,7 @@
 #include "now.h"
 
 MainDataFrame mainDataFrame = {};
+States state;
 
 void setup(){
   
