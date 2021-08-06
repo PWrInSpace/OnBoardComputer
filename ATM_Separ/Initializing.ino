@@ -17,4 +17,15 @@ void initSeparationSystem() {
   
   // Altimax apogeum, Altimax main, Tele apogeum, Tele main - INPUT_PULLUP:
   PORTC |= (ALTI_TEST1_Pin | ALTI_TEST2_Pin | TELE_TEST1_Pin | TELE_TEST2_Pin);
+
+  // i2c:
+  Wire.begin(3);
+  Wire.onRequest(sendData);
+}
+
+/*******************************************************/
+
+void sendData() {
+
+  Wire.write(SeparationFrame);
 }

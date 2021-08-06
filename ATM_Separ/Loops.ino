@@ -1,6 +1,17 @@
 void i2cLoop() {
 
-  
+  if(Wire.available()) {
+    uint8_t rxByte = Wire.read();
+
+    if(rxByte == 8) {
+      
+      state = ARMED;
+      SeparationFrame |= (1<<0);
+    }
+    
+    else if(rxByte == 24) doFirstSeparation();
+    else if(rxByte == 56) doSecondSeparation();
+  }
 }
 
 /*******************************************************/
