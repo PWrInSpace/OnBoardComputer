@@ -11,4 +11,33 @@ struct PitotData {
     float speed;
 };
 
+struct GPSData {
+
+    float longitude;
+    float laltitude;
+    float altitude;
+    int satellitesNumber;
+
+};
+
+struct MainDataFrame {
+
+    uint32_t timer_ms;
+    float battery;
+
+    PitotData pitotData = {};
+    GPSData gps = {};
+
+    uint16_t halSensor[5];
+    float tankPressure;
+
+    float initialPressure = 1013;
+    float pressure;
+    float speed;
+    float gForce;
+
+    uint16_t espNowErrorCounter;
+    uint16_t sdErrorCounter;
+};
+
 #endif

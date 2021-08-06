@@ -1,5 +1,11 @@
 #include "now.h"
 
+extern MainDataFrame mainDataFrame;
+
+bool adressCompare(const uint8_t *addr1, const uint8_t *addr2);
+
+/**********************************************************************************************/
+
 bool nowInit() {
 
     WiFi.mode(WIFI_STA);
@@ -28,20 +34,32 @@ bool nowAddPeer(const uint8_t* address, uint8_t channel) {
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
-  if (status) Serial.println("Blad Dost");
-  //Serial.println(status == ESP_NOW_SEND_SUCCESS ? /*"Dostarczono"*/"" : "Blad dostarczania");
+  if (status) mainDataFrame.espNowErrorCounter++;
 }
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   
-  /*memcpy(&pitotdata, (PitotData*) incomingData, sizeof(pitotdata));
+  if(adressCompare(mac, adressPitot)) {
 
-  Serial.println("Cisnienie stat: " + String(pitotdata.staticPressure));
-  Serial.println("Cisnienie dyn: " + String(pitotdata.dynamicPressure));
-  Serial.println("Wysokosc: " + String(pitotdata.altitude));
-  Serial.println("Predkosc: " + String(pitotdata.speed));*/
+    memcpy(&mainDataFrame.pitotData, (PitotData*) incomingData, sizeof(mainDataFrame.pitotData));
+  }
 
-  //memcpy(&pitotDelayTime, (uint16_t*) incomingData, sizeof(pitotDelayTime));
+  else if(adressCompare(mac, adressMValve)) {
 
-  //Serial.println(pitotDelayTime);
+    // parsowanie stringa
+  }
+  
+
+}
+
+/**********************************************************************************************/
+
+bool adressCompare(const uint8_t *addr1, const uint8_t *addr2) {
+
+  for(int8_t i = 0; i < 6; i++) {
+
+    if(addr1[i] != addr2[i]) return false;
+  }
+
+  return true;
 }
