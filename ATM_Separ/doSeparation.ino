@@ -5,8 +5,7 @@ void doFirstSeparation() {
   PORTB |= SEPAR1A_Pin;
   PORTD |= SEPAR1B_Pin;
 
-  uint32_t timer_ms = millis();
-  while(millis() - timer_ms < 2000) i2cLoop();
+  _delay_ms(2000);
 
   PORTB &= ~SEPAR1A_Pin;
   PORTD &= ~SEPAR1B_Pin;
@@ -26,8 +25,6 @@ void doSecondSeparation() {
 
   uint32_t timer_ms = millis();
   while(millis() - timer_ms < 2000) {
-    
-    i2cLoop();
 
     if(PIND & TEST2_Pin) {
 
@@ -40,7 +37,7 @@ void doSecondSeparation() {
   PORTB |= SEPAR2B_Pin;
   
   timer_ms = millis();
-  while(millis() - timer_ms < 2000) i2cLoop();
+  while(millis() - timer_ms < 2000) {;}
   
   PORTB &= ~SEPAR2A_Pin;
   PORTB &= ~SEPAR2B_Pin;

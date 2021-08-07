@@ -10,12 +10,13 @@ void setup(){
   
     Serial.begin(115200);
 
-    nowInit();
+    /*nowInit();
 
     nowAddPeer(adressPitot, 0);
-    nowAddPeer(adressMValve, 0);
+    nowAddPeer(adressMValve, 0);*/
 
     Wire.begin();
+    Serial.println("wire jest");
 }
 
 void loop() {
@@ -24,26 +25,30 @@ void loop() {
     if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
         mainDataFrame.espNowErrorCounter++;*/
 
-    for(int i = 0; i < 5; i++) {
+    Serial.println("for1");
+    for (int i = 0; i < 5; i++) {
         
         Wire.requestFrom(3, 1);
         delay(100);
-        while (Wire.available()) {
+        if (Wire.available()) {
             int val = Wire.read();
             Serial.println(val);
         }
         delay(1000);
     }
 
+    Serial.println("Leci arm");
     Wire.beginTransmission(3);
     Wire.write(8);
     Wire.endTransmission();
+    delay(10);
   
-    for(;;) {
+    Serial.println("for2");
+    for (;;) {
         
         Wire.requestFrom(3, 1);
         delay(100);
-        while (Wire.available()) {
+        if (Wire.available()) {
             int val = Wire.read();
             Serial.println(val);
         }
