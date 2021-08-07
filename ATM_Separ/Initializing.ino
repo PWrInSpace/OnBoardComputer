@@ -35,7 +35,7 @@ void sendData() {
 
 void receiveData() {
 
-  _delay_ms(10);
+  _delay_ms(2);
   if(Wire.available()) {
     char rxByte = Wire.read();
 
