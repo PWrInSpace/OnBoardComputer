@@ -5,7 +5,7 @@
  *   2. BME280.           [TODO]
  */
 
-void i2cTask(void *arg) {
+void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego mniej docelowo.
 
     Wire.begin();
 
@@ -42,23 +42,7 @@ void i2cTask(void *arg) {
 
 /**********************************************************************************************/
 
-/* Zadanie odpowiedzialne za obsługę poleceń przychodzących po uartcie z płytki 3-antenowej. Obsługuje:
- *   1. Odczyt gpsa z płytki 3-antenowej,   [TODO]
- *   2. Stan Tanwy,                         [TODO]
- *   3. Polecenia przychodzące z LoRy,      [TODO]
- *   4. Ramki, które chcemy wysłać do LoRy. [TODO]
- */
-
-void uart3AntsTask(void *arg) {
-
-    while(1) {
-        ;
-    }
-}
-
-/**********************************************************************************************/
-
-/* Zadanie odpowiedzialne za logowanie wszystkiego na SD -> pobierając dane z kolejki.
+/* Zadanie odpowiedzialne za logowanie wszystkiego na SD -> pobierając dane z kolejki. [TODO]
  */
 
 void sdTask(void *arg) {
@@ -71,16 +55,37 @@ void sdTask(void *arg) {
 /**********************************************************************************************/
 
 /* Zadanie odpowiedzialne za uruchomienie ESP-now i ustawienie przerwań dla wysłania i odbioru. Komunikacja z:
- *   1. Pitot,
- *   2. Główny zawór.
+ *   1. Pitot,          [TODO - Done earlier]
+ *   2. Główny zawór.   [TODO]
  */
 
 void espNowTask(void *arg) {
 
     nowInit();
 
-    nowAddPeer(adressPitot, 0);
-    nowAddPeer(adressMValve, 0);
+    /*nowAddPeer(adressPitot, 0);
+    nowAddPeer(adressMValve, 0);*/
+
+    /*char message[] = "wazna wiadomosc do przeslania\n";
+    if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
+        mainDataFrame.espNowErrorCounter++;*/
+
+    while(1) {
+        ;
+    }
+}
+
+/**********************************************************************************************/
+
+/* Zadanie odpowiedzialne za pomiary analogowe:
+ *   1. Czujnik ciśnienia butli,
+ *   2. 5 czuników halla,
+ *   3. Napięcie zasilania,
+ *   4. Krańcówki (I/O),
+ *   5. Potencjometr zaworu upustowego.
+ */
+
+void adcTask(void *arg) {
 
     while(1) {
         ;

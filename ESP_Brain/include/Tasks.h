@@ -5,8 +5,8 @@
 
 void i2cTask(void *arg);
 
-void uart3AntsTask(void *arg);
-
 void sdTask(void *arg);
 
 void espNowTask(void *arg);
+
+void adcTask(void *arg);
