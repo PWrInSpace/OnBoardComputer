@@ -5,8 +5,7 @@ void doFirstSeparation() {
   PORTB |= SEPAR1A_Pin;
   PORTD |= SEPAR1B_Pin;
 
-  uint32_t timer_ms = millis();
-  while(millis() - timer_ms < 2000) i2cLoop();
+  _delay_ms(2000);
 
   PORTB &= ~SEPAR1A_Pin;
   PORTD &= ~SEPAR1B_Pin;
@@ -24,23 +23,18 @@ void doSecondSeparation() {
   // Zapalniki podstawowe:
   PORTB |= SEPAR2A_Pin;
 
-  uint32_t timer_ms = millis();
-  while(millis() - timer_ms < 2000) {
-    
-    i2cLoop();
+  _delay_ms(2000);
 
-    if(PIND & TEST2_Pin) {
+  if(PIND & TEST2_Pin) {
 
-      PORTB &= ~SEPAR2A_Pin;
-      return; // Wyjście z funkcji, jeśli separacja uda się przy zapalnikach podstawowych
-    }
+    PORTB &= ~SEPAR2A_Pin;
+    return; // Wyjście z funkcji, jeśli separacja uda się przy zapalnikach podstawowych
   }
 
   // Zapalniki awaryjne:
   PORTB |= SEPAR2B_Pin;
   
-  timer_ms = millis();
-  while(millis() - timer_ms < 2000) i2cLoop();
+  _delay_ms(2000);
   
   PORTB &= ~SEPAR2A_Pin;
   PORTB &= ~SEPAR2B_Pin;

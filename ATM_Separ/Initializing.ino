@@ -21,6 +21,7 @@ void initSeparationSystem() {
   // i2c:
   Wire.begin(3);
   Wire.onRequest(sendData);
+  Wire.onReceive(receiveData);
 }
 
 /*******************************************************/
@@ -28,4 +29,25 @@ void initSeparationSystem() {
 void sendData() {
 
   Wire.write(SeparationFrame);
+}
+
+/*******************************************************/
+
+void receiveData() {
+
+  _delay_ms(2);
+  if(Wire.available()) {
+    char rxByte = Wire.read();
+
+    if(rxByte == 8) {
+      
+      state = ARMED;
+      SeparationFrame |= (1<<0);
+    }
+    
+    else if(rxByte == 24) doFirstSeparation();
+    else if(rxByte == 56) doSecondSeparation();
+
+    else SeparationFrame |= (1<<7);
+  }
 }
