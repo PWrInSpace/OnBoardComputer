@@ -16,10 +16,10 @@ void setup(){
     Serial.begin(115200);
     delay(100);
 
-    xTaskCreate(i2cTask,    "Task i2c",     4096, NULL, 1, NULL);
+    xTaskCreate(i2cTask,    "Task i2c",     4096,  NULL, 1, NULL);
     xTaskCreate(sdTask,     "Task SD",      32768, NULL, 1, NULL);
-    xTaskCreate(espNowTask, "Task Esp Now", 32768, NULL, 1, NULL);
-    xTaskCreate(adcTask,    "Task ADC",     4096, NULL, 1, NULL);
+    xTaskCreate(espNowTask, "Task Esp Now", 65536, NULL, 1, NULL);
+    xTaskCreate(adcTask,    "Task ADC",     4096,  NULL, 1, NULL);
 }
 
 /**********************************************************************************************/
