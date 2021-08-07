@@ -22,10 +22,11 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
             vTaskDelay(500 / portTICK_PERIOD_MS);
         }
 
+        Serial.println("dupa");
         Wire.beginTransmission(3);
         Wire.write(8);
         Wire.endTransmission();
-        vTaskDelay(5 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
 
         for (;;) {
             
@@ -48,7 +49,7 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 void sdTask(void *arg) {
 
     while(1) {
-        ;
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -61,7 +62,7 @@ void sdTask(void *arg) {
 
 void espNowTask(void *arg) {
 
-    nowInit();
+    if(!nowInit()) Serial.println("nie działa now");
 
     /*nowAddPeer(adressPitot, 0);
     nowAddPeer(adressMValve, 0);*/
@@ -71,7 +72,7 @@ void espNowTask(void *arg) {
         mainDataFrame.espNowErrorCounter++;*/
 
     while(1) {
-        ;
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
 
@@ -88,6 +89,6 @@ void espNowTask(void *arg) {
 void adcTask(void *arg) {
 
     while(1) {
-        ;
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
