@@ -1,25 +1,27 @@
 #ifndef QUEUE_ROCKET_H
 #define QUEUE_ROCKET_H
 
-#ifdef _cplusplus
-extern "C"{
-#endif
+#include <Arduino.h>
+#include <stdlib.h>
 
-typedef struct Queue{
-  char *data;
-  struct Queue *next_elem;
-}t_queue;
+struct Queue_struct {
+  String data;
+  struct Queue_struct *next;
+};
 
-void init(t_queue *elem);
+class Queue {
+  private:
+  Queue_struct *head;
+  Queue_struct *tail;
+  unsigned int numberOfElements;
 
-void push(t_queue **elem, char *data);
-
-char *pop(t_queue **queue);
-
-void print(t_queue * elem);
-
-#ifdef _cplusplus
-}
-#endif
+  public:
+  Queue();
+  void push(const String & value);
+  void print();
+  String pop();
+  unsigned int getNumberOfElements();
+  //~Queue();
+};
 
 #endif
