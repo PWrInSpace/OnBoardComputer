@@ -34,7 +34,8 @@ char *pop(t_queue **queue){
   char *value = malloc(sizeof((*queue)->data));
 
   if(*queue == NULL){
-    printf("Brak elementów na stosie!");
+    strcpy(value, "Brak elementow");
+    return value;
   }
   next = (*queue)->next_elem;
   strcpy(value, (*queue)->data);
