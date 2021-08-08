@@ -8,7 +8,7 @@ void init(t_queue *elem){
 
 void add(t_queue **queue, char *data){
   t_queue *temp, *new_element; 
-  new_element = (t_queue*)malloc(sizeof(t_queue) + sizeof(data));
+  new_element = (t_queue*)malloc(sizeof(t_queue));
   new_element->data = data;
   new_element->next_elem = NULL;
 
