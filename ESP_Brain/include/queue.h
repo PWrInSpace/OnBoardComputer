@@ -1,5 +1,9 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef QUEUE_ROCKET_H
+#define QUEUE_ROCKET_H
+
+#ifdef _cplusplus
+extern "C"{
+#endif
 
 typedef struct Queue{
   char *data;
@@ -8,10 +12,14 @@ typedef struct Queue{
 
 void init(t_queue *elem);
 
-void add(t_queue **elem, char *data);
+void push(t_queue **elem, char *data);
 
 char *pop(t_queue **queue);
 
 void print(t_queue * elem);
+
+#ifdef _cplusplus
+}
+#endif
 
 #endif

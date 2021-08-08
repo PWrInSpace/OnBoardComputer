@@ -1,15 +1,18 @@
 #include <queue.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void init(t_queue *elem){
   elem = NULL;
 }
 
-void add(t_queue **queue, char *data){
+void push(t_queue **queue, char *data){
   t_queue *temp, *new_element; 
-  new_element = (t_queue*)malloc(sizeof(t_queue));
-  new_element->data = data;
+  new_element = (t_queue*)malloc(sizeof(t_queue) + sizeof(data));
+  new_element->data = malloc(sizeof(data));
+  strcpy(new_element->data, data);
+  
   new_element->next_elem = NULL;
 
   if(*queue == NULL){
@@ -28,13 +31,15 @@ void add(t_queue **queue, char *data){
 
 char *pop(t_queue **queue){
   t_queue *next;
-  char *value;
+  char *value = malloc(sizeof((*queue)->data));
 
   if(*queue == NULL){
     printf("Brak elementów na stosie!");
   }
   next = (*queue)->next_elem;
-  value = (*queue)->data;
+  strcpy(value, (*queue)->data);
+  
+  free((*queue)->data);
   free(*queue);
   *queue = next;
 
