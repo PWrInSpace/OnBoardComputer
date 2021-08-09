@@ -14,6 +14,7 @@ Queue::~Queue(){
   }
 }
 
+/**  [TO DO] - DODAĆ OBSŁUGĘ WYJĄTKU NEW **/
 void Queue::push(const String & value){
   Queue_struct *temp = new Queue_struct;
   temp->data = value;
@@ -54,11 +55,12 @@ void Queue::print(){
     Serial.println("Brak elementow!");
     return;
   }
-
+  Serial.println("=====================================");
   while (current != nullptr) {
     Serial.println(current->data);
     current = current->next;
   }
+  Serial.println("=====================================");
 }
 
 unsigned int Queue::getNumberOfElements(){

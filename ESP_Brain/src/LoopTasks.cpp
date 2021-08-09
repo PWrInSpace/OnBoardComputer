@@ -1,5 +1,7 @@
 #include "LoopTasks.h"
 
+extern Queue queue;
+
 extern MainDataFrame mainDataFrame;
 
 /* Zadanie zajmujące się wszystkim, co łączy się przez i2c:
@@ -49,8 +51,29 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
  */
 
 void sdTask(void *arg) {
+    const int SD_CS = 5;
+    SPIClass SPISD(HSPI); 
+    SPISD.begin(GPIO_NUM_18, GPIO_NUM_19, GPIO_NUM_23);
+    
+    if(!SD.begin(SD_CS, SPISD)){
+        Serial.println("Brak karty");
+        //while(1);
+    }
+    Serial.println("Init");
+    SPI.setClockDivider(SPI_CLOCK_DIV2);
 
     while(1) {
+        while(queue.getNumberOfElements()){
+            String dataFrame = queue.pop() + "\n";
+
+            File file = SD.open("/R4_data.txt", "a");  
+            if(!file) Serial.println("Problem z plikiem");
+
+            if(!file.write((uint8_t *) dataFrame.c_str(), dataFrame.length())) Serial.println("Problem z zapisem");
+
+            file.close();
+        }
+
         vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }

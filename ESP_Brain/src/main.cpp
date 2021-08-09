@@ -11,11 +11,14 @@ volatile MainDataFrame mainDataFrame = {};
 Jest po to aby inne taski czekały aż ten zapis się skończy, by w tym czasie nie odczytywać głównej struktury: */
 volatile bool mainDataFrameSaveBusy = false; 
 
+Queue queue;
+
 States state = INIT;
 
 void setup(){  
     Serial.begin(115200);
     delay(100);
+    
 
     xTaskCreate(i2cTask,    "Task i2c",     4096,  NULL, 1, NULL);
     xTaskCreate(sdTask,     "Task SD",      32768, NULL, 1, NULL);
@@ -35,6 +38,7 @@ void setup(){
  */
 
 void loop() {
-
+    queue.push("R4_test: " + String(millis()));
+    Serial.println(String(millis()));
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
