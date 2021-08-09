@@ -1,6 +1,8 @@
 #include <Arduino.h>
 
+
 #include "LoopTasks.h"
+
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -11,8 +13,7 @@ volatile bool mainDataFrameSaveBusy = false;
 
 States state = INIT;
 
-void setup(){
-  
+void setup(){  
     Serial.begin(115200);
     delay(100);
 
