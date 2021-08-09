@@ -102,9 +102,8 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
 
-	HAL_Delay(8000);
+	HAL_Delay(1000);
 	initAll();
-	rocketState = IDLE;
 
   /* USER CODE END 2 */
 
@@ -131,21 +130,6 @@ int main(void)
 			logDataLoop();
 		}
 
-		if (!ignitionConfirmation && rocketState == READY
-				&& uwTick - timers.tenSecondTimer > 10000) {
-
-			timers.tenSecondTimer = uwTick;
-
-			timers.launchTimer -= 10;
-
-			char tempString[40];
-			sprintf(tempString, "ASTR;Pozostalo do startu: %d\n",
-					timers.launchTimer);
-			loraSendData((uint8_t*) tempString, strlen(tempString));
-
-			if (timers.launchTimer <= 0)
-				doLaunch();
-		}
 
     /* USER CODE END WHILE */
 
