@@ -5,7 +5,7 @@ Queue::Queue(){
   tail = nullptr;
   numberOfElements = 0;
 }
-/*
+
 Queue::~Queue(){
   while(head != nullptr){
     Queue_struct *tmp = head->next;
@@ -13,7 +13,7 @@ Queue::~Queue(){
     head = tmp;
   }
 }
-*/
+
 void Queue::push(const String & value){
   Queue_struct *temp = new Queue_struct;
   temp->data = value;
@@ -37,6 +37,9 @@ String Queue::pop(){
     delete head;
   
     head = temp;
+    if(temp == nullptr){  //gdy ściągniety został ostatni element
+      tail = temp; 
+    }
     numberOfElements -= 1;
   }else{
     Serial.println("Brak elementow!");
