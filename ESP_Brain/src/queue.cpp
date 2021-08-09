@@ -3,6 +3,7 @@
 Queue::Queue(){
   head = nullptr;
   tail = nullptr;
+  numberOfElements = 0;
 }
 /*
 Queue::~Queue(){
