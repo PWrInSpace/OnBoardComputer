@@ -82,10 +82,6 @@ void initAll(void) {
 	xbee_init(&xbeePrandl, 0x0013A20041A26FDD, &huart2);
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
-	sd_spi_init();
-	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND);
-	f_close(&file);
-
 	timers.logDataTimer = uwTick;
 	timers.sendDataTimer = uwTick;
 	timers.tenSecondTimer = uwTick;
@@ -118,19 +114,6 @@ void logDataLoop(void) {
 			GPS.GPGGA.HDOP, GPS.GPGGA.SatellitesUsed, otherData.sdState,
 			otherData.pitotStatic, otherData.pitotDynamic,
 			otherData.computedAltitude, otherData.ignitionState);
-
-	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND | FA_READ);
-
-	f_lseek(&file, allWrittenBytes);
-	int bytWrot = f_puts(bufferLoraTx, &file);
-
-	if (bytWrot > 0)
-		otherData.sdState = 1;
-	else
-		otherData.sdState = 0;
-
-	allWrittenBytes += bytWrot;
-	f_close(&file);
 }
 
 /*******************************************************************************************/

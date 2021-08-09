@@ -5,7 +5,6 @@
 #include "GPS.h"
 #include <string.h>
 #include "xbee.h"
-#include "user_diskio_spi.h"
 
 /******************************/
 
@@ -50,12 +49,6 @@ typedef struct {
 } Timers;
 
 /******************************/
-
-// SD:
-FIL file;
-FRESULT fres;
-UINT bytesWrote;
-uint64_t allWrittenBytes;
 
 char bufferLoraTx[BUFFER_SIZE];
 char separationBufferRx[10];
