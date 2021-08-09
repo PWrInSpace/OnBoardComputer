@@ -21,7 +21,7 @@ class Queue {
   void print();
   String pop();
   unsigned int getNumberOfElements();
-  //~Queue();
+  ~Queue();
 };
 
 #endif

@@ -6,7 +6,7 @@
 
 volatile MainDataFrame mainDataFrame = {};
 States state;
-Queue test;
+
 void setup(){  
     Serial.begin(115200);
 
@@ -20,15 +20,6 @@ void setup(){
 
 void loop() {
     
-    while(test.getNumberOfElements() >= 5){
-            test.pop();
-    }
-    
-    test.push(String(millis()));
-    delay(50);
-    Serial.println("=======================");
-    test.print();
-    delay(50);
     /*char message[] = "wazna wiadomosc do przeslania\n";
     if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
         mainDataFrame.espNowErrorCounter++;*/
