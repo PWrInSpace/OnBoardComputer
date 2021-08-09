@@ -1,5 +1,7 @@
 #include "LoopTasks.h"
 
+extern MainDataFrame mainDataFrame;
+
 /* Zadanie zajmujące się wszystkim, co łączy się przez i2c:
  *   1. Atmega odzyskowa, [ALMOST DONE]
  *   2. BME280.           [TODO]
@@ -79,16 +81,45 @@ void espNowTask(void *arg) {
 /**********************************************************************************************/
 
 /* Zadanie odpowiedzialne za pomiary analogowe:
- *   1. Czujnik ciśnienia butli,
- *   2. 5 czuników halla,
- *   3. Napięcie zasilania,
- *   4. Krańcówki (I/O),
- *   5. Potencjometr zaworu upustowego.
+ *   1. Czujnik ciśnienia butli,        [ALMOST_DONE]
+ *   2. 5 czuników halla,               [TODO]
+ *   3. Napięcie zasilania,             [ALMOST_DONE]
+ *   4. Krańcówki (I/O),                [ALMOST_DONE]
+ *   5. Potencjometr zaworu upustowego. [ALMOST_DONE]
  */
 
 void adcTask(void *arg) {
 
+    const int gpioHalSensor[] = {GPIO_NUM_26, GPIO_NUM_25, GPIO_NUM_33, GPIO_NUM_32, GPIO_NUM_35};
+
+    // Pullup dla krańcówek:
+    pinMode(GPIO_NUM_27, INPUT_PULLUP);
+    pinMode(GPIO_NUM_14, INPUT_PULLUP);
+
     while(1) {
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+
+        // Ciśnienie butli:
+        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) / 1.0; // Dorobić dzielnik lub mnożnik lub funkcję map!
+
+        // Czujniki halla: - trzeba będzie naprawić
+        /*for (uint8_t i = 0; i < 5; i++) {
+            
+            mainDataFrame.halSensor[i] = analogRead(gpioHalSensor[i]);
+        }*/
+
+        // Akumulator:
+        mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0;
+        
+        // Krańcówki:
+        mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_27);
+        mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_14);
+
+        // Potencjometr zaworu upustowego:
+        mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);
+
+        Serial.println(mainDataFrame.battery); // Tylko do debugu
+        
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
