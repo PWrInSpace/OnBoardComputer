@@ -33,18 +33,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		if (strstr(tfsStruct.maincompStringDma,
-				"RAMKA_MAINCOMPA_TODO") != NULL) {
+		if (strstr(tfsStruct.maincompStringDma, "R4MC") != NULL) {
 
 			tfsStruct.maincompRxFlag = 1;
-			strcpy(tfsStruct.maincompStringLora,
-					tfsStruct.maincompStringDma);
+			strcpy(tfsStruct.maincompStringLora, tfsStruct.maincompStringDma);
 		}
 
 		memset(tfsStruct.maincompStringDma, 0, RX_BUFFER_SIZE);
-		HAL_UART_Receive_DMA(&huart1,
-				(uint8_t*) tfsStruct.maincompStringDma,
-				RX_BUFFER_SIZE);
+		HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
+		RX_BUFFER_SIZE);
 	}
 
 }
@@ -62,9 +59,8 @@ void initAll(void) {
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1,
-			(uint8_t*) tfsStruct.maincompStringDma,
-			RX_BUFFER_SIZE);
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
+	RX_BUFFER_SIZE);
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
@@ -107,12 +103,14 @@ void sendGPSData(void) {
 
 	GPS_Process();
 
-	int len = sprintf(tfsStruct.gpsStringLora,
-			"R4GP;%.5f;%.5f;%.1f;%d\n", GPS.GPGGA.LatitudeDecimal,
-			GPS.GPGGA.LongitudeDecimal, GPS.GPGGA.MSL_Altitude,
-			GPS.GPGGA.SatellitesUsed);
+	int len = sprintf(tfsStruct.gpsStringLora, "R4GP;%.5f;%.5f;%.1f;%d\n",
+			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
+			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed);
 
 	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.gpsStringLora, len, 100);
+
 	HAL_Delay(100);
 }
 
@@ -120,7 +118,8 @@ void sendGPSData(void) {
 
 void sendFromMaincompToLora(void) {
 
-	loraSendData((uint8_t*) tfsStruct.maincompStringLora, strlen(tfsStruct.maincompStringLora));
+	loraSendData((uint8_t*) tfsStruct.maincompStringLora,
+			strlen(tfsStruct.maincompStringLora));
 	HAL_Delay(100);
 }
 
@@ -128,6 +127,11 @@ void sendFromMaincompToLora(void) {
 
 void sendFromTanwaToLora(void) {
 
-	loraSendData((uint8_t*) tfsStruct.tanwaStringLora, strlen(tfsStruct.tanwaStringLora));
+	size_t len = strlen(tfsStruct.tanwaStringLora);
+
+	loraSendData((uint8_t*) tfsStruct.tanwaStringLora, len);
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.tanwaStringLora, len, 100);
+
 	HAL_Delay(100);
 }
