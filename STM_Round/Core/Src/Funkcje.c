@@ -96,9 +96,9 @@ void sendGPSData(void) {
 
 	GPS_Process();
 
-	int len = sprintf(tfsStruct.gpsStringLora, "R4GP;%.5f;%.5f;%.1f;%d\n",
+	int len = sprintf(tfsStruct.gpsStringLora, "R4GP;%.5f;%.5f;%.1f;%d;%d\n",
 			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
-			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed);
+			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec);
 
 	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
 
