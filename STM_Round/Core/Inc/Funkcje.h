@@ -9,7 +9,7 @@
 /******************************/
 
 #define RX_BUFFER_SIZE 128
-#define GPS_PERIOD 5000
+#define GPS_PERIOD 8000
 
 typedef struct {
 
@@ -18,15 +18,16 @@ typedef struct {
 	_Bool tanwaRxFlag;
 	_Bool maincompRxFlag;
 
-	char tanwaString[RX_BUFFER_SIZE];
-	char maincompString[RX_BUFFER_SIZE];
-	char bufferLoraTx[BUFFER_SIZE];
+	char gpsStringLora[RX_BUFFER_SIZE];
+	char maincompStringDma[RX_BUFFER_SIZE];
+	char tanwaStringLora[RX_BUFFER_SIZE];
+	char maincompStringLora[RX_BUFFER_SIZE];
 
 } TimersFlagsStrings;
 
 /******************************/
 
-TimersFlagsStrings timersFlagsStrings;
+TimersFlagsStrings tfsStruct;
 
 Xbee xbeeIgnition;
 
@@ -36,9 +37,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void initAll(void);
 
-void logAndSendDataLoop(void);
+void sendGPSData(void);
 
-void logDataLoop(void);
+void sendFromMaincompToLora(void);
+
+void sendFromTanwaToLora(void);
 
 void loraReaction(void);
 

@@ -1,7 +1,5 @@
 #include "Funkcje.h"
 
-_Bool cmeaSent;
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	if (huart->Instance == _GPS_USART.Instance)
@@ -16,8 +14,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		xbee_receive();
 		if (xbee_rx.data_flag) {
 
-			//if (strstr(xbee_rx.data_array, "DDAT") != NULL)
-			// JAKIŚ KOD TODO
+			if (strstr(xbee_rx.data_array, "RAMKA_TANWY_TODO") != NULL) {
+
+				tfsStruct.tanwaRxFlag = 1;
+				strcpy(tfsStruct.tanwaStringLora, xbee_rx.data_array);
+			}
 
 		}
 
@@ -32,10 +33,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		// JAKIS KOD TODO!!!
+		if (strstr(tfsStruct.maincompStringDma,
+				"RAMKA_MAINCOMPA_TODO") != NULL) {
 
-		memset(timersFlagsStrings.maincompString, 0, RX_BUFFER_SIZE);
-		HAL_UART_Receive_DMA(&huart1, (uint8_t*) timersFlagsStrings.maincompString, RX_BUFFER_SIZE);
+			tfsStruct.maincompRxFlag = 1;
+			strcpy(tfsStruct.maincompStringLora,
+					tfsStruct.maincompStringDma);
+		}
+
+		memset(tfsStruct.maincompStringDma, 0, RX_BUFFER_SIZE);
+		HAL_UART_Receive_DMA(&huart1,
+				(uint8_t*) tfsStruct.maincompStringDma,
+				RX_BUFFER_SIZE);
 	}
 
 }
@@ -47,50 +56,24 @@ void initAll(void) {
 	loraInit();
 	GPS_Init();
 
+	// Inity uartów:
+
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) timersFlagsStrings.maincompString, RX_BUFFER_SIZE);
+	HAL_UART_Receive_DMA(&huart1,
+			(uint8_t*) tfsStruct.maincompStringDma,
+			RX_BUFFER_SIZE);
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
-	timersFlagsStrings.gpsFrameTimer = uwTick;
+	// Inity struktury:
+
+	tfsStruct.gpsFrameTimer = uwTick;
+	tfsStruct.tanwaRxFlag = 0;
+	tfsStruct.maincompRxFlag = 0;
 }
-
-/*******************************************************************************************/
-
-void logAndSendDataLoop(void) {
-
-	GPS_Process();
-
-	logDataLoop();
-
-	//loraSendData((uint8_t*) bufferLoraTx, strlen(bufferLoraTx));
-
-	// To trzeba jakoś sprytnie przerobić, by wykryć, kiedy stracimy połączenie:
-	//if (uwTick - timers.checkConnectionTimer > 5500) otherData.ignitionState = 0;
-
-}
-
-/*******************************************************************************************/
-
-void logDataLoop(void) {
-
-	// Trzeba przerobić na sam GPS:
-	/*sprintf(bufferLoraTx,
-			"ADAT;%d;%.5f;%.5f;%.1f;%d:%d:%d;%.3f;%d;%d;%.2f;%.2f;%d;%d\n",
-			(int) rocketState, GPS.GPGGA.LatitudeDecimal,
-			GPS.GPGGA.LongitudeDecimal, GPS.GPGGA.MSL_Altitude,
-			GPS.GPGGA.UTC_Hour, GPS.GPGGA.UTC_Min, GPS.GPGGA.UTC_Sec,
-			GPS.GPGGA.HDOP, GPS.GPGGA.SatellitesUsed, otherData.sdState,
-			otherData.pitotStatic, otherData.pitotDynamic,
-			otherData.computedAltitude, otherData.ignitionState);*/
-}
-
-/*******************************************************************************************/
-
-_Bool cmeaSent;
 
 /*******************************************************************************************/
 
@@ -99,21 +82,52 @@ void loraReaction(void) {
 	// Trzeba przerobić:
 	/*if (strstr(loraBuffer, "STAT") != NULL && strlen(loraBuffer) >= 8) {
 
-		if (rocketState == (loraBuffer[5] - '0')) {
-			rocketState = loraBuffer[7] - '0';
-			xbee_transmit_char(xbeeIgnition, loraBuffer);
-			if (rocketState == FIRST_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE1", 6, 500);
-			else if (rocketState == SECOND_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE2", 6, 500);
-		}
-	}
+	 if (rocketState == (loraBuffer[5] - '0')) {
+	 rocketState = loraBuffer[7] - '0';
+	 xbee_transmit_char(xbeeIgnition, loraBuffer);
+	 if (rocketState == FIRST_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE1", 6, 500);
+	 else if (rocketState == SECOND_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE2", 6, 500);
+	 }
+	 }
 
-	else if (strstr(loraBuffer, "ABRT") != NULL) {
+	 else if (strstr(loraBuffer, "ABRT") != NULL) {
 
-		rocketState = ABORT;
-		HAL_UART_Transmit(&huart1, (uint8_t*) "END", 3, 500);
-		xbee_transmit_char(xbeeIgnition, "STAT;-;7");
-	}*/
+	 rocketState = ABORT;
+	 HAL_UART_Transmit(&huart1, (uint8_t*) "END", 3, 500);
+	 xbee_transmit_char(xbeeIgnition, "STAT;-;7");
+	 }*/
 
+	HAL_Delay(10);
 	memset(loraBuffer, 0, BUFFER_SIZE);
 }
 
+/*******************************************************************************************/
+
+void sendGPSData(void) {
+
+	GPS_Process();
+
+	int len = sprintf(tfsStruct.gpsStringLora,
+			"R4GP;%.5f;%.5f;%.1f;%d\n", GPS.GPGGA.LatitudeDecimal,
+			GPS.GPGGA.LongitudeDecimal, GPS.GPGGA.MSL_Altitude,
+			GPS.GPGGA.SatellitesUsed);
+
+	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
+	HAL_Delay(100);
+}
+
+/*******************************************************************************************/
+
+void sendFromMaincompToLora(void) {
+
+	loraSendData((uint8_t*) tfsStruct.maincompStringLora, strlen(tfsStruct.maincompStringLora));
+	HAL_Delay(100);
+}
+
+/*******************************************************************************************/
+
+void sendFromTanwaToLora(void) {
+
+	loraSendData((uint8_t*) tfsStruct.tanwaStringLora, strlen(tfsStruct.tanwaStringLora));
+	HAL_Delay(100);
+}
