@@ -1,7 +1,5 @@
 #include "Funkcje.h"
 
-_Bool cmeaSent;
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	if (huart->Instance == _GPS_USART.Instance)
@@ -16,24 +14,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		xbee_receive();
 		if (xbee_rx.data_flag) {
 
-			if (strstr(xbee_rx.data_array, "DDAT") != NULL) {
+			if (strstr(xbee_rx.data_array, "R4TN") != NULL) {
 
-				/*strcat(xbee_rx.data_array, "\n");
-				loraSendData((uint8_t*) xbee_rx.data_array,
-						strlen(xbee_rx.data_array));*/
-				int notUsed = 0;
-				sscanf(xbee_rx.data_array, "DDAT;%d;%d", &otherData.ignitionState, &notUsed);
-				timers.checkConnectionTimer = uwTick;
-
-
-			} else if (strstr(xbee_rx.data_array, "AME1")) {
-
-				// Zapis danych z pitota do zmiennnych TODO!!!
-				sscanf(xbee_rx.data_array, "AME1;%f;%f", &otherData.pitotDynamic, &otherData.pitotStatic);
-
-
-			} else if (strstr(xbee_rx.data_array, "ASTB")) {
-				ignitionConfirmation = 1;
+				tfsStruct.tanwaRxFlag = 1;
+				strcpy(tfsStruct.tanwaStringLora, xbee_rx.data_array);
 			}
 
 		}
@@ -49,17 +33,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		if (rocketState == FLIGHT && strstr(separationBufferRx, "A1S1") != NULL) {
+		if (strstr(tfsStruct.maincompStringDma, "R4MC") != NULL) {
 
-			rocketState = FIRST_SEPAR;
-		}
-		else if (rocketState == FLIGHT && strstr(separationBufferRx, "A1S2") != NULL) {
-
-			rocketState = SECOND_SEPAR;
+			tfsStruct.maincompRxFlag = 1;
+			strcpy(tfsStruct.maincompStringLora, tfsStruct.maincompStringDma);
 		}
 
-		memset(separationBufferRx, 0, 10);
-		HAL_UART_Receive_DMA(&huart1, (uint8_t*) separationBufferRx, 10);
+		memset(tfsStruct.maincompStringDma, 0, RX_BUFFER_SIZE);
+		HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
+		RX_BUFFER_SIZE);
 	}
 
 }
@@ -68,167 +50,81 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 void initAll(void) {
 
-	timers.launchTimer = 40;
-	rocketState = INIT;
 	loraInit();
 	GPS_Init();
+
+	// Inity uartów:
 
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) separationBufferRx, 10);
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
+	RX_BUFFER_SIZE);
 
-	xbee_init(&xbeePrandl, 0x0013A20041A26FDD, &huart2);
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
-	sd_spi_init();
-	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND);
-	f_close(&file);
+	// Inity struktury:
 
-	timers.logDataTimer = uwTick;
-	timers.sendDataTimer = uwTick;
-	timers.tenSecondTimer = uwTick;
-	timers.checkConnectionTimer = uwTick;
-}
-
-/*******************************************************************************************/
-
-void logAndSendDataLoop(void) {
-
-	GPS_Process();
-
-	logDataLoop();
-
-	loraSendData((uint8_t*) bufferLoraTx, strlen(bufferLoraTx));
-
-	if (uwTick - timers.checkConnectionTimer > 5500) otherData.ignitionState = 0;
-
-}
-
-/*******************************************************************************************/
-
-void logDataLoop(void) {
-
-	sprintf(bufferLoraTx,
-			"ADAT;%d;%.5f;%.5f;%.1f;%d:%d:%d;%.3f;%d;%d;%.2f;%.2f;%d;%d\n",
-			(int) rocketState, GPS.GPGGA.LatitudeDecimal,
-			GPS.GPGGA.LongitudeDecimal, GPS.GPGGA.MSL_Altitude,
-			GPS.GPGGA.UTC_Hour, GPS.GPGGA.UTC_Min, GPS.GPGGA.UTC_Sec,
-			GPS.GPGGA.HDOP, GPS.GPGGA.SatellitesUsed, otherData.sdState,
-			otherData.pitotStatic, otherData.pitotDynamic,
-			otherData.computedAltitude, otherData.ignitionState);
-
-	f_open(&file, "plik.txt", FA_WRITE | FA_OPEN_APPEND | FA_READ);
-
-	f_lseek(&file, allWrittenBytes);
-	int bytWrot = f_puts(bufferLoraTx, &file);
-
-	if (bytWrot > 0)
-		otherData.sdState = 1;
-	else
-		otherData.sdState = 0;
-
-	allWrittenBytes += bytWrot;
-	f_close(&file);
-}
-
-/*******************************************************************************************/
-
-_Bool cmeaSent;
-
-void setPeriods(void) {
-
-	switch (rocketState) {
-
-	case INIT:
-
-		timers.sendDataPeriod = 2800;
-		timers.logDataPeriod = 0;
-		break;
-
-	case IDLE:
-
-		timers.sendDataPeriod = 2800;
-		timers.logDataPeriod = 0;
-		break;
-	case ARMED_HARD:
-		break;
-
-	case ARMED_SOFT:
-		break;
-
-	case READY:
-
-		timers.sendDataPeriod = 2500;
-		break;
-
-	case FLIGHT:
-
-		timers.sendDataPeriod = 2000;
-		timers.logDataPeriod = 50;
-		break;
-
-	case ABORT:
-
-		timers.sendDataPeriod = 5000;
-		timers.logDataPeriod = 0;
-		break;
-
-	case FIRST_SEPAR:
-
-		timers.sendDataPeriod = 2000;
-		timers.logDataPeriod = 200;
-		break;
-
-	case SECOND_SEPAR:
-
-		timers.sendDataPeriod = 5000;
-		timers.logDataPeriod = 500;
-		if(GPS.GPGGA.MSL_Altitude < 100) rocketState = END;
-		break;
-
-	case END:
-
-		timers.sendDataPeriod = 5000;
-		timers.logDataPeriod = 0;
-		break;
-	}
+	tfsStruct.gpsFrameTimer = uwTick;
+	tfsStruct.tanwaRxFlag = 0;
+	tfsStruct.maincompRxFlag = 0;
 }
 
 /*******************************************************************************************/
 
 void loraReaction(void) {
 
-	if (strstr(loraBuffer, "STAT") != NULL && strlen(loraBuffer) >= 8) {
-
-		if (rocketState == (loraBuffer[5] - '0')) {
-			rocketState = loraBuffer[7] - '0';
-			xbee_transmit_char(xbeeIgnition, loraBuffer);
-			if (rocketState == FIRST_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE1", 6, 500);
-			else if (rocketState == SECOND_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE2", 6, 500);
-		}
+	// Przesyłanie wiadomości z LoRy do Maincompa:
+	if (strstr(loraBuffer, "MNCP") != NULL) {
+		HAL_UART_Transmit(&huart1, (uint8_t*) loraBuffer, strlen(loraBuffer),
+				100);
 	}
 
-	else if (strstr(loraBuffer, "ABRT") != NULL) {
-
-		rocketState = ABORT;
-		HAL_UART_Transmit(&huart1, (uint8_t*) "END", 3, 500);
-		xbee_transmit_char(xbeeIgnition, "STAT;-;7");
+	// Przesyłanie wiadomości z LoRy do Tanwy:
+	else if (strstr(loraBuffer, "TNWN") != NULL) {
+		xbee_transmit_char(xbeeIgnition, loraBuffer);
 	}
 
+	HAL_Delay(10);
 	memset(loraBuffer, 0, BUFFER_SIZE);
 }
 
 /*******************************************************************************************/
 
-void doLaunch(void) {
+void sendGPSData(void) {
 
-	rocketState = FLIGHT;
-	setPeriods();
-	char mess[] = "LECI";
-	HAL_UART_Transmit(&huart1, (uint8_t*) mess, strlen(mess), 500);
+	GPS_Process();
 
-	if (!ignitionConfirmation)
-		xbee_transmit_char(xbeeIgnition, "DSTA");
+	int len = sprintf(tfsStruct.gpsStringLora, "R4GP;%.5f;%.5f;%.1f;%d\n",
+			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
+			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed);
+
+	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.gpsStringLora, len, 100);
+
+	HAL_Delay(100);
+}
+
+/*******************************************************************************************/
+
+void sendFromMaincompToLora(void) {
+
+	loraSendData((uint8_t*) tfsStruct.maincompStringLora,
+			strlen(tfsStruct.maincompStringLora));
+	HAL_Delay(100);
+}
+
+/*******************************************************************************************/
+
+void sendFromTanwaToLora(void) {
+
+	size_t len = strlen(tfsStruct.tanwaStringLora);
+
+	loraSendData((uint8_t*) tfsStruct.tanwaStringLora, len);
+
+	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.tanwaStringLora, len, 100);
+
+	HAL_Delay(100);
 }

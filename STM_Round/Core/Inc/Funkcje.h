@@ -5,67 +5,30 @@
 #include "GPS.h"
 #include <string.h>
 #include "xbee.h"
-#include "user_diskio_spi.h"
 
 /******************************/
 
-enum StateMachine {
-	INIT = 1,
-	IDLE = 2,
-	ARMED_HARD = 3,
-	ARMED_SOFT = 4,
-	READY = 5,
-	FLIGHT = 6,
-	ABORT = 7,
-	FIRST_SEPAR = 8,
-	SECOND_SEPAR = 9,
-	END = 10
-} rocketState;
-
-/******************************/
+#define RX_BUFFER_SIZE 128
+#define GPS_PERIOD 8000
 
 typedef struct {
 
-	_Bool sdState;
-	float pitotStatic;
-	float pitotDynamic;
-	int computedAltitude;
-	int ignitionState;
+	uint32_t gpsFrameTimer;
 
-} OtherDataToSend;
+	_Bool tanwaRxFlag;
+	_Bool maincompRxFlag;
 
-/******************************/
+	char gpsStringLora[RX_BUFFER_SIZE];
+	char maincompStringDma[RX_BUFFER_SIZE];
+	char tanwaStringLora[RX_BUFFER_SIZE];
+	char maincompStringLora[RX_BUFFER_SIZE];
 
-typedef struct {
-
-	uint32_t sendDataTimer;
-	uint32_t logDataTimer;
-	uint16_t sendDataPeriod;
-	uint16_t logDataPeriod;
-
-	uint32_t tenSecondTimer;
-	int launchTimer;
-	int checkConnectionTimer;
-
-} Timers;
+} TimersFlagsStrings;
 
 /******************************/
 
-// SD:
-FIL file;
-FRESULT fres;
-UINT bytesWrote;
-uint64_t allWrittenBytes;
+TimersFlagsStrings tfsStruct;
 
-char bufferLoraTx[BUFFER_SIZE];
-char separationBufferRx[10];
-
-OtherDataToSend otherData;
-Timers timers;
-_Bool ignitionConfirmation;
-
-
-Xbee xbeePrandl;
 Xbee xbeeIgnition;
 
 /******************************/
@@ -74,14 +37,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void initAll(void);
 
-void logAndSendDataLoop(void);
+void sendGPSData(void);
 
-void logDataLoop(void);
+void sendFromMaincompToLora(void);
 
-void setPeriods(void);
+void sendFromTanwaToLora(void);
 
 void loraReaction(void);
-
-void doLaunch(void);
 
 #endif /* INC_FUNKCJE_H_ */

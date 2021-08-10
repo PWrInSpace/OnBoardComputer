@@ -260,9 +260,9 @@ __attribute__((weak)) int SX1278_hw_GetDIO0(SX1278_hw_t * hw);
 uint8_t SX1278_SPIRead(SX1278_t * module, uint8_t addr);
 void SX1278_SPIWrite(SX1278_t * module, uint8_t addr, uint8_t cmd);
 void SX1278_SPIBurstRead(SX1278_t * module, uint8_t addr, uint8_t *rxBuf,
-		uint8_t length);
+		uint16_t length);
 void SX1278_SPIBurstWrite(SX1278_t * module, uint8_t addr, uint8_t *txBuf,
-		uint8_t length);
+		uint16_t length);
 void SX1278_DIO0_InterruptHandler(SX1278_t * module);
 
 void SX1278_config(SX1278_t * module, uint64_t frequency, uint8_t power,
@@ -271,20 +271,20 @@ void SX1278_defaultConfig(SX1278_t * module);
 
 void SX1278_entryLoRa(SX1278_t * module);
 void SX1278_clearLoRaIrq(SX1278_t * module);
-int SX1278_LoRaEntryRx(SX1278_t * module, uint8_t length, uint32_t timeout);
+int SX1278_LoRaEntryRx(SX1278_t * module, uint16_t length, uint32_t timeout);
 uint8_t SX1278_LoRaRxPacket(SX1278_t * module);
-int SX1278_LoRaEntryTx(SX1278_t * module, uint8_t length, uint32_t timeout);
-int SX1278_LoRaTxPacket(SX1278_t * module, uint8_t *txBuf, uint8_t length,
+int SX1278_LoRaEntryTx(SX1278_t * module, uint16_t length, uint32_t timeout);
+int SX1278_LoRaTxPacket(SX1278_t * module, uint8_t *txBuf, uint16_t length,
 		uint32_t timeout);
 
 void SX1278_begin(SX1278_t * module, uint64_t frequency, uint8_t power,
 		uint8_t LoRa_Rate, uint8_t LoRa_BW, uint8_t packetLength);
 
-int SX1278_transmit(SX1278_t * module, uint8_t *txBuf, uint8_t length,
+int SX1278_transmit(SX1278_t * module, uint8_t *txBuf, uint16_t length,
 		uint32_t timeout);
-int SX1278_(SX1278_t * module, uint8_t length, uint32_t timeoutT);
+int SX1278_(SX1278_t * module, uint16_t length, uint32_t timeoutT);
 uint8_t SX1278_available(SX1278_t * module);
-uint8_t SX1278_read(SX1278_t * module, uint8_t *rxBuf, uint8_t length);
+uint8_t SX1278_read(SX1278_t * module, uint8_t *rxBuf, uint16_t length);
 
 uint8_t SX1278_RSSI_LoRa(SX1278_t * module);
 uint8_t SX1278_RSSI(SX1278_t * module);
