@@ -2,11 +2,8 @@
 #include <Wire.h>
 
 #include "now.h"
-
-#include <FS.h>
-#include <SPI.h>
-#include <SD.h>
 #include "queue.h"
+#include "SDcard.h"
 
 void i2cTask(void *arg);
 

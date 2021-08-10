@@ -38,7 +38,9 @@ void setup(){
  */
 
 void loop() {
-    queue.push("R4_test: " + String(millis()));
+    queue.push("G: " + String(millis()));
+    queue.push("T: " + String(millis()));
+    queue.push("D: " + String(millis()));
     Serial.println(String(millis()));
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
