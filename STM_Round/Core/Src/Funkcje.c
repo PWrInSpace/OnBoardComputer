@@ -34,8 +34,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 		// JAKIS KOD TODO!!!
 
-		memset(separationBufferRx, 0, 10);
-		HAL_UART_Receive_DMA(&huart1, (uint8_t*) separationBufferRx, 10);
+		memset(timersFlagsStrings.maincompString, 0, RX_BUFFER_SIZE);
+		HAL_UART_Receive_DMA(&huart1, (uint8_t*) timersFlagsStrings.maincompString, RX_BUFFER_SIZE);
 	}
 
 }
@@ -51,14 +51,11 @@ void initAll(void) {
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) separationBufferRx, 10);
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) timersFlagsStrings.maincompString, RX_BUFFER_SIZE);
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
-	timers.logDataTimer = uwTick;
-	timers.sendDataTimer = uwTick;
-	timers.tenSecondTimer = uwTick;
-	timers.checkConnectionTimer = uwTick;
+	timersFlagsStrings.gpsFrameTimer = uwTick;
 }
 
 /*******************************************************************************************/
@@ -69,7 +66,7 @@ void logAndSendDataLoop(void) {
 
 	logDataLoop();
 
-	loraSendData((uint8_t*) bufferLoraTx, strlen(bufferLoraTx));
+	//loraSendData((uint8_t*) bufferLoraTx, strlen(bufferLoraTx));
 
 	// To trzeba jakoś sprytnie przerobić, by wykryć, kiedy stracimy połączenie:
 	//if (uwTick - timers.checkConnectionTimer > 5500) otherData.ignitionState = 0;
@@ -94,13 +91,6 @@ void logDataLoop(void) {
 /*******************************************************************************************/
 
 _Bool cmeaSent;
-
-void setPeriods(void) {
-
-	// To też do przerobienia:
-	timers.sendDataPeriod = 500;
-	timers.logDataPeriod = 0;
-}
 
 /*******************************************************************************************/
 

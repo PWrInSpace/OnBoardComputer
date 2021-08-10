@@ -115,9 +115,7 @@ int main(void)
 		if (loraBuffer[0] != 0)
 			loraReaction();
 
-		setPeriods();
-
-		if (uwTick - timers.sendDataTimer > timers.sendDataPeriod) {
+		/*if (uwTick - timers.sendDataTimer > timers.sendDataPeriod) {
 
 			timers.sendDataTimer = uwTick;
 			logAndSendDataLoop();
@@ -128,7 +126,7 @@ int main(void)
 
 			timers.logDataPeriod = uwTick;
 			logDataLoop();
-		}
+		}*/
 
 
     /* USER CODE END WHILE */

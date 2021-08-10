@@ -8,27 +8,26 @@
 
 /******************************/
 
+#define RX_BUFFER_SIZE 128
+#define GPS_PERIOD 5000
+
 typedef struct {
 
-	uint32_t sendDataTimer;
-	uint32_t logDataTimer;
-	uint16_t sendDataPeriod;
-	uint16_t logDataPeriod;
+	uint32_t gpsFrameTimer;
 
-	uint32_t tenSecondTimer;
-	int launchTimer;
-	int checkConnectionTimer;
+	_Bool tanwaRxFlag;
+	_Bool maincompRxFlag;
 
-} Timers;
+	char tanwaString[RX_BUFFER_SIZE];
+	char maincompString[RX_BUFFER_SIZE];
+	char bufferLoraTx[BUFFER_SIZE];
+
+} TimersFlagsStrings;
 
 /******************************/
 
-char bufferLoraTx[BUFFER_SIZE];
-char separationBufferRx[10];
+TimersFlagsStrings timersFlagsStrings;
 
-Timers timers;
-
-Xbee xbeePrandl;
 Xbee xbeeIgnition;
 
 /******************************/
@@ -40,8 +39,6 @@ void initAll(void);
 void logAndSendDataLoop(void);
 
 void logDataLoop(void);
-
-void setPeriods(void);
 
 void loraReaction(void);
 
