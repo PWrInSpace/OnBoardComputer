@@ -14,7 +14,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		xbee_receive();
 		if (xbee_rx.data_flag) {
 
-			if (strstr(xbee_rx.data_array, "RAMKA_TANWY_TODO") != NULL) {
+			if (strstr(xbee_rx.data_array, "R4TN") != NULL) {
 
 				tfsStruct.tanwaRxFlag = 1;
 				strcpy(tfsStruct.tanwaStringLora, xbee_rx.data_array);
@@ -75,23 +75,16 @@ void initAll(void) {
 
 void loraReaction(void) {
 
-	// Trzeba przerobić:
-	/*if (strstr(loraBuffer, "STAT") != NULL && strlen(loraBuffer) >= 8) {
+	// Przesyłanie wiadomości z LoRy do Maincompa:
+	if (strstr(loraBuffer, "MNCP") != NULL) {
+		HAL_UART_Transmit(&huart1, (uint8_t*) loraBuffer, strlen(loraBuffer),
+				100);
+	}
 
-	 if (rocketState == (loraBuffer[5] - '0')) {
-	 rocketState = loraBuffer[7] - '0';
-	 xbee_transmit_char(xbeeIgnition, loraBuffer);
-	 if (rocketState == FIRST_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE1", 6, 500);
-	 else if (rocketState == SECOND_SEPAR) HAL_UART_Transmit(&huart1, (uint8_t*) "FORCE2", 6, 500);
-	 }
-	 }
-
-	 else if (strstr(loraBuffer, "ABRT") != NULL) {
-
-	 rocketState = ABORT;
-	 HAL_UART_Transmit(&huart1, (uint8_t*) "END", 3, 500);
-	 xbee_transmit_char(xbeeIgnition, "STAT;-;7");
-	 }*/
+	// Przesyłanie wiadomości z LoRy do Tanwy:
+	else if (strstr(loraBuffer, "TNWN") != NULL) {
+		xbee_transmit_char(xbeeIgnition, loraBuffer);
+	}
 
 	HAL_Delay(10);
 	memset(loraBuffer, 0, BUFFER_SIZE);
