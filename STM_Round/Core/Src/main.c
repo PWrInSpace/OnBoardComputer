@@ -115,6 +115,8 @@ int main(void) {
 		if (loraBuffer[0] != 0)
 			loraReaction();
 
+		GPS_Process();
+
 		// Wysyłanie GPSa co jakiś czas:
 		if (uwTick - tfsStruct.gpsFrameTimer > GPS_PERIOD) {
 

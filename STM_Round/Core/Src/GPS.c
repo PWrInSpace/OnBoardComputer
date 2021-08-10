@@ -41,7 +41,7 @@ void	GPS_CallBack(void)
 //##################################################################################################################
 void	GPS_Process(void)
 {
-	if( (HAL_GetTick()-GPS.LastTime>50) && (GPS.rxIndex>0))
+	if((uwTick - GPS.LastTime>50) && (GPS.rxIndex>0))
 	{
 		char	*str;
 		#if (_GPS_DEBUG==1)
