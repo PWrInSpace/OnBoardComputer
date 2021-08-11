@@ -52,25 +52,27 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
 void sdTask(void *arg) {
     SPIClass SPISD(HSPI); 
-    SPISD.begin(GPIO_NUM_18, GPIO_NUM_19, GPIO_NUM_23);
+    SPISD.begin(GPIO_NUM_10, GPIO_NUM_11, GPIO_NUM_15);
     
     if(!SD.begin(SD_CS, SPISD)){
+
+        // Tu się wstawi dodawanie liczby błędów SD o 1, albo o 1000
         Serial.println("Brak karty");
         //while(1);
     }
     SPI.setClockDivider(SPI_CLOCK_DIV2);
 
-    SD_write("/R4_data.txt", "cos;cos;cos;cos;\n");
+    /*SD_write("/R4_data.txt", "cos;cos;cos;cos;\n");
     SD_write("/R4_tanwa.txt", "cos;cos;cos;cos;\n");
-    SD_write("/R4_gps.txt", "cos;cos;cos;cos;\n");
+    SD_write("/R4_gps.txt", "cos;cos;cos;cos;\n");*/
 
     while(1) {
        
         while(queue.getNumberOfElements()){
             String dataFrame = queue.pop() + "\n";
             
-            switch (dataFrame[0]){
-                case 'D':
+            switch (dataFrame[2]){
+                case 'M':
                     SD_write("/R4_data.txt", dataFrame);
                     break;
                 case 'T':
@@ -80,10 +82,10 @@ void sdTask(void *arg) {
                     SD_write("/R4_gps.txt", dataFrame);
                     break;
                 default:
-                    Serial.println("Nie ma takiego znacznika!");
+                    Serial.println("Nie ma takiego znacznika!"); // Tu się wstawi dodawanie liczby błędów SD o 1.
             }
         }
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
+        vTaskDelay(2 / portTICK_PERIOD_MS);
     }
 }
 
