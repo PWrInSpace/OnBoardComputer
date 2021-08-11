@@ -2,6 +2,7 @@
 
 
 #include "LoopTasks.h"
+#include "SingleTasks.h"
 
 
 // Główna struktura na wszelnie dane z rakiety:
