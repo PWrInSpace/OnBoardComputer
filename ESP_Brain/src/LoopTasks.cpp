@@ -124,8 +124,6 @@ void espNowTask(void *arg) {
 
 void adcTask(void *arg) {
 
-    const int gpioHalSensor[] = {GPIO_NUM_33, GPIO_NUM_32, GPIO_NUM_35};
-
     // Pullup dla krańcówek:
     pinMode(GPIO_NUM_27, INPUT_PULLUP);
     pinMode(GPIO_NUM_14, INPUT_PULLUP);
@@ -134,12 +132,6 @@ void adcTask(void *arg) {
 
         // Ciśnienie butli:
         mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) / 1.0; // Dorobić dzielnik lub mnożnik lub funkcję map!
-
-        // Czujniki halla:
-        for (uint8_t i = 0; i < 3; i++) {
-            
-            mainDataFrame.halSensor[i] = analogRead(gpioHalSensor[i]);
-        }
 
         // Akumulator:
         mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0;
