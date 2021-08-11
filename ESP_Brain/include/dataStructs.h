@@ -40,7 +40,7 @@ struct MainDataFrame {
     GPSData gps = {};
     UpustData upust = {};
 
-    uint16_t halSensor[5];
+    uint16_t halSensor[3];
     float tankPressure;
 
     float initialPressure = 1013;

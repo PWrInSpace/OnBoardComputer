@@ -26,8 +26,8 @@ void setup(){
 /**********************************************************************************************/
 
 /* Zadanie odpowiedzialne za obsługę poleceń przychodzących po uartcie z płytki 3-antenowej. Obsługuje:
- *   1. Odczyt gpsa z płytki 3-antenowej,       [TODO]
- *   2. Stan Tanwy,                             [TODO]
+ *   1. Stan Gpsa - do zapisu na SD,            [TODO]
+ *   2. Stan Tanwy - do zapisu na SD,           [TODO]
  *   3. Polecenia przychodzące z LoRy,          [TODO]
  *   4. Ramki, które chcemy wysłać do LoRy,     [TODO]
  *   5. Sterowanie silnikiem zaworu upustowego, [TODO]
