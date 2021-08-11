@@ -5,6 +5,8 @@
 #include <Wire.h>
 
 #include "now.h"
+#include "queue.h"
+#include "SDcard.h"
 
 void i2cTask(void *arg);
 
