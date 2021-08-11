@@ -5,11 +5,12 @@
 #include "GPS.h"
 #include <string.h>
 #include "xbee.h"
+#include "adc.h"
 
 /******************************/
 
 #define RX_BUFFER_SIZE 128
-#define GPS_PERIOD 8000
+#define GPS_PERIOD 4000
 
 typedef struct {
 
@@ -30,6 +31,8 @@ typedef struct {
 TimersFlagsStrings tfsStruct;
 
 Xbee xbeeIgnition;
+
+uint16_t hallSensors[5];
 
 /******************************/
 

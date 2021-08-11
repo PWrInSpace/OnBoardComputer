@@ -64,6 +64,8 @@ void initAll(void) {
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) hallSensors, 5);
+
 	// Inity struktury:
 
 	tfsStruct.gpsFrameTimer = uwTick;
@@ -96,9 +98,12 @@ void sendGPSData(void) {
 
 	GPS_Process();
 
-	int len = sprintf(tfsStruct.gpsStringLora, "R4GP;%.5f;%.5f;%.1f;%d;%d\n",
+	int len = sprintf(tfsStruct.gpsStringLora,
+			"R4GP;%.5f;%.5f;%.1f;%d;%d;%d;%d;%d;%d;%d\n",
 			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
-			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec);
+			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec,
+			(int) hallSensors[0], (int) hallSensors[1], (int) hallSensors[2],
+			(int) hallSensors[3], (int) hallSensors[4]);
 
 	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
 
