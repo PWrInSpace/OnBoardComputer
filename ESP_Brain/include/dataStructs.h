@@ -11,6 +11,7 @@ struct PitotData {
     float dynamicPressure;
     float altitude;
     float speed;
+    float temperature;
 };
 
 struct UpustData {
@@ -38,8 +39,10 @@ struct MainDataFrame {
     float speed;
     float gForce;
 
-    uint16_t espNowErrorCounter;
-    uint16_t sdErrorCounter;
+    uint16_t espNowErrorCounter = 0;
+    uint16_t sdErrorCounter = 0;
+
+    uint8_t separationData = 0;
 };
 
 // Stany maszyny stanów:

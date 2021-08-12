@@ -1,6 +1,6 @@
 #include "SingleTasks.h"
 
-void countStructData() {
+String countStructData() {
 
     
 }

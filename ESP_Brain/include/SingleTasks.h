@@ -1,7 +1,9 @@
 #ifndef SINGLETASKS_H
 #define SINGLETASKS_H
 
-void countStructData();
+#include <Arduino.h>
+
+String countStructData();
 
 
 #endif
