@@ -19,27 +19,40 @@ States state = INIT;
 void setup(){  
     Serial.begin(115200);
     delay(100);
-    
 
     xTaskCreate(i2cTask,    "Task i2c",     4096,  NULL, 1, NULL);
     xTaskCreate(sdTask,     "Task SD",      32768, NULL, 1, NULL);
-    xTaskCreate(espNowTask, "Task Esp Now", 65536, NULL, 1, NULL);
     xTaskCreate(adcTask,    "Task ADC",     4096,  NULL, 1, NULL);
+
+    if(!nowInit()) Serial.println("nie działa now");
 }
 
 /**********************************************************************************************/
 
-/* Zadanie odpowiedzialne za obsługę poleceń przychodzących po uartcie z płytki 3-antenowej. Obsługuje:
+/* Zadanie odpowiedzialne za obsługę poleceń przychodzących po uartcie z płytki 3-antenowej oraz ESP now. Obsługuje:
  *   1. Stan Gpsa - do zapisu na SD,            [TODO]
  *   2. Stan Tanwy - do zapisu na SD,           [TODO]
  *   3. Polecenia przychodzące z LoRy,          [TODO]
  *   4. Ramki, które chcemy wysłać do LoRy,     [TODO]
  *   5. Sterowanie silnikiem zaworu upustowego, [TODO]
- *   6. Obsługa maszyny stanów.                 [TODO]
+ *   6. Obsługa maszyny stanów,                 [TODO]
+ *   1. Pitot - ESP now,                        [TODO - Done earlier]
+ *   2. Główny zawór - ESP now.                 [TODO]
  */
 
 void loop() {
-    
+
+    /*nowAddPeer(adressPitot, 0);
+    nowAddPeer(adressMValve, 0);*/
+
+    /*char message[] = "wazna wiadomosc do przeslania\n";
+    if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
+        mainDataFrame.espNowErrorCounter++;*/
+
+    while(1) {
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
+    }
+
     queue.push("R4GP;" + String(millis()));
     queue.push("R4TN;" + String(millis()));
     queue.push("R4MC;" + String(millis()));

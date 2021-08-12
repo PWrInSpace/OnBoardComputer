@@ -91,29 +91,6 @@ void sdTask(void *arg) {
 
 /**********************************************************************************************/
 
-/* Zadanie odpowiedzialne za uruchomienie ESP-now i ustawienie przerwań dla wysłania i odbioru. Komunikacja z:
- *   1. Pitot,          [TODO - Done earlier]
- *   2. Główny zawór.   [TODO]
- */
-
-void espNowTask(void *arg) {
-
-    if(!nowInit()) Serial.println("nie działa now");
-
-    /*nowAddPeer(adressPitot, 0);
-    nowAddPeer(adressMValve, 0);*/
-
-    /*char message[] = "wazna wiadomosc do przeslania\n";
-    if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
-        mainDataFrame.espNowErrorCounter++;*/
-
-    while(1) {
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
-    }
-}
-
-/**********************************************************************************************/
-
 /* Zadanie odpowiedzialne za pomiary analogowe:
  *   1. Czujnik ciśnienia butli,                    [ALMOST_DONE]
  *   2. 3 czuniki halla (2 przejdą na moduł GPS),   [TODO]
