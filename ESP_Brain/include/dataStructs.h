@@ -44,6 +44,7 @@ struct MainDataFrame {
 
     float initialPressure = 1013;
     float pressure;
+    float altitude;
     float speed;
     float gForce;
 
