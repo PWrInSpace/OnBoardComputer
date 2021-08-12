@@ -13,15 +13,6 @@ struct PitotData {
     float speed;
 };
 
-struct GPSData {
-
-    float longitude;
-    float laltitude;
-    float altitude;
-    int satellitesNumber;
-
-};
-
 struct UpustData {
 
     bool endStop1;
@@ -37,7 +28,6 @@ struct MainDataFrame {
     float battery;
 
     PitotData pitotData = {};
-    GPSData gps = {};
     UpustData upust = {};
     
     float tankPressure;
