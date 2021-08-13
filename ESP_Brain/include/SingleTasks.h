@@ -1,9 +1,14 @@
 #ifndef SINGLETASKS_H
 #define SINGLETASKS_H
 
-#include <Arduino.h>
+#include "queue.h"
+#include "now.h"
+#include "Timer_ms.h"
 
 String countStructData();
 
+void uart2Handler();
+
+void sendData(String txData);
 
 #endif

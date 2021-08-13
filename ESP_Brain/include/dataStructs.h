@@ -14,7 +14,7 @@ struct PitotData {
     float temperature;
 };
 
-struct UpustData {
+struct ValveData {
 
     bool endStop1;
     bool endStop2;
@@ -25,11 +25,12 @@ struct UpustData {
 
 struct MainDataFrame {
 
-    uint32_t timer_ms;
+    uint8_t rocketState;
     float battery;
 
     PitotData pitotData = {};
-    UpustData upust = {};
+    ValveData upust = {};
+    ValveData mValve = {};
     
     float tankPressure;
 
