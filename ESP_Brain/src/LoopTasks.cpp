@@ -13,35 +13,30 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
     Wire.begin();
 
-    while(1) {
 
-        for (int i = 0; i < 5; i++) {
-        
-            Wire.requestFrom(3, 1);
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-            if (Wire.available()) {
-                int val = Wire.read();
-                Serial.println(val); // Tylko do debugu
-            }
-            vTaskDelay(500 / portTICK_PERIOD_MS);
-        }
-
-        Serial.println("dupa");
-        Wire.beginTransmission(3);
-        Wire.write(8);
-        Wire.endTransmission();
+    for (int i = 0; i < 5; i++) {
+    
+        Wire.requestFrom(3, 1);
         vTaskDelay(10 / portTICK_PERIOD_MS);
-
-        for (;;) {
-            
-            Wire.requestFrom(3, 1);
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-            if (Wire.available()) {
-                int val = Wire.read();
-                Serial.println(val); // Tylko do debugu
-            }
-            vTaskDelay(500 / portTICK_PERIOD_MS);
+        if (Wire.available()) {
+            mainDataFrame.separationData = Wire.read();
         }
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+
+    Wire.beginTransmission(3);
+    Wire.write(8);
+    Wire.endTransmission();
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    for (;;) {
+        
+        Wire.requestFrom(3, 1);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+        if (Wire.available()) {
+            mainDataFrame.separationData = Wire.read();
+        }
+        vTaskDelay(500 / portTICK_PERIOD_MS);
     }
 }
 
@@ -51,27 +46,27 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
  */
 
 void sdTask(void *arg) {
-    SPIClass SPISD(HSPI); 
-    SPISD.begin(GPIO_NUM_10, GPIO_NUM_11, GPIO_NUM_15);
+
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+    SPIClass SPISD(HSPI);
+    SPISD.begin(GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_15);
+    SPI.setClockDivider(SPI_CLOCK_DIV2);
     
     if(!SD.begin(SD_CS, SPISD)){
 
-        // Tu się wstawi dodawanie liczby błędów SD o 1, albo o 1000
-        Serial.println("Brak karty");
-        //while(1);
+        mainDataFrame.sdErrorCounter = 1000;
     }
-    SPI.setClockDivider(SPI_CLOCK_DIV2);
-
-    /*SD_write("/R4_data.txt", "cos;cos;cos;cos;\n");
-    SD_write("/R4_tanwa.txt", "cos;cos;cos;cos;\n");
-    SD_write("/R4_gps.txt", "cos;cos;cos;cos;\n");*/
 
     while(1) {
        
         while(queue.getNumberOfElements()){
-            String dataFrame = queue.pop() + "\n";
             
-            switch (dataFrame[2]){
+            String dataFrame = queue.pop();
+
+            Serial.print(dataFrame); // Dla debugu
+            
+            switch (dataFrame[2]) {
                 case 'M':
                     SD_write("/R4_data.txt", dataFrame);
                     break;
@@ -81,9 +76,9 @@ void sdTask(void *arg) {
                 case 'G':
                     SD_write("/R4_gps.txt", dataFrame);
                     break;
-                default:
-                    Serial.println("Nie ma takiego znacznika!"); // Tu się wstawi dodawanie liczby błędów SD o 1.
             }
+        
+            vTaskDelay(1 / portTICK_PERIOD_MS);
         }
         vTaskDelay(2 / portTICK_PERIOD_MS);
     }

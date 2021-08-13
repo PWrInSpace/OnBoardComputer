@@ -11,18 +11,10 @@ struct PitotData {
     float dynamicPressure;
     float altitude;
     float speed;
+    float temperature;
 };
 
-struct GPSData {
-
-    float longitude;
-    float laltitude;
-    float altitude;
-    int satellitesNumber;
-
-};
-
-struct UpustData {
+struct ValveData {
 
     bool endStop1;
     bool endStop2;
@@ -33,22 +25,26 @@ struct UpustData {
 
 struct MainDataFrame {
 
-    uint32_t timer_ms;
+    uint8_t rocketState;
     float battery;
 
     PitotData pitotData = {};
-    GPSData gps = {};
-    UpustData upust = {};
+    ValveData upust = {};
+    ValveData mValve = {};
     
     float tankPressure;
 
     float initialPressure = 1013;
     float pressure;
+    float altitude;
     float speed;
     float gForce;
 
-    uint16_t espNowErrorCounter;
-    uint16_t sdErrorCounter;
+    uint16_t espNowErrorCounter = 0;
+    uint16_t sdErrorCounter = 0;
+
+    uint8_t separationData = 0;
+    int8_t countdown = 45;
 };
 
 // Stany maszyny stanów:

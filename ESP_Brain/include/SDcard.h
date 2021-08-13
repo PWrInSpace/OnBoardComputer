@@ -5,6 +5,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include "queue.h"
+#include "dataStructs.h"
 
 #define SD_CS 4
 

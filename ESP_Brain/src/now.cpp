@@ -46,7 +46,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   else if(adressCompare(mac, adressMValve)) {
 
-    // parsowanie stringa
+    sscanf((char*) incomingData, "R4MV;%d;%d;%d", (int*) &mainDataFrame.mValve.endStop1, (int*) &mainDataFrame.mValve.endStop2, (int*) &mainDataFrame.mValve.potentiometer);
   }
   
 
