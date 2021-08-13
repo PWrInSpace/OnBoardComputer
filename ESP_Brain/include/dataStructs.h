@@ -44,6 +44,7 @@ struct MainDataFrame {
     uint16_t sdErrorCounter = 0;
 
     uint8_t separationData = 0;
+    int8_t countdown = 45;
 };
 
 // Stany maszyny stanów:

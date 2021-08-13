@@ -7,7 +7,7 @@ String countStructData() {
 
     String frame = "R4MC;" + String(millis()) + ";";
     
-    frame += String(mainDataFrame.rocketState) + ";";
+    frame += String((int) mainDataFrame.rocketState) + ";";
     frame += String(mainDataFrame.battery) + ";";
     frame += String(mainDataFrame.pitotData.staticPressure) + ";";
     frame += String(mainDataFrame.pitotData.dynamicPressure) + ";";
@@ -24,7 +24,8 @@ String countStructData() {
     frame += String(mainDataFrame.gForce) + ";";
     frame += String(mainDataFrame.espNowErrorCounter) + ";";
     frame += String(mainDataFrame.sdErrorCounter) + ";";
-    frame += String((int) mainDataFrame.separationData) + "\n";
+    frame += String((int) mainDataFrame.separationData) + ";";
+    frame += String((int) mainDataFrame.countdown) + "\n";
 
     return frame;
 }
@@ -36,29 +37,30 @@ void uart2Handler() {
     // Dane przychodzące z uartu:
     if (Serial2.available()) {
 
-        mainDataFrame.pressure = 222;
-
         vTaskDelay(2 / portTICK_PERIOD_MS);
         String dataFrom3Ant = Serial2.readString();
-        
-        if (dataFrom3Ant.indexOf("R4TN") >= 0 || dataFrom3Ant.indexOf("R4GP") >= 0) {
-            queue.push(dataFrom3Ant);
-        }
 
-        //else if () TODO polecenia zaworu upustowego
+        if (strstr(dataFrom3Ant.c_str(), "MNCP;STAT") != NULL) {
 
-        else if (dataFrom3Ant.indexOf("MNCP;STAT") >= 0) {
+            mainDataFrame.countdown++;
 
             uint8_t oldState, newState;
             sscanf(dataFrom3Ant.c_str(), "MNCP;STAT;%d;%d", (int*) &oldState, (int*) &newState);
 
-            if (oldState == mainDataFrame.rocketState)
+            //if (oldState == mainDataFrame.rocketState)
                 mainDataFrame.rocketState = newState;
         }
 
-        else if (dataFrom3Ant.indexOf("MNCP;ABRT") == 0) {
+        else if (strstr(dataFrom3Ant.c_str(), "MNCP;ABRT") != NULL) {
             
             mainDataFrame.rocketState = ABORT;
+        }
+
+        //else if () TODO polecenia zaworu upustowego
+
+        else if (strstr(dataFrom3Ant.c_str(), "R4TN") != NULL || strstr(dataFrom3Ant.c_str(), "R4GP") != NULL) {
+            
+            queue.push(dataFrom3Ant);
         }
 
     }

@@ -47,6 +47,8 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
 void sdTask(void *arg) {
 
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+
     SPIClass SPISD(HSPI);
     SPISD.begin(GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_15);
     SPI.setClockDivider(SPI_CLOCK_DIV2);
