@@ -37,17 +37,18 @@ void uart2Handler() {
     // Dane przychodzące z uartu:
     if (Serial2.available()) {
 
-        vTaskDelay(2 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
         String dataFrom3Ant = Serial2.readString();
 
         if (strstr(dataFrom3Ant.c_str(), "MNCP;STAT") != NULL) {
 
             mainDataFrame.countdown++;
 
-            uint8_t oldState, newState;
-            sscanf(dataFrom3Ant.c_str(), "MNCP;STAT;%d;%d", (int*) &oldState, (int*) &newState);
+            int oldState, newState;
+            dataFrom3Ant = "p" + dataFrom3Ant + "k";
+            sscanf(dataFrom3Ant.c_str(), "%*s%d;%d%*s", &oldState, &newState);
 
-            //if (oldState == mainDataFrame.rocketState)
+            if (oldState == mainDataFrame.rocketState)
                 mainDataFrame.rocketState = newState;
         }
 
