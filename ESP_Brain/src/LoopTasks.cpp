@@ -110,7 +110,7 @@ void adcTask(void *arg) {
         
         // Krańcówki:
         mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_27);
-        mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_14);
+        mainDataFrame.upust.endStop2 = !digitalRead(GPIO_NUM_14);
 
         // Potencjometr zaworu upustowego:
         mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);        

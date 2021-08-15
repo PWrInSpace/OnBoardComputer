@@ -78,3 +78,50 @@ void sendData(String txData) {
         lastSendTime = millis();
     }
 }
+
+/*********************************************************************************************/
+//                                  ZAWÓR UPUSTOWY                                           //
+
+
+void valveInit(){
+    pinMode(VALVE1, OUTPUT);
+    pinMode(VALVE2, OUTPUT);
+    pinMode(VALVE_PWM, OUTPUT);
+    pinMode(GPIO_NUM_14, INPUT_PULLUP);
+    pinMode(GPIO_NUM_27, INPUT_PULLUP);
+
+    ledcSetup(valvePWMChanel, valveFrequency, valveResolution);
+    ledcAttachPin(VALVE_PWM, valvePWMChanel);
+    Serial.println("Valve init complete");
+    
+    digitalWrite(VALVE1, LOW);
+    digitalWrite(VALVE2, LOW);
+    ledcWrite(valvePWMChanel, 0);
+}
+
+void valveOpen(void *arg){
+    int pwm = 140;
+    if(!digitalRead(GPIO_NUM_27)){ // gdy druga krancówka jest zwarta
+        Serial.println("Jazda");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    digitalWrite(VALVE1, HIGH);
+    digitalWrite(VALVE2, LOW);
+    ledcWrite(valvePWMChanel, pwm);
+
+    while(digitalRead(GPIO_NUM_27)){
+        if(pwm < 255){
+            pwm += 5;
+            ledcWrite(valvePWMChanel, pwm);
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        Serial.println(String(pwm));
+    }
+
+    digitalWrite(VALVE1, LOW);
+    ledcWrite(valvePWMChanel, 0);
+    
+    vTaskDelete(NULL);
+}
