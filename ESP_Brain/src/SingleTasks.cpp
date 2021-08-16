@@ -2,6 +2,7 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
+extern bool forceStateAction;
 
 String countStructData() {
 
@@ -53,13 +54,16 @@ void uart2Handler() {
             int oldState, newState;
             sscanf(dataFrom3Ant.c_str(), "MNCP;STAT;%d;%d", &oldState, &newState);
 
-            if (oldState == mainDataFrame.rocketState)
+            if (oldState == mainDataFrame.rocketState) {
                 mainDataFrame.rocketState = newState;
+                forceStateAction = true;
+            }
         }
 
         else if (strstr(dataFrom3Ant.c_str(), "MNCP;ABRT") != NULL) {
             
             mainDataFrame.rocketState = ABORT;
+            forceStateAction = true;
         }
 
         //else if () TODO polecenia zaworu upustowego

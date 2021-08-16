@@ -1,8 +1,8 @@
 #include "LoopTasks.h"
 
-extern Queue queue;
-
 extern MainDataFrame mainDataFrame;
+extern Queue queue;
+extern bool forceStateAction;
 
 /* Zadanie zajmujące się wszystkim, co łączy się przez i2c:
  *   1. Atmega odzyskowa, [ALMOST DONE]
@@ -10,6 +10,8 @@ extern MainDataFrame mainDataFrame;
  */
 
 void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego mniej docelowo.
+
+    // TODO pomiar początkowego ciśnienia.
 
     Wire.begin();
 
@@ -105,9 +107,9 @@ void adcTask(void *arg) {
         mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0;
 
         // Krańcówki:
-        if (!digitalRead(GPIO_NUM_27))
+        if (!digitalRead(GPIO_NUM_14))
             mainDataFrame.upust.valveState = CLOSED;
-        else if (!digitalRead(GPIO_NUM_14))
+        else if (!digitalRead(GPIO_NUM_17))
             mainDataFrame.upust.valveState = OPEN;
         else mainDataFrame.upust.valveState = MOVING;
 

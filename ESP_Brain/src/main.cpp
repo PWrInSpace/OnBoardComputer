@@ -5,6 +5,7 @@
 #include "SingleTasks.h"
 #include "Timer_ms.h"
 
+#define SERVO_DELAY 100
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -15,6 +16,7 @@ volatile bool mainDataFrameSaveBusy = false;
 
 Queue queue;
 Timer_ms frameTimer;
+bool forceStateAction;
 
 /**********************************************************************************************/
 
@@ -47,14 +49,14 @@ void setup() {
 /**********************************************************************************************/
 
 /* Zadanie odpowiedzialne za obsługę poleceń przychodzących po uartcie z płytki 3-antenowej oraz ESP now. Obsługuje:
- *   1. Stan Gpsa - do zapisu na SD,            [ALMOST_DONE]
- *   2. Stan Tanwy - do zapisu na SD,           [ALMOST_DONE]
- *   3. Polecenia przychodzące z LoRy,          [TODO]
- *   4. Ramki, które chcemy wysłać do LoRy,     [TODO]
- *   5. Sterowanie silnikiem zaworu upustowego, [TODO]
+ *   1. Stan Gpsa - do zapisu na SD,            [DONE]
+ *   2. Stan Tanwy - do zapisu na SD,           [DONE]
+ *   3. Polecenia przychodzące z LoRy,          [DONE]
+ *   4. Ramki, które chcemy wysłać do LoRy,     [DONE]
+ *   5. Sterowanie silnikiem zaworu upustowego, [ALMOST_DONE]
  *   6. Obsługa maszyny stanów,                 [TODO]
  *   1. Pitot - ESP now,                        [TODO - Done earlier]
- *   2. Główny zawór - ESP now.                 [TODO]
+ *   2. Główny zawór - ESP now.                 [ALMOSt_DONE]
  */
 
 void loop() {
@@ -72,9 +74,16 @@ void loop() {
         }
     }
 
+    /*------------------------------------*/
+
     else if (mainDataFrame.rocketState == FUELING) {
-        
+    
         frameTimer.setVal(2000);
+        if (forceStateAction) {
+
+            forceStateAction = false;
+            // Zamknąć zawór upustowy, kazać głównemu zaworowi się zamknąć.
+        }
 
         if (frameTimer.check()) {
 
@@ -83,22 +92,42 @@ void loop() {
             sendData(txData);
         }
     }
+
+    /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == COUNTDOWN) {
         
        frameTimer.setVal(1000);
 
+
         if (frameTimer.check()) {
+
+            mainDataFrame.countdown--;
 
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+
+            if(mainDataFrame.countdown < 1) {
+
+                // Odpal silnik
+                vTaskDelay(SERVO_DELAY / portTICK_PERIOD_MS);
+                // Każ serwu się otworzyć
+                mainDataFrame.rocketState = FLIGHT;
+            }
         }
     }
+
+    /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == ABORT) {
         
         frameTimer.setVal(10000);
+        if (forceStateAction) {
+
+            forceStateAction = false;
+            // otworzyć zawór upustowy.
+        }
 
         if (frameTimer.check()) {
 
@@ -107,6 +136,8 @@ void loop() {
             sendData(txData);
         }
     }
+
+    /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == FLIGHT) {
         
@@ -117,12 +148,22 @@ void loop() {
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+
+            if (mainDataFrame.separationData & (1<<1))
+                mainDataFrame.rocketState = FIRST_SEPAR;
         }
     }
+
+    /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == FIRST_SEPAR) {
         
         frameTimer.setVal(500);
+        if (forceStateAction) {
+
+            forceStateAction = false;
+            // Rozkaz separacji 1 st.
+        }
 
         if (frameTimer.check()) {
 
@@ -131,18 +172,28 @@ void loop() {
             sendData(txData);
         }
     }
+
+    /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
         
         frameTimer.setVal(2000);
+        if (forceStateAction) {
+
+            forceStateAction = false;
+            // Rozkaz separacji 2 st.
+        }
 
         if (frameTimer.check()) {
 
+            // Otworzenie zaworów, wyłączenie silników i serw.
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
         }
     }
+
+    /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == GROUND) {
         
