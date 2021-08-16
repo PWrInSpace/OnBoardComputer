@@ -95,11 +95,7 @@ void sdTask(void *arg) {
  */
 
 void adcTask(void *arg) {
-
-    // Pullup dla krańcówek:
-    pinMode(GPIO_NUM_27, INPUT_PULLUP);
-    pinMode(GPIO_NUM_14, INPUT_PULLUP);
-
+    
     while(1) {
 
         // Ciśnienie butli:
@@ -110,7 +106,7 @@ void adcTask(void *arg) {
         
         // Krańcówki:
         mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_27);
-        mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_14);
+        mainDataFrame.upust.endStop2 = !digitalRead(GPIO_NUM_14);
 
         // Potencjometr zaworu upustowego:
         mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);        

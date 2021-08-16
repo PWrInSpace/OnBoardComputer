@@ -86,3 +86,70 @@ void sendData(String txData) {
         lastSendTime = millis();
     }
 }
+
+/*********************************************************************************************/
+//                                  ZAWÓR UPUSTOWY                                           //
+
+
+void valveInit(){
+    pinMode(VALVE1, OUTPUT);
+    pinMode(VALVE2, OUTPUT);
+    pinMode(VALVE_PWM, OUTPUT);
+    pinMode(GPIO_NUM_14, INPUT_PULLUP);
+    pinMode(GPIO_NUM_27, INPUT_PULLUP);
+
+    ledcSetup(valvePWMChanel, valveFrequency, valveResolution);
+    ledcAttachPin(VALVE_PWM, valvePWMChanel);
+    Serial.println("Valve init complete");
+    
+    digitalWrite(VALVE1, LOW);
+    digitalWrite(VALVE2, LOW);
+    ledcWrite(valvePWMChanel, 0);
+}
+
+void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, const uint8_t & valveSpeed){
+    if(!digitalRead(limitSwitchPIN)){ // gdy krancówka jest zwarta
+        vTaskDelete(NULL);
+        return;
+    }
+
+    //wlaczenie silnika
+    digitalWrite(highValvePIN, HIGH);
+    ledcWrite(valvePWMChanel, valveSpeed);
+
+    //oczekiwanie az sie obroci
+    while(digitalRead(limitSwitchPIN)){};
+
+    //wylaczenie silnika
+    digitalWrite(highValvePIN, LOW);
+    ledcWrite(valvePWMChanel, 0);
+}
+
+void valveOpen(void *arg){
+    valveMove(GPIO_NUM_27, VALVE1);
+    
+    vTaskDelete(NULL);
+}
+
+void valveClose(void *arg){
+    valveMove(GPIO_NUM_14, VALVE2);
+    
+    vTaskDelete(NULL);
+}
+
+void valveTimeOpen(void *arg){
+    unsigned int openTime = 5000; //(ms)
+    unsigned long int valveTimer;
+
+    valveMove(GPIO_NUM_27, VALVE1);
+
+    valveTimer = millis();
+    while(millis() - valveTimer < openTime){
+        Serial.println(String(millis() - valveTimer));
+    }
+    
+    valveMove(GPIO_NUM_14, VALVE2);
+    vTaskDelete(NULL);
+}
+
+

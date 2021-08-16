@@ -25,10 +25,12 @@ void setup() {
     Serial.begin(115200);
     delay(100);
 
+    valveInit();
+
     xTaskCreate(i2cTask,    "Task i2c",     8192,  NULL, 1, NULL);
     xTaskCreate(sdTask,     "Task SD",      65536, NULL, 1, NULL);
     xTaskCreate(adcTask,    "Task ADC",     4096,  NULL, 1, NULL);
-
+    
     if(!nowInit()) {
 
         mainDataFrame.espNowErrorCounter++;
@@ -56,7 +58,6 @@ void setup() {
  */
 
 void loop() {
-
     uart2Handler();
 
     if (mainDataFrame.rocketState == IDLE) {
