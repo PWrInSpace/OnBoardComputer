@@ -14,11 +14,9 @@ String countStructData() {
     frame += String(mainDataFrame.pitotData.altitude) + ";";
     frame += String(mainDataFrame.pitotData.speed) + ";";
     frame += String(mainDataFrame.pitotData.temperature) + ";";
-    frame += String(mainDataFrame.upust.endStop1) + ";";
-    frame += String(mainDataFrame.upust.endStop2) + ";";
+    frame += String(mainDataFrame.upust.valveState) + ";";
     frame += String(mainDataFrame.upust.potentiometer) + ";";
-    frame += String(mainDataFrame.mValve.endStop1) + ";";
-    frame += String(mainDataFrame.mValve.endStop2) + ";";
+    frame += String(mainDataFrame.mValve.valveState) + ";";
     frame += String(mainDataFrame.mValve.potentiometer) + ";";
     frame += String(mainDataFrame.tankPressure) + ";";
     frame += String(mainDataFrame.pressure) + ";";

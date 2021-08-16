@@ -103,10 +103,13 @@ void adcTask(void *arg) {
 
         // Akumulator:
         mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0;
-        
+
         // Krańcówki:
-        mainDataFrame.upust.endStop1 = !digitalRead(GPIO_NUM_27);
-        mainDataFrame.upust.endStop2 = !digitalRead(GPIO_NUM_14);
+        if (!digitalRead(GPIO_NUM_27))
+            mainDataFrame.upust.valveState = CLOSED;
+        else if (!digitalRead(GPIO_NUM_14))
+            mainDataFrame.upust.valveState = OPEN;
+        else mainDataFrame.upust.valveState = MOVING;
 
         // Potencjometr zaworu upustowego:
         mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);        

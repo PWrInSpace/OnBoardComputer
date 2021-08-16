@@ -48,13 +48,12 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
     Serial.println((char*) incomingData);
 
-    int a, b, c;
-    int wart = sscanf((char*) incomingData, "R4MV;%d;%d;%d", &a, &b, &c);
+    int mValveState, mValvePot;
+    int wart = sscanf((char*) incomingData, "R4MV;%d;%d", &mValveState, &mValvePot);
     Serial.println(wart);
 
-    mainDataFrame.mValve.endStop1 = a;
-    mainDataFrame.mValve.endStop2 = b;
-    mainDataFrame.mValve.potentiometer = c;
+    mainDataFrame.mValve.valveState = mValveState;
+    mainDataFrame.mValve.potentiometer = mValvePot;
   }
   
 

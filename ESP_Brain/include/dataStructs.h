@@ -3,6 +3,15 @@
 
 #include <cstdint>
 
+// Stany zaworów:
+
+enum ValveStates {
+
+    CLOSED = 0,
+    MOVING,
+    OPEN
+};
+
 // Struktury pomocnicze:
 
 struct PitotData {
@@ -16,8 +25,7 @@ struct PitotData {
 
 struct ValveData {
 
-    bool endStop1;
-    bool endStop2;
+    uint8_t valveState;
     uint16_t potentiometer;
 };
 
