@@ -46,7 +46,15 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   else if(adressCompare(mac, adressMValve)) {
 
-    sscanf((char*) incomingData, "R4MV;%d;%d;%d", (int*) &mainDataFrame.mValve.endStop1, (int*) &mainDataFrame.mValve.endStop2, (int*) &mainDataFrame.mValve.potentiometer);
+    Serial.println((char*) incomingData);
+
+    int a, b, c;
+    int wart = sscanf((char*) incomingData, "R4MV;%d;%d;%d", &a, &b, &c);
+    Serial.println(wart);
+
+    mainDataFrame.mValve.endStop1 = a;
+    mainDataFrame.mValve.endStop2 = b;
+    mainDataFrame.mValve.potentiometer = c;
   }
   
 

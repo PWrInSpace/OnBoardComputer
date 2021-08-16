@@ -10,7 +10,7 @@
 /******************************/
 
 #define RX_BUFFER_SIZE 128
-#define GPS_PERIOD 4000
+#define GPS_PERIOD 1000
 
 typedef struct {
 

@@ -88,7 +88,7 @@ void loraReaction(void) {
 		xbee_transmit_char(xbeeIgnition, loraBuffer);
 	}
 
-	HAL_Delay(10);
+	HAL_Delay(20);
 	memset(loraBuffer, 0, BUFFER_SIZE);
 }
 

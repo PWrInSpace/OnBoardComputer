@@ -35,10 +35,11 @@ void setup() {
     }
 
     //nowAddPeer(adressPitot, 0);
-    //nowAddPeer(adressMValve, 0);
+    nowAddPeer(adressMValve, 0);
 
     mainDataFrame.rocketState = IDLE;
     Serial2.begin(115200);
+    Serial2.setTimeout(1);
 }
 
 /**********************************************************************************************/
