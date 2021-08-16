@@ -3,9 +3,10 @@
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
 extern bool forceStateAction;
+extern Timer_ms frameTimer;
 
 /* Zadanie zajmujące się wszystkim, co łączy się przez i2c:
- *   1. Atmega odzyskowa, [ALMOST DONE]
+ *   1. Atmega odzyskowa, [ALMOST_DONE]
  *   2. BME280.           [TODO]
  */
 
@@ -15,15 +16,20 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
     Wire.begin();
 
+    while (mainDataFrame.rocketState < FUELING) {
 
-    for (int i = 0; i < 5; i++) {
-    
-        Wire.requestFrom(3, 1);
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-        if (Wire.available()) {
-            mainDataFrame.separationData = Wire.read();
+        if (frameTimer.flag) {
+
+            frameTimer.flag = false;
+        
+            Wire.requestFrom(3, 1);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            if (Wire.available()) {
+                mainDataFrame.separationData = Wire.read();
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+
     }
 
     Wire.beginTransmission(3);
@@ -31,14 +37,51 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
     Wire.endTransmission();
     vTaskDelay(10 / portTICK_PERIOD_MS);
 
-    for (;;) {
+    while (1) {
         
-        Wire.requestFrom(3, 1);
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-        if (Wire.available()) {
-            mainDataFrame.separationData = Wire.read();
+        if (frameTimer.flag) {
+
+            frameTimer.flag = false;
+
+            Wire.requestFrom(3, 1);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+            if (Wire.available()) {
+                mainDataFrame.separationData = Wire.read();
+            }
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+
         }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+
+        while (mainDataFrame.rocketState == FLIGHT) {
+
+            // Tutaj lecą pomiary z BME i obliczenia wszystkie (wysokość, prędkość, przyspieszenie)
+            vTaskDelay(2 / portTICK_PERIOD_MS);
+        }
+
+        if (forceStateAction && mainDataFrame.rocketState == FIRST_SEPAR) {
+
+            forceStateAction = false;
+
+            // Rozkaz separacji 1 st:
+            Wire.beginTransmission(3);
+            Wire.write(24);
+            Wire.endTransmission();
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+
+        else if (forceStateAction && mainDataFrame.rocketState == SECOND_SEPAR) {
+
+            forceStateAction = false;
+
+            // Rozkaz separacji 2 st.
+            // Rozkaz separacji 1 st:
+            Wire.beginTransmission(3);
+            Wire.write(56);
+            Wire.endTransmission();
+            vTaskDelay(10 / portTICK_PERIOD_MS);
+        }
+
+    vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 

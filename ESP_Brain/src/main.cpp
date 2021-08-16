@@ -3,7 +3,6 @@
 
 #include "LoopTasks.h"
 #include "SingleTasks.h"
-#include "Timer_ms.h"
 
 #define SERVO_DELAY 100
 
@@ -16,7 +15,7 @@ volatile bool mainDataFrameSaveBusy = false;
 
 Queue queue;
 Timer_ms frameTimer;
-bool forceStateAction;
+volatile bool forceStateAction;
 
 /**********************************************************************************************/
 
@@ -159,11 +158,6 @@ void loop() {
     else if (mainDataFrame.rocketState == FIRST_SEPAR) {
         
         frameTimer.setVal(500);
-        if (forceStateAction) {
-
-            forceStateAction = false;
-            // Rozkaz separacji 1 st.
-        }
 
         if (frameTimer.check()) {
 
@@ -178,11 +172,6 @@ void loop() {
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
         
         frameTimer.setVal(2000);
-        if (forceStateAction) {
-
-            forceStateAction = false;
-            // Rozkaz separacji 2 st.
-        }
 
         if (frameTimer.check()) {
 
@@ -214,13 +203,4 @@ void loop() {
     if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
         mainDataFrame.espNowErrorCounter++;*/
 
-    /*while(1) {
-        vTaskDelay(10000 / portTICK_PERIOD_MS);
-    }
-
-    queue.push("R4GP;" + String(millis()));
-    queue.push("R4TN;" + String(millis()));
-    queue.push("R4MC;" + String(millis()));
-    Serial.println(String(millis()));
-    vTaskDelay(1000 / portTICK_PERIOD_MS);*/
 }

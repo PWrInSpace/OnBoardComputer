@@ -10,6 +10,7 @@ bool Timer_ms::check() {
     if (millis() - this->timer > this->val) {
         
         this->reset();
+        this->flag = true;
         return true;
     }
 

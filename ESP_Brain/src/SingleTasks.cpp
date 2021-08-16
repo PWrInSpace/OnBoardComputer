@@ -66,13 +66,14 @@ void uart2Handler() {
             forceStateAction = true;
         }
 
-        //else if () TODO polecenia zaworu upustowego
-
         else if (strstr(dataFrom3Ant.c_str(), "R4TN") != NULL || strstr(dataFrom3Ant.c_str(), "R4GP") != NULL) {
             
             queue.push(dataFrom3Ant);
         }
 
+        else if (mainDataFrame.rocketState == FUELING) { 
+            // TODO polecenia zaworu upustowego
+        }
     }
 }
 

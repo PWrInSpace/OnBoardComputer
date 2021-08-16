@@ -12,6 +12,8 @@ class Timer_ms {
 
     Timer_ms() { timer = millis(); }
 
+    bool flag;
+
     void reset();
     bool check();
     void setVal(uint16_t val);
