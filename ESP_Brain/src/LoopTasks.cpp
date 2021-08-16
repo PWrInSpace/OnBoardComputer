@@ -95,11 +95,7 @@ void sdTask(void *arg) {
  */
 
 void adcTask(void *arg) {
-
-    // Pullup dla krańcówek:
-    pinMode(GPIO_NUM_27, INPUT_PULLUP);
-    pinMode(GPIO_NUM_14, INPUT_PULLUP);
-
+    
     while(1) {
 
         // Ciśnienie butli:

@@ -22,6 +22,9 @@ const int valvePWMChanel = 0;
 const int valveResolution = 8;
 
 void valveInit();
+void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, const uint8_t & valveSpeed = 255);
 void valveOpen(void *arg);
+void valveClose(void *arg);
+void valveTimeOpen(void *arg);
 
 #endif
