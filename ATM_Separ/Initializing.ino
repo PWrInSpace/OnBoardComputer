@@ -35,7 +35,6 @@ void sendData() {
 
 void receiveData() {
 
-  _delay_ms(2);
   if(Wire.available()) {
     char rxByte = Wire.read();
 
@@ -47,7 +46,5 @@ void receiveData() {
     
     else if(rxByte == 24) doFirstSeparation();
     else if(rxByte == 56) doSecondSeparation();
-
-    else SeparationFrame |= (1<<7);
   }
 }

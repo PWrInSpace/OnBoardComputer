@@ -29,7 +29,7 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
         }
-
+        vTaskDelay(2 / portTICK_PERIOD_MS);
     }
 
     Wire.beginTransmission(3);
@@ -52,33 +52,35 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
         }
 
-        while (mainDataFrame.rocketState == FLIGHT) {
+        while (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {
 
             // Tutaj lecą pomiary z BME i obliczenia wszystkie (wysokość, prędkość, przyspieszenie)
             vTaskDelay(2 / portTICK_PERIOD_MS);
-        }
+        
 
-        if (forceStateAction && mainDataFrame.rocketState == FIRST_SEPAR) {
+            if (forceStateAction && mainDataFrame.rocketState == FIRST_SEPAR) {
 
-            forceStateAction = false;
+                forceStateAction = false;
 
-            // Rozkaz separacji 1 st:
-            Wire.beginTransmission(3);
-            Wire.write(24);
-            Wire.endTransmission();
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
+                // Rozkaz separacji 1 st:
+                Wire.beginTransmission(3);
+                Wire.write(24);
+                Wire.endTransmission();
+                vTaskDelay(10 / portTICK_PERIOD_MS);
+            }
 
-        else if (forceStateAction && mainDataFrame.rocketState == SECOND_SEPAR) {
+            else if (forceStateAction && mainDataFrame.rocketState == SECOND_SEPAR) {
 
-            forceStateAction = false;
+                forceStateAction = false;
 
-            // Rozkaz separacji 2 st.
-            // Rozkaz separacji 1 st:
-            Wire.beginTransmission(3);
-            Wire.write(56);
-            Wire.endTransmission();
-            vTaskDelay(10 / portTICK_PERIOD_MS);
+                // Rozkaz separacji 2 st.
+                // Rozkaz separacji 1 st:
+                Wire.beginTransmission(3);
+                Wire.write(56);
+                Wire.endTransmission();
+                vTaskDelay(10 / portTICK_PERIOD_MS);
+            }
+
         }
 
     vTaskDelay(10 / portTICK_PERIOD_MS);

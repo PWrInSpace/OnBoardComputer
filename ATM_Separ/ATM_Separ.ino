@@ -4,7 +4,7 @@
 
 void setup() {
 
-  delay(1000);
+  delay(10);
   initSeparationSystem(); // Ustaw piny itp.
 
 }

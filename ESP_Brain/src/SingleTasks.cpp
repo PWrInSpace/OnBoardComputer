@@ -49,8 +49,6 @@ void uart2Handler() {
 
         if (strstr(dataFrom3Ant.c_str(), "MNCP;STAT") != NULL) {
 
-            mainDataFrame.countdown++;
-
             int oldState, newState;
             sscanf(dataFrom3Ant.c_str(), "MNCP;STAT;%d;%d", &oldState, &newState);
 
