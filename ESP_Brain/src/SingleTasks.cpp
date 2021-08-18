@@ -6,9 +6,9 @@ extern bool forceStateAction;
 
 String countStructData() {
 
-    String frame = "R4MC;" + String(millis()) + ";";
+    String frame = "R4MC;" + String((int) mainDataFrame.rocketState) + ";";
     
-    frame += String((int) mainDataFrame.rocketState) + ";";
+    frame += String(millis()) + ";";
     frame += String(mainDataFrame.battery) + ";";
     frame += String(mainDataFrame.pitotData.staticPressure) + ";";
     frame += String(mainDataFrame.pitotData.dynamicPressure) + ";";

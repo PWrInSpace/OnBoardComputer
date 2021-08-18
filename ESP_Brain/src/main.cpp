@@ -37,7 +37,7 @@ void setup() {
         mainDataFrame.espNowErrorCounter++;
     }
 
-    //nowAddPeer(adressPitot, 0);
+    nowAddPeer(adressPitot, 0);
     nowAddPeer(adressMValve, 0);
 
     mainDataFrame.rocketState = IDLE;
@@ -109,9 +109,16 @@ void loop() {
 
             if(mainDataFrame.countdown < 1) {
 
-                // Odpal silnik
+                // Odpal silnik:
+                Serial2.print("Odpalaj");
+
                 vTaskDelay(SERVO_DELAY / portTICK_PERIOD_MS);
-                // Każ serwu się otworzyć
+
+                // Każ serwu się otworzyć:
+                char messageOpen[] = "MNVL;1";
+                if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
+                    mainDataFrame.espNowErrorCounter++;
+
                 mainDataFrame.rocketState = FLIGHT;
             }
         }
@@ -200,10 +207,4 @@ void loop() {
     }
 
     vTaskDelay(2 / portTICK_PERIOD_MS);
-    
-
-    /*char message[] = "wazna wiadomosc do przeslania\n";
-    if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
-        mainDataFrame.espNowErrorCounter++;*/
-
 }

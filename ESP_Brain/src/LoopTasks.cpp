@@ -35,7 +35,7 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
     Wire.beginTransmission(3);
     Wire.write(8);
     Wire.endTransmission();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(40 / portTICK_PERIOD_MS);
 
     while (1) {
         
@@ -52,7 +52,7 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
         }
 
-        while (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {
+        if (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {
 
             // Tutaj lecą pomiary z BME i obliczenia wszystkie (wysokość, prędkość, przyspieszenie)
             vTaskDelay(2 / portTICK_PERIOD_MS);
@@ -74,7 +74,6 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
                 forceStateAction = false;
 
                 // Rozkaz separacji 2 st.
-                // Rozkaz separacji 1 st:
                 Wire.beginTransmission(3);
                 Wire.write(56);
                 Wire.endTransmission();

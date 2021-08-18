@@ -37,6 +37,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 			tfsStruct.maincompRxFlag = 1;
 			strcpy(tfsStruct.maincompStringLora, tfsStruct.maincompStringDma);
+
+			if (tfsStruct.maincompStringDma[5] == '2') gpsPeriod = 1000;
+			else gpsPeriod = 8000;
 		}
 
 		memset(tfsStruct.maincompStringDma, 0, RX_BUFFER_SIZE);
@@ -52,6 +55,8 @@ void initAll(void) {
 
 	loraInit();
 	GPS_Init();
+
+	gpsPeriod = 1000;
 
 	// Inity uartów:
 
