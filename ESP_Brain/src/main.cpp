@@ -164,6 +164,9 @@ void loop() {
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+
+            if (mainDataFrame.separationData & (1<<2))
+                mainDataFrame.rocketState = SECOND_SEPAR;
         }
     }
 
