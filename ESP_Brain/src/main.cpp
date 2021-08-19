@@ -28,14 +28,12 @@ void setup() {
 
     valveInit();
 
-    xTaskCreate(i2cTask,    "Task i2c",     8192,  NULL, 1, NULL);
+    xTaskCreate(i2cTask,    "Task i2c",     8192,  NULL, 3, NULL);
     xTaskCreate(sdTask,     "Task SD",      65536, NULL, 1, NULL);
     xTaskCreate(adcTask,    "Task ADC",     4096,  NULL, 1, NULL);
     
-    if(!nowInit()) {
-
-        mainDataFrame.espNowErrorCounter++;
-    }
+    if(!nowInit())
+        mainDataFrame.espNowErrorCounter = 2137; // Fatalny błąd.
 
     nowAddPeer(adressPitot, 0);
     nowAddPeer(adressMValve, 0);
@@ -81,7 +79,7 @@ void loop() {
         if (forceStateAction) {
 
             forceStateAction = false;
-            // Zamknąć zawór upustowy, kazać głównemu zaworowi się zamknąć.
+            // Zamknąć zawór upustowy, kazać głównemu zaworowi się zamknąć TODO!!!.
         }
 
         if (frameTimer.check()) {
@@ -110,7 +108,7 @@ void loop() {
             if(mainDataFrame.countdown < 1) {
 
                 // Odpal silnik:
-                Serial2.print("Odpalaj");
+                Serial2.print("Lecimy!\n");
 
                 vTaskDelay(SERVO_DELAY / portTICK_PERIOD_MS);
 

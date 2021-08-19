@@ -10,7 +10,7 @@ String countStructData() {
     
     frame += String(millis()) + ";";
     frame += String(mainDataFrame.battery) + ";";
-    frame += String(mainDataFrame.pitotData.staticPressure) + ";";
+    frame += String(mainDataFrame.pitotData.staticPressure)  + ";";
     frame += String(mainDataFrame.pitotData.dynamicPressure) + ";";
     frame += String(mainDataFrame.pitotData.altitude) + ";";
     frame += String(mainDataFrame.pitotData.speed) + ";";
@@ -81,7 +81,7 @@ uint32_t lastSendTime = 0;
 
 void sendData(String txData) {
 
-    if (millis() - lastSendTime > 1000) {
+    if (millis() - lastSendTime > 950) {
 
         Serial2.print(txData);
         lastSendTime = millis();
@@ -89,8 +89,9 @@ void sendData(String txData) {
 }
 
 /*********************************************************************************************/
+/*********************************************************************************************/
+/*********************************************************************************************/
 //                                  ZAWÓR UPUSTOWY                                           //
-
 
 void valveInit(){
     pinMode(VALVE1, OUTPUT);
@@ -107,6 +108,8 @@ void valveInit(){
     digitalWrite(VALVE2, LOW);
     ledcWrite(valvePWMChanel, 0);
 }
+
+/*********************************************************************************************/
 
 void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, const uint8_t & valveSpeed){
     if(!digitalRead(limitSwitchPIN)){ // gdy krancówka jest zwarta
@@ -126,17 +129,23 @@ void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, con
     ledcWrite(valvePWMChanel, 0);
 }
 
+/*********************************************************************************************/
+
 void valveOpen(void *arg){
     valveMove(GPIO_NUM_27, VALVE1);
     
     vTaskDelete(NULL);
 }
 
+/*********************************************************************************************/
+
 void valveClose(void *arg){
     valveMove(GPIO_NUM_14, VALVE2);
     
     vTaskDelete(NULL);
 }
+
+/*********************************************************************************************/
 
 void valveTimeOpen(void *arg){
     unsigned int openTime = 5000; //(ms)
