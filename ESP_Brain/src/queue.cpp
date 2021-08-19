@@ -1,4 +1,7 @@
 #include "queue.h"
+#include "dataStructs.h"
+
+extern MainDataFrame mainDataFrame;
 
 Queue::Queue(){
   head = nullptr;
@@ -14,19 +17,25 @@ Queue::~Queue(){
   }
 }
 
-/**  [TO DO] - DODAĆ OBSŁUGĘ WYJĄTKU NEW **/
 void Queue::push(const String & value){
-  Queue_struct *temp = new Queue_struct;
-  temp->data = value;
-  temp->next = nullptr;
+  try{
+    Queue_struct *temp = new Queue_struct;
+    temp->data = value;
+    temp->next = nullptr;
 
-  if (head == nullptr){
+    if (head == nullptr){
     head = temp;
     tail = temp;
-  }else{
-    tail->next = temp;
-    tail = temp;
+    }else{
+      tail->next = temp;
+      tail = temp;
+    }
   }
+  catch(std::bad_alloc & e){
+    mainDataFrame.sdErrorCounter += 3;
+    return;
+  }
+  
   numberOfElements += 1;
 }
 
