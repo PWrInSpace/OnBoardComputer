@@ -1,4 +1,5 @@
 #include "LoopTasks.h"
+#include "Adafruit_BME280.h"
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
@@ -11,7 +12,19 @@ extern Timer_ms frameTimer;
  */
 
 void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego mniej docelowo.
+    
+    const int I2C_SDA = 21;
+    const int I2C_SCL = 22;
+    const int seaLevelPressure = 1013.5; //tutaj może weźmiemy ciśnienie z pitota gdy rakieta jest na padzie?
+    
+    TwoWire I2C_BME = TwoWire(0);
+    Adafruit_BME280 bme;
+    I2C_BME.begin(I2C_SDA, I2C_SCL, 10000);
+    if(!bme.begin(0x23, &I2C_BME)){
+        Serial.println("Problem z czujnikiem bme");
+    }
 
+    Serial.println(String(bme.readPressure()) + " Pa\t" + String(bme.readAltitude(seaLevelPressure)) + " m\t" );
     // TODO pomiar początkowego ciśnienia.
 
     Wire.begin();
