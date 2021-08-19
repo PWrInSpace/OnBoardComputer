@@ -33,9 +33,9 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
     }
 
     Wire.beginTransmission(3);
-    Wire.write(8);
+    Wire.write((uint8_t) 8);
     Wire.endTransmission();
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(40 / portTICK_PERIOD_MS);
 
     while (1) {
         
@@ -52,11 +52,10 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
         }
 
-        while (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {
+        if (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {
 
             // Tutaj lecą pomiary z BME i obliczenia wszystkie (wysokość, prędkość, przyspieszenie)
             vTaskDelay(2 / portTICK_PERIOD_MS);
-        
 
             if (forceStateAction && mainDataFrame.rocketState == FIRST_SEPAR) {
 
@@ -64,7 +63,7 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
                 // Rozkaz separacji 1 st:
                 Wire.beginTransmission(3);
-                Wire.write(24);
+                Wire.write((uint8_t) 24);
                 Wire.endTransmission();
                 vTaskDelay(10 / portTICK_PERIOD_MS);
             }
@@ -73,10 +72,9 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
 
                 forceStateAction = false;
 
-                // Rozkaz separacji 2 st.
-                // Rozkaz separacji 1 st:
+                // Rozkaz separacji 2 st:
                 Wire.beginTransmission(3);
-                Wire.write(56);
+                Wire.write((uint8_t) 56);
                 Wire.endTransmission();
                 vTaskDelay(10 / portTICK_PERIOD_MS);
             }
@@ -100,10 +98,8 @@ void sdTask(void *arg) {
     SPISD.begin(GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_15);
     SPI.setClockDivider(SPI_CLOCK_DIV2);
     
-    if(!SD.begin(SD_CS, SPISD)){
-
-        mainDataFrame.sdErrorCounter = 1000;
-    }
+    if(!SD.begin(SD_CS, SPISD))
+        mainDataFrame.sdErrorCounter = 2137; // Fatalny błąd.
 
     while(1) {
        

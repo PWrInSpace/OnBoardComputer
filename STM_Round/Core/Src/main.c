@@ -121,7 +121,7 @@ int main(void)
 		GPS_Process();
 
 		// Wysyłanie GPSa co jakiś czas:
-		if (uwTick - tfsStruct.gpsFrameTimer > GPS_PERIOD) {
+		if (uwTick - tfsStruct.gpsFrameTimer > gpsPeriod) {
 
 			tfsStruct.gpsFrameTimer = uwTick;
 			sendGPSData();

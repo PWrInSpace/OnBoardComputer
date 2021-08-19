@@ -28,16 +28,14 @@ void setup() {
 
     valveInit();
 
-    xTaskCreate(i2cTask,    "Task i2c",     8192,  NULL, 1, NULL);
+    xTaskCreate(i2cTask,    "Task i2c",     8192,  NULL, 3, NULL);
     xTaskCreate(sdTask,     "Task SD",      65536, NULL, 1, NULL);
     xTaskCreate(adcTask,    "Task ADC",     4096,  NULL, 1, NULL);
     
-    if(!nowInit()) {
+    if(!nowInit())
+        mainDataFrame.espNowErrorCounter = 2137; // Fatalny błąd.
 
-        mainDataFrame.espNowErrorCounter++;
-    }
-
-    //nowAddPeer(adressPitot, 0);
+    nowAddPeer(adressPitot, 0);
     nowAddPeer(adressMValve, 0);
 
     mainDataFrame.rocketState = IDLE;
@@ -81,7 +79,7 @@ void loop() {
         if (forceStateAction) {
 
             forceStateAction = false;
-            // Zamknąć zawór upustowy, kazać głównemu zaworowi się zamknąć.
+            // Zamknąć zawór upustowy, kazać głównemu zaworowi się zamknąć TODO!!!.
         }
 
         if (frameTimer.check()) {
@@ -109,9 +107,16 @@ void loop() {
 
             if(mainDataFrame.countdown < 1) {
 
-                // Odpal silnik
+                // Odpal silnik:
+                Serial2.print("Lecimy!\n");
+
                 vTaskDelay(SERVO_DELAY / portTICK_PERIOD_MS);
-                // Każ serwu się otworzyć
+
+                // Każ serwu się otworzyć:
+                char messageOpen[] = "MNVL;1";
+                if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
+                    mainDataFrame.espNowErrorCounter++;
+
                 mainDataFrame.rocketState = FLIGHT;
             }
         }
@@ -200,10 +205,4 @@ void loop() {
     }
 
     vTaskDelay(2 / portTICK_PERIOD_MS);
-    
-
-    /*char message[] = "wazna wiadomosc do przeslania\n";
-    if(esp_now_send(adressPitot, (uint8_t *) message, strlen(message)))
-        mainDataFrame.espNowErrorCounter++;*/
-
 }

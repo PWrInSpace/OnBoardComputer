@@ -10,7 +10,6 @@
 /******************************/
 
 #define RX_BUFFER_SIZE 128
-#define GPS_PERIOD 1000
 
 typedef struct {
 
@@ -33,6 +32,8 @@ TimersFlagsStrings tfsStruct;
 Xbee xbeeIgnition;
 
 uint16_t hallSensors[5];
+
+uint16_t gpsPeriod;
 
 /******************************/
 
