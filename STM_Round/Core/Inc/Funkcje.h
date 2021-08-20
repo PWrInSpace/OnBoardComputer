@@ -35,6 +35,8 @@ uint16_t hallSensors[5];
 
 uint16_t gpsPeriod;
 
+_Bool ignite;
+
 /******************************/
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);

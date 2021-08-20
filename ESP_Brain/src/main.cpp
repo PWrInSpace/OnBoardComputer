@@ -51,9 +51,9 @@ void setup() {
  *   3. Polecenia przychodzące z LoRy,          [DONE]
  *   4. Ramki, które chcemy wysłać do LoRy,     [DONE]
  *   5. Sterowanie silnikiem zaworu upustowego, [ALMOST_DONE]
- *   6. Obsługa maszyny stanów,                 [TODO]
- *   1. Pitot - ESP now,                        [TODO - Done earlier]
- *   2. Główny zawór - ESP now.                 [ALMOSt_DONE]
+ *   6. Obsługa maszyny stanów,                 [DONE]
+ *   1. Pitot - ESP now,                        [ALMOST_DONE]
+ *   2. Główny zawór - ESP now.                 [DONE]
  */
 
 void loop() {

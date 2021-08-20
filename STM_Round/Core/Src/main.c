@@ -141,6 +141,15 @@ int main(void)
 			sendFromMaincompToLora();
 		}
 
+		// Sprawdzanie, czy należy odpalać:
+		if (ignite) {
+
+			ignite = 0;
+
+			xbee_transmit_char(xbeeIgnition, "TNWN;DSTA");
+			HAL_Delay(100);
+		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

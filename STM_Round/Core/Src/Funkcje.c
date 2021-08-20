@@ -42,6 +42,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			else gpsPeriod = 8000;
 		}
 
+		else if (strstr(tfsStruct.maincompStringDma, "Lecimy") != NULL) {
+
+			ignite = 1;
+		}
+
 		memset(tfsStruct.maincompStringDma, 0, RX_BUFFER_SIZE);
 		HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
 		RX_BUFFER_SIZE);

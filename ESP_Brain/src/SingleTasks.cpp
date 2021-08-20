@@ -69,8 +69,29 @@ void uart2Handler() {
             queue.push(dataFrom3Ant);
         }
 
+        /*------------------------------------*/
+        // Sterowanie zaworem upustowym:
+
         else if (mainDataFrame.rocketState == FUELING) { 
-            // TODO polecenia zaworu upustowego
+
+            if (strstr(dataFrom3Ant.c_str(), "MNCP;UPST") != NULL) {
+
+                int upustMode = -1, upustTime_ms; // mode - 0 - zamykanie, 1 - otwieranie, time - czas, gdy równy zero, to otwarcie na stałe.
+                sscanf(dataFrom3Ant.c_str(), "MNCP;UPST;%d;%d", &upustMode, &upustTime_ms);
+
+                if (upustMode == 0)
+                    xTaskCreate(valveClose, "Task close valve", 4096, NULL, 2, NULL);
+
+                else if (upustMode == 1) {
+                    if (!upustTime_ms)
+                        xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+                    else
+                        xTaskCreate(valveTimeOpen, "Task open valve", 4096, (void*) &upustTime_ms, 2, NULL);
+                    
+                    vTaskDelay(2 / portTICK_PERIOD_MS);
+                }
+
+            }
         }
     }
 }
@@ -122,7 +143,9 @@ void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, con
     ledcWrite(valvePWMChanel, valveSpeed);
 
     //oczekiwanie az sie obroci
-    while(digitalRead(limitSwitchPIN)){};
+    while(digitalRead(limitSwitchPIN)){
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
 
     //wylaczenie silnika
     digitalWrite(highValvePIN, LOW);
@@ -148,7 +171,10 @@ void valveClose(void *arg){
 /*********************************************************************************************/
 
 void valveTimeOpen(void *arg){
-    unsigned int openTime = 5000; //(ms)
+    
+    uint32_t* openTime_ptr = (uint32_t*) arg; //(ms)
+    uint32_t openTime = *openTime_ptr;
+
     unsigned long int valveTimer;
 
     valveMove(GPIO_NUM_27, VALVE1);
