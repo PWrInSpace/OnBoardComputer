@@ -1,5 +1,4 @@
 #include "LoopTasks.h"
-#include "Adafruit_BME280.h"
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
@@ -11,23 +10,24 @@ extern Timer_ms frameTimer;
  *   2. BME280.           [TODO]
  */
 
-void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego mniej docelowo.
+void i2cTask(void *arg) {
     
-    const int I2C_SDA = 21;
-    const int I2C_SCL = 22;
-    const int seaLevelPressure = 1013.5; //tutaj może weźmiemy ciśnienie z pitota gdy rakieta jest na padzie?
-    
-    TwoWire I2C_BME = TwoWire(0);
     Adafruit_BME280 bme;
-    I2C_BME.begin(I2C_SDA, I2C_SCL, 10000);
-    if(!bme.begin(0x23, &I2C_BME)){
-        Serial.println("Problem z czujnikiem bme");
-    }
-
-    Serial.println(String(bme.readPressure()) + " Pa\t" + String(bme.readAltitude(seaLevelPressure)) + " m\t" );
-    // TODO pomiar początkowego ciśnienia.
 
     Wire.begin();
+
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    if(!bme.begin(0x76))
+        mainDataFrame.sdErrorCounter++;
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    // Pomiar początkowego ciśnienia:
+
+    mainDataFrame.pressure = bme.readPressure() / 100.0F;
+    mainDataFrame.initialPressure = mainDataFrame.pressure;
+    mainDataFrame.altitude = bme.readAltitude(mainDataFrame.initialPressure);
 
     while (mainDataFrame.rocketState < FUELING) {
 
@@ -41,6 +41,12 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
                 mainDataFrame.separationData = Wire.read();
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
+
+            mainDataFrame.pressure = bme.readPressure() / 100.0F;
+            mainDataFrame.altitude = bme.readAltitude(mainDataFrame.initialPressure);
+
+            Serial.println(mainDataFrame.pressure);
+            Serial.println(mainDataFrame.altitude);
         }
         vTaskDelay(2 / portTICK_PERIOD_MS);
     }
@@ -63,6 +69,8 @@ void i2cTask(void *arg) { // Trochę jest bałagan w tej funkcji. Będzie tego m
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
 
+            mainDataFrame.pressure = bme.readPressure() / 100.0F;
+            mainDataFrame.altitude = bme.readAltitude(mainDataFrame.initialPressure);
         }
 
         if (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {

@@ -16,17 +16,17 @@ enum ValveStates {
 
 struct PitotData {
 
-    float staticPressure;
-    float dynamicPressure;
-    float altitude;
-    float speed;
-    float temperature;
+    float staticPressure = -1;
+    float dynamicPressure = -1;
+    float temperature = -1;
+    float altitude = -1;
+    float speed = -1;
 };
 
 struct ValveData {
 
-    uint8_t valveState;
-    uint16_t potentiometer;
+    uint8_t valveState = MOVING;
+    uint16_t potentiometer = 2137;
 };
 
 // Główna struktura na przechowywanie danych całej rakiety:
