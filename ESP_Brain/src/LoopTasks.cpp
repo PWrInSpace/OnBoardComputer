@@ -77,7 +77,7 @@ void i2cTask(void *arg) {
             mainDataFrame.pressure = bme.readPressure() / 100.0F;
             mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
 
-            uint32_t deltaT_s = (millis() - lastMeasuredTime) / 1000;
+            float deltaT_s = (millis() - lastMeasuredTime) / 1000.0F;
             mainDataFrame.speed = (mainDataFrame.altitude - oldAlt) / deltaT_s;
             mainDataFrame.gForce = (mainDataFrame.speed - oldSpeed) / deltaT_s;
             

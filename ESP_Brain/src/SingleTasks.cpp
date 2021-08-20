@@ -34,6 +34,8 @@ String countStructData() {
 
 /**********************************************************************************************/
 
+int upustTime_ms;
+
 void uart2Handler() {
 
     // Dane przychodzące z uartu:
@@ -76,7 +78,7 @@ void uart2Handler() {
 
             if (strstr(dataFrom3Ant.c_str(), "MNCP;UPST") != NULL) {
 
-                int upustMode = -1, upustTime_ms; // mode - 0 - zamykanie, 1 - otwieranie, time - czas, gdy równy zero, to otwarcie na stałe.
+                int upustMode = -1; // mode - 0 - zamykanie, 1 - otwieranie, upustTime - czas, gdy równy zero, to otwarcie na stałe.
                 sscanf(dataFrom3Ant.c_str(), "MNCP;UPST;%d;%d", &upustMode, &upustTime_ms);
 
                 if (upustMode == 0)
@@ -86,7 +88,7 @@ void uart2Handler() {
                     if (!upustTime_ms)
                         xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
                     else
-                        xTaskCreate(valveTimeOpen, "Task open valve", 4096, (void*) &upustTime_ms, 2, NULL);
+                        xTaskCreate(valveTimeOpen, "Task open valve", 4096, NULL, 2, NULL);
                     
                     vTaskDelay(2 / portTICK_PERIOD_MS);
                 }
@@ -134,7 +136,6 @@ void valveInit(){
 
 void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, const uint8_t & valveSpeed){
     if(!digitalRead(limitSwitchPIN)){ // gdy krancówka jest zwarta
-        vTaskDelete(NULL);
         return;
     }
 
@@ -171,10 +172,8 @@ void valveClose(void *arg){
 /*********************************************************************************************/
 
 void valveTimeOpen(void *arg){
-    
-    uint32_t* openTime_ptr = (uint32_t*) arg; //(ms)
-    uint32_t openTime = *openTime_ptr;
 
+    uint32_t openTime = upustTime_ms;
     unsigned long int valveTimer;
 
     valveMove(GPIO_NUM_27, VALVE1);

@@ -42,7 +42,7 @@ struct MainDataFrame {
     
     float tankPressure = -1;
 
-    float initialPressure = -1;
+    float initialPressure = 2137;
     float pressure = -1;
     int altitude;
     float speed;
