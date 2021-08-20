@@ -34,24 +34,24 @@ struct ValveData {
 struct MainDataFrame {
 
     uint8_t rocketState;
-    float battery;
+    float battery = -1;
 
     PitotData pitotData = {};
     ValveData upust = {};
     ValveData mValve = {};
     
-    float tankPressure;
+    float tankPressure = -1;
 
-    float initialPressure = 1013;
-    float pressure;
-    float altitude;
+    float initialPressure = -1;
+    float pressure = -1;
+    int altitude;
     float speed;
     float gForce;
 
     uint16_t espNowErrorCounter = 0;
     uint16_t sdErrorCounter = 0;
 
-    uint8_t separationData = 0;
+    uint8_t separationData = 255;
     int8_t countdown = 32;
 };
 
@@ -69,5 +69,9 @@ enum States {
     SECOND_SEPAR,
     GROUND
 };
+
+#define FLIGHT_DATA_PERIOD  (50)
+#define WAIT_DATA_PERIOD    (1000)
+#define END_DATA_PERIOD     (10000)
 
 #endif

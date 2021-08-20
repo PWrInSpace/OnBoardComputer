@@ -61,7 +61,7 @@ void loop() {
 
     if (mainDataFrame.rocketState == IDLE) {
         
-        frameTimer.setVal(5000);
+        frameTimer.setVal(WAIT_DATA_PERIOD*5);
 
         if (frameTimer.check()) {
 
@@ -75,11 +75,17 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FUELING) {
     
-        frameTimer.setVal(2000);
+        frameTimer.setVal(WAIT_DATA_PERIOD*2);
         if (forceStateAction) {
 
             forceStateAction = false;
-            // Zamknąć zawór upustowy, kazać głównemu zaworowi się zamknąć TODO!!!.
+
+            // Każ serwu zamknąć zawór:
+            char messageOpen[] = "MNVL;0";
+            if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
+                mainDataFrame.espNowErrorCounter++;
+
+            // TODO trzeba gdzieś jeszcze dorobić ruchy zaworem upustowym - może w funkcji czytającej z UARTu
         }
 
         if (frameTimer.check()) {
@@ -94,7 +100,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == COUNTDOWN) {
         
-       frameTimer.setVal(1000);
+       frameTimer.setVal(WAIT_DATA_PERIOD);
 
 
         if (frameTimer.check()) {
@@ -106,6 +112,11 @@ void loop() {
             sendData(txData);
 
             if(mainDataFrame.countdown < 1) {
+
+                // Przyspiesz pomiary z pitota:
+                uint16_t pitotPeriod = 50;
+                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
+                    mainDataFrame.espNowErrorCounter++;
 
                 // Odpal silnik:
                 Serial2.print("Lecimy!\n");
@@ -126,7 +137,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == ABORT) {
         
-        frameTimer.setVal(10000);
+        frameTimer.setVal(END_DATA_PERIOD);
         if (forceStateAction) {
 
             forceStateAction = false;
@@ -145,7 +156,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FLIGHT) {
         
-       frameTimer.setVal(50);
+       frameTimer.setVal(FLIGHT_DATA_PERIOD);
 
         if (frameTimer.check()) {
 
@@ -162,9 +173,14 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FIRST_SEPAR) {
         
-        frameTimer.setVal(500);
+        frameTimer.setVal(FLIGHT_DATA_PERIOD*10);
 
         if (frameTimer.check()) {
+
+            // Spowolnij pomiary z pitota:
+            uint16_t pitotPeriod = 400;
+            if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
+                mainDataFrame.espNowErrorCounter++;
 
             String txData = countStructData();
             queue.push(txData);
@@ -179,9 +195,14 @@ void loop() {
 
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
         
-        frameTimer.setVal(2000);
+        frameTimer.setVal(WAIT_DATA_PERIOD*2);
 
         if (frameTimer.check()) {
+
+            // Spowolnij jeszcze mocniej pomiary z pitota:
+            uint16_t pitotPeriod = 8000;
+            if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
+                mainDataFrame.espNowErrorCounter++;
 
             // Otworzenie zaworów, wyłączenie silników i serw.
             String txData = countStructData();
@@ -194,7 +215,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == GROUND) {
         
-        frameTimer.setVal(10000);
+        frameTimer.setVal(END_DATA_PERIOD);
 
         if (frameTimer.check()) {
 

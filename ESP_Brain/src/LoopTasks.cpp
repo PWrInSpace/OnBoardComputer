@@ -6,12 +6,13 @@ extern bool forceStateAction;
 extern Timer_ms frameTimer;
 
 /* Zadanie zajmujące się wszystkim, co łączy się przez i2c:
- *   1. Atmega odzyskowa, [ALMOST_DONE]
- *   2. BME280.           [TODO]
+ *   1. Atmega odzyskowa, [DONE]
+ *   2. BME280.           [DONE]
  */
 
 void i2cTask(void *arg) {
     
+    // Inicjalizacja wszystkiego do i2c:
     Adafruit_BME280 bme;
 
     Wire.begin();
@@ -24,76 +25,88 @@ void i2cTask(void *arg) {
     vTaskDelay(100 / portTICK_PERIOD_MS);
 
     // Pomiar początkowego ciśnienia:
-
     mainDataFrame.pressure = bme.readPressure() / 100.0F;
     mainDataFrame.initialPressure = mainDataFrame.pressure;
-    mainDataFrame.altitude = bme.readAltitude(mainDataFrame.initialPressure);
+    mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
 
+    // Sprawdzenie komunikacji z odzyskiem:
+    Wire.requestFrom(3, 1);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+    if (Wire.available()) {
+        mainDataFrame.separationData = Wire.read();
+    }
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+
+    // Oczekiwanie:
     while (mainDataFrame.rocketState < FUELING) {
-
-        if (frameTimer.flag) {
-
-            frameTimer.flag = false;
-        
-            Wire.requestFrom(3, 1);
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-            if (Wire.available()) {
-                mainDataFrame.separationData = Wire.read();
-            }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-
-            mainDataFrame.pressure = bme.readPressure() / 100.0F;
-            mainDataFrame.altitude = bme.readAltitude(mainDataFrame.initialPressure);
-
-            Serial.println(mainDataFrame.pressure);
-            Serial.println(mainDataFrame.altitude);
-        }
-        vTaskDelay(2 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 
+    /*------------------------------------*/
+
+    // Uzbrojenie odzysku:
     Wire.beginTransmission(3);
     Wire.write((uint8_t) 8);
     Wire.endTransmission();
     vTaskDelay(40 / portTICK_PERIOD_MS);
 
+    uint32_t lastMeasuredTime = millis(); // Do wyliczania szybkości i przyspieszenia.
+
     while (1) {
         
+        /*------------------------------------*/
+        // Cykliczne pomiary i obliczenia:
+
         if (frameTimer.flag) {
 
             frameTimer.flag = false;
 
+            // Komunikacja z odzyskiem:
             Wire.requestFrom(3, 1);
             vTaskDelay(10 / portTICK_PERIOD_MS);
             if (Wire.available()) {
                 mainDataFrame.separationData = Wire.read();
             }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
+            vTaskDelay(5 / portTICK_PERIOD_MS);
+
+            // Pomiary ciśnienia i obliczenia:
+
+            int oldAlt = mainDataFrame.altitude;
+            float oldSpeed = mainDataFrame.speed;
 
             mainDataFrame.pressure = bme.readPressure() / 100.0F;
-            mainDataFrame.altitude = bme.readAltitude(mainDataFrame.initialPressure);
+            mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
+
+            uint32_t deltaT_s = (millis() - lastMeasuredTime) / 1000;
+            mainDataFrame.speed = (mainDataFrame.altitude - oldAlt) / deltaT_s;
+            mainDataFrame.gForce = (mainDataFrame.speed - oldSpeed) / deltaT_s;
+            
+            lastMeasuredTime = millis();
         }
 
-        if (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {
+        /*------------------------------------*/
+        // Rozkazy awaryjnej separacji:
 
-            // Tutaj lecą pomiary z BME i obliczenia wszystkie (wysokość, prędkość, przyspieszenie)
+        if (mainDataFrame.rocketState >= FLIGHT && mainDataFrame.rocketState < GROUND) {            
+
             vTaskDelay(2 / portTICK_PERIOD_MS);
 
+            // Rozkaz separacji 1 st:
             if (forceStateAction && mainDataFrame.rocketState == FIRST_SEPAR) {
 
                 forceStateAction = false;
 
-                // Rozkaz separacji 1 st:
                 Wire.beginTransmission(3);
                 Wire.write((uint8_t) 24);
                 Wire.endTransmission();
                 vTaskDelay(10 / portTICK_PERIOD_MS);
             }
 
+            // Rozkaz separacji 2 st:
             else if (forceStateAction && mainDataFrame.rocketState == SECOND_SEPAR) {
 
                 forceStateAction = false;
 
-                // Rozkaz separacji 2 st:
                 Wire.beginTransmission(3);
                 Wire.write((uint8_t) 56);
                 Wire.endTransmission();
