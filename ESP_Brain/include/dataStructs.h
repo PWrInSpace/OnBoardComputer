@@ -8,8 +8,8 @@
 enum ValveStates {
 
     CLOSED = 0,
-    MOVING,
-    OPEN
+    OPEN,
+    MOVING
 };
 
 // Struktury pomocnicze:
