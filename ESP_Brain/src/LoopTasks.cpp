@@ -51,6 +51,9 @@ void i2cTask(void *arg) {
     vTaskDelay(40 / portTICK_PERIOD_MS);
 
     uint32_t lastMeasuredTime = millis(); // Do wyliczania szybkości i przyspieszenia.
+    
+    // Powtórny pomiar początkowego ciśnienia - jakby od początkowego minęło za dużo czasu:
+    mainDataFrame.initialPressure = bme.readPressure() / 100.0F;
 
     while (1) {
         
@@ -121,7 +124,7 @@ void i2cTask(void *arg) {
 
 /**********************************************************************************************/
 
-/* Zadanie odpowiedzialne za logowanie wszystkiego na SD -> pobierając dane z kolejki. [TODO]
+/* Zadanie odpowiedzialne za logowanie wszystkiego na SD -> pobierając dane z kolejki. [DONE]
  */
 
 void sdTask(void *arg) {
@@ -165,10 +168,9 @@ void sdTask(void *arg) {
 
 /* Zadanie odpowiedzialne za pomiary analogowe:
  *   1. Czujnik ciśnienia butli,                    [ALMOST_DONE]
- *   2. 3 czuniki halla (2 przejdą na moduł GPS),   [TODO]
- *   3. Napięcie zasilania,                         [ALMOST_DONE]
- *   4. Krańcówki (I/O),                            [ALMOST_DONE]
- *   5. Potencjometr zaworu upustowego.             [ALMOST_DONE]
+ *   3. Napięcie zasilania,                         [DONE]
+ *   4. Krańcówki (I/O),                            [TESTING]
+ *   5. Potencjometr zaworu upustowego.             [TESTING]
  */
 
 void adcTask(void *arg) {

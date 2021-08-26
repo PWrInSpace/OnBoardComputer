@@ -9,13 +9,12 @@
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
 
-/* Ta zmienna przyjmuje wartość true, gdy trwa zapis do mainDataFrame.
-Jest po to aby inne taski czekały aż ten zapis się skończy, by w tym czasie nie odczytywać głównej struktury: */
-volatile bool mainDataFrameSaveBusy = false; 
-
 Queue queue;
 Timer_ms frameTimer;
 volatile bool forceStateAction;
+
+// Odcięcie przy ciśnieniu w butli poniżej 36 barów (aby nie doszło do zassania gazów spalinowych i eksplozji butli):
+bool safetyCutoff_36atm = false;
 
 /**********************************************************************************************/
 
@@ -50,9 +49,9 @@ void setup() {
  *   2. Stan Tanwy - do zapisu na SD,           [DONE]
  *   3. Polecenia przychodzące z LoRy,          [DONE]
  *   4. Ramki, które chcemy wysłać do LoRy,     [DONE]
- *   5. Sterowanie silnikiem zaworu upustowego, [ALMOST_DONE]
+ *   5. Sterowanie silnikiem zaworu upustowego, [TESTING]
  *   6. Obsługa maszyny stanów,                 [DONE]
- *   1. Pitot - ESP now,                        [ALMOST_DONE]
+ *   1. Pitot - ESP now,                        [TESTING]
  *   2. Główny zawór - ESP now.                 [DONE]
  */
 
@@ -63,7 +62,7 @@ void loop() {
         
         frameTimer.setVal(WAIT_DATA_PERIOD*5);
 
-        if (frameTimer.check()) {
+        if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
             String txData = countStructData();
             queue.push(txData);
@@ -76,7 +75,7 @@ void loop() {
     else if (mainDataFrame.rocketState == FUELING) {
     
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
-        if (forceStateAction) {
+        if (forceStateAction) { // Jednorazowa akcja wykonywana tylko podczas przełączenia na FUELING.
 
             forceStateAction = false;
 
@@ -85,10 +84,11 @@ void loop() {
             if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
                 mainDataFrame.espNowErrorCounter++;
 
-            // TODO trzeba gdzieś jeszcze dorobić ruchy zaworem upustowym - może w funkcji czytającej z UARTu
+            // Zamknij także upustowy:
+            xTaskCreate(valveClose, "Task close valve", 4096, NULL, 2, NULL);
         }
 
-        if (frameTimer.check()) {
+        if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FUELING.
 
             String txData = countStructData();
             queue.push(txData);
@@ -103,7 +103,7 @@ void loop() {
        frameTimer.setVal(WAIT_DATA_PERIOD);
 
 
-        if (frameTimer.check()) {
+        if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie COUNTDOWN.
 
             mainDataFrame.countdown--;
 
@@ -138,13 +138,14 @@ void loop() {
     else if (mainDataFrame.rocketState == ABORT) {
         
         frameTimer.setVal(END_DATA_PERIOD);
-        if (forceStateAction) {
+        if (forceStateAction) { // Jednorazowa akcja wykonywana tylko podczas przełączenia na ABORT.
 
             forceStateAction = false;
-            // otworzyć zawór upustowy.
+            // Otworzenie upustowego:
+            xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
         }
 
-        if (frameTimer.check()) {
+        if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie ABORT.
 
             String txData = countStructData();
             queue.push(txData);
@@ -158,7 +159,7 @@ void loop() {
         
        frameTimer.setVal(FLIGHT_DATA_PERIOD);
 
-        if (frameTimer.check()) {
+        if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FLIGHT.
 
             String txData = countStructData();
             queue.push(txData);
@@ -166,6 +167,15 @@ void loop() {
 
             if (mainDataFrame.separationData & (1<<1))
                 mainDataFrame.rocketState = FIRST_SEPAR;
+
+            // Odcięcie bezpieczeństwa:
+            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0) {
+
+                // Każ serwu zamknąć zawór:
+                char messageOpen[] = "MNVL;0";
+                if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
+                    mainDataFrame.espNowErrorCounter++;
+            }
         }
     }
 
@@ -204,7 +214,9 @@ void loop() {
             if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
                 mainDataFrame.espNowErrorCounter++;
 
-            // Otworzenie zaworów, wyłączenie silników i serw.
+            // Otworzenie zaworu upustowego:
+            xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
