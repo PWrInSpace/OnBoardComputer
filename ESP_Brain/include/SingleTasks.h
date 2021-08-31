@@ -7,6 +7,8 @@
 
 String countStructData();
 
+void saveFrameHeaders();
+
 void uart2Handler();
 
 void sendData(String txData);
