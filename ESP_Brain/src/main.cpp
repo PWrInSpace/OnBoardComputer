@@ -121,7 +121,7 @@ void loop() {
                     mainDataFrame.espNowErrorCounter++;
 
                 // Odpal silnik:
-                Serial2.print("Lecimy!\n");
+                Serial2.print("TNWN;DSTA\n");
 
                 vTaskDelay(SERVO_DELAY / portTICK_PERIOD_MS);
 

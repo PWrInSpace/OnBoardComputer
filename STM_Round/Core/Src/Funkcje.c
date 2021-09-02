@@ -42,7 +42,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			else gpsPeriod = 8000;
 		}
 
-		else if (strstr(tfsStruct.maincompStringDma, "Lecimy") != NULL) {
+		if (strstr(tfsStruct.maincompStringDma, "TNWN;DSTA") != NULL) {
 
 			ignite = 1;
 		}

@@ -52,7 +52,7 @@ String Queue::pop(){
     }
     numberOfElements -= 1;
   }else{
-    Serial.println("Brak elementow!");
+    //Serial.println("Brak elementow!");
   }
   
   return value;

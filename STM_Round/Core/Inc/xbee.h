@@ -94,8 +94,8 @@ void xbee_char_load(char *data, Xbee *sensor);
 
 /*****************  ODBIERANIE ****************/
 
-#define DATA_LENGTH 50
-#define DATA_ARRAY 30
+#define DATA_LENGTH 80
+#define DATA_ARRAY 60
 
 typedef struct {
   int length; //Obliczona dlugosc
