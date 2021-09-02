@@ -34,6 +34,24 @@ String countStructData() {
 
 /**********************************************************************************************/
 
+void saveFrameHeaders() {
+
+    String espFrame = "R4MC;State;Time_ms;Voltage;";
+
+    espFrame += "Pt_stat_press;Pt_dyna_press;Pt_alt;Pt_speed;Pt_temp;";
+    espFrame += "Upust_state;Upust_analog;MValve_state;MValve_analog;Tank_press;";
+    espFrame += "Press;Altitude;Speed;Acceleration;";
+    espFrame += "ESP_errors;SD_errors;Separation_frame;Countdown\n";
+
+    queue.push(espFrame);
+
+    String gpsFrame = "R4GP;Lal;Long;Alt;Satelites;Time_s;Hal1;Hal2;Hal3;HAl4;Hal5\n";
+
+    queue.push(gpsFrame);
+}
+
+/**********************************************************************************************/
+
 int upustTime_ms;
 
 void uart2Handler() {
