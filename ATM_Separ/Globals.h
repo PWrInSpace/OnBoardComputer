@@ -20,9 +20,7 @@ uint8_t SeparationFrame = 0;
 enum States {
 
   IDLE_STATE = 0,
-  ARMED,
-  FIRST_SEP,
-  SECOND_SEP
+  ARMED
 };
 
 States state = IDLE_STATE;

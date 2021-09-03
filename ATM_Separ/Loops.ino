@@ -1,11 +1,6 @@
 void separationMonitoringLoop() {
 
   if(state == IDLE_STATE) return;
-  else if(state == SECOND_SEP) {
-
-    SeparationFrame &= ~(1<<0);
-    return;
-  }
   
   // Monitoring pinów portu C:
   
@@ -20,7 +15,7 @@ void separationMonitoringLoop() {
 
     SeparationFrame |= (1<<5);
 
-    if(state == FIRST_SEP) doSecondSeparation();
+    if(state == ARMED) doSecondSeparation();
   }
 
   if(!(PINC & TELE_TEST1_Pin)) { // Tele apogeum
@@ -34,6 +29,6 @@ void separationMonitoringLoop() {
 
     SeparationFrame |= (1<<7);
 
-    if(state == FIRST_SEP) doSecondSeparation();
+    if(state == ARMED) doSecondSeparation();
   }
 }

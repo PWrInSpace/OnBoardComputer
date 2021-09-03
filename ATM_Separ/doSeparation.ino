@@ -1,6 +1,4 @@
 void doFirstSeparation() {
-
-  state = FIRST_SEP;
   
   PORTB |= SEPAR1A_Pin;
   PORTD |= SEPAR1B_Pin;
@@ -17,7 +15,6 @@ void doFirstSeparation() {
 
 void doSecondSeparation() {
 
-  state = SECOND_SEP;
   SeparationFrame |= (1<<2);
 
   // Zapalniki podstawowe:
