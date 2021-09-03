@@ -3,6 +3,7 @@
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
 extern bool forceStateAction;
+extern MaximumData maxData;
 
 String countStructData() {
 
@@ -21,9 +22,21 @@ String countStructData() {
     frame += String(mainDataFrame.mValve.potentiometer) + ";";
     frame += String(mainDataFrame.tankPressure) + ";";
     frame += String(mainDataFrame.pressure) + ";";
-    frame += String(mainDataFrame.altitude) + ";";
-    frame += String(mainDataFrame.speed) + ";";
-    frame += String(mainDataFrame.gForce) + ";";
+
+    if (mainDataFrame.rocketState == GROUND) {
+
+        frame += String(maxData.apogee) + ";";
+        frame += String(maxData.maxSpeed) + ";";
+        frame += String(maxData.maxAcc) + ";";
+    }
+
+    else {
+
+        frame += String(mainDataFrame.altitude) + ";";
+        frame += String(mainDataFrame.speed) + ";";
+        frame += String(mainDataFrame.gForce) + ";";
+    }
+    
     frame += String(mainDataFrame.espNowErrorCounter) + ";";
     frame += String(mainDataFrame.sdErrorCounter) + ";";
     frame += String((int) mainDataFrame.separationData) + ";";

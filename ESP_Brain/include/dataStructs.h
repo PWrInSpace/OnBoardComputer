@@ -29,6 +29,13 @@ struct ValveData {
     uint16_t potentiometer = 2137;
 };
 
+struct MaximumData {
+
+    int apogee = 1;
+    float maxSpeed = 1;
+    float maxAcc = 1;
+};
+
 // Główna struktura na przechowywanie danych całej rakiety:
 
 struct MainDataFrame {
@@ -52,7 +59,7 @@ struct MainDataFrame {
     uint16_t sdErrorCounter = 0;
 
     uint8_t separationData = 255;
-    int8_t countdown = 32;
+    int8_t countdown = 8;
 };
 
 // Stany maszyny stanów:

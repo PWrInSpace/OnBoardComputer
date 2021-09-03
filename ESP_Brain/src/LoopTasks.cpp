@@ -4,6 +4,7 @@ extern MainDataFrame mainDataFrame;
 extern Queue queue;
 extern bool forceStateAction;
 extern Timer_ms frameTimer;
+extern MaximumData maxData;
 
 /* Zadanie zajmujące się wszystkim, co łączy się przez i2c:
  *   1. Atmega odzyskowa, [DONE]
@@ -77,13 +78,20 @@ void i2cTask(void *arg) {
             int oldAlt = mainDataFrame.altitude;
             float oldSpeed = mainDataFrame.speed;
 
-            mainDataFrame.pressure = bme.readPressure() / 100.0F;
+            float tmpPress = bme.readPressure() / 100.0F;
+            if (tmpPress > 200)
+                mainDataFrame.pressure = tmpPress;
             mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
 
             float deltaT_s = (millis() - lastMeasuredTime) / 1000.0F;
             mainDataFrame.speed = (mainDataFrame.altitude - oldAlt) / deltaT_s;
             mainDataFrame.gForce = (mainDataFrame.speed - oldSpeed) / deltaT_s;
-            
+
+            // Uzupełnienie danych maxymalnych:
+            if (mainDataFrame.altitude > maxData.apogee)    maxData.apogee    = mainDataFrame.altitude;
+            if (mainDataFrame.speed > maxData.maxSpeed)     maxData.maxSpeed  = mainDataFrame.speed;
+            if (mainDataFrame.gForce > maxData.maxAcc)      maxData.maxAcc    = mainDataFrame.gForce;
+
             lastMeasuredTime = millis();
         }
 

@@ -8,6 +8,7 @@
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
+volatile MaximumData maxData;
 
 Queue queue;
 Timer_ms frameTimer;
