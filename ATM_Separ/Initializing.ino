@@ -2,8 +2,8 @@ void initSeparationSystem() {
 
   // Inity pinów portu D:
 
-  // Test 2 stopnia separacji - INPUT_PULLUP:
-  PORTD |= TEST2_Pin;
+  // Test, czy wyleciał stożek - INPUT_PULLUP:
+  PORTD |= CONT_HEAD_Pin;
   
   // Zapalniki 2A, 2B, 1B - OUTPUT:
   DDRD |= (SEPAR2A_Pin | SEPAR2B_Pin | SEPAR1B_Pin);
@@ -29,7 +29,7 @@ void initSeparationSystem() {
 
 void sendData() {
 
-  Wire.write(SeparationFrame);
+  Wire.write((uint8_t*) &SeparationFrame, sizeof(SeparationFrame));
 }
 
 /*******************************************************/
@@ -41,7 +41,7 @@ void receiveData() {
   if(rxByte == 8) {
     
     state = ARMED;
-    SeparationFrame |= (1<<0);
+    SeparationFrame |= FRAME_ARMED;
   }
   
   else if(rxByte == 24) doFirstSeparation();

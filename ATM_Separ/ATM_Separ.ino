@@ -14,4 +14,5 @@ void setup() {
 void loop() {
 
   separationMonitoringLoop(); // Monitoruj zachowanie Altimaxa i telemetrum.
+  continuityMonitoringLoop(); // Monitoruj ciągłość.
 }

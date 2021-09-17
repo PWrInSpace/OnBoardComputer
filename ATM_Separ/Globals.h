@@ -6,14 +6,27 @@
  * 0. Czy Atmega jest uzbrojona softowo? 0 - nie, 1 - tak,
  * 1. Czy zrobiono separację 1 stopnia?
  * 2. Czy zrobiono separację podstawową 2 stopnia?
- * 3. Czy zrobiono separację awaryjną 2 stopnia?
- * 4. Czy Altimax wykrył apogeum?
- * 5. Czy Altimax wykrył 200m na ziemią?
- * 6. Czy telemetrum wykrył apogeum?
- * 7. Czy telemetrum wykrył 200m nad ziemią?
+ * 3. Czy jest ciągłość zapalnika 1?
+ * 4. Czy jest ciągłość zapalnika 2?
+ * 5. Czy Altimax wykrył apogeum?
+ * 6. Czy Altimax wykrył 200m na ziemią?
+ * 7. Czy telemetrum wykrył apogeum?
+ * 8. Czy telemetrum wykrył 200m nad ziemią?
+ * 9. Czy wyleciał stożek?
  */
 
-uint8_t SeparationFrame = 0;
+#define FRAME_ARMED          (1<<0)
+#define FRAME_1ST_SEPAR_DONE (1<<1)
+#define FRAME_2ND_SEPAR_DONE (1<<2)
+#define FRAME_1ST_CONTINUITY (1<<3)
+#define FRAME_2ND_CONTINUITY (1<<4)
+#define FRAME_ALTI_APOG      (1<<5)
+#define FRAME_ALTI_MAIN      (1<<6)
+#define FRAME_TELE_APOG      (1<<7)
+#define FRAME_TELE_MAIN      (1<<8)
+#define FRAME_HEAD_DETACHED  (1<<9)
+
+uint16_t SeparationFrame = 0;
 
 /*******************************************************/
 
@@ -29,8 +42,8 @@ States state = IDLE_STATE;
 
 // Definicje pinów portu D:
 
-// Test 2 stopnia separacji:
-#define TEST2_Pin   (1<<3)
+// Test wypadnięcia stożka:
+#define CONT_HEAD_Pin   (1<<3)
 
 // Zapalnik 2A:
 #define SEPAR2A_Pin (1<<5)
