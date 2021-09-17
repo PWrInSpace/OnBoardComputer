@@ -38,11 +38,11 @@ void separationMonitoringLoop() {
 void continuityMonitoringLoop() {
 
   // Ciągłość 1:
-  if(/* tutaj PINx & CONT1_Pin*/0) SeparationFrame |= FRAME_1ST_CONTINUITY;
+  if(PINB & CONT1_Pin) SeparationFrame |= FRAME_1ST_CONTINUITY;
   else SeparationFrame &= ~FRAME_1ST_CONTINUITY;
 
   // Ciągłość 2:
-  if(/* tutaj PINx & CONT2_Pin*/0) SeparationFrame |= FRAME_2ND_CONTINUITY;
+  if(PINB & CONT2_Pin) SeparationFrame |= FRAME_2ND_CONTINUITY;
   else SeparationFrame &= ~FRAME_2ND_CONTINUITY;
 
   // Wylecenie stożka:

@@ -61,6 +61,12 @@ States state = IDLE_STATE;
 // Zapalnik 1A:
 #define SEPAR1A_Pin (1<<0)
 
+// Ciągłość 1:
+#define CONT1_Pin (1<<1)
+
+// Ciągłość 2:
+#define CONT2_Pin (1<<2)
+
 /*----------------------------*/
 
 // Definicje pinów portu C:
