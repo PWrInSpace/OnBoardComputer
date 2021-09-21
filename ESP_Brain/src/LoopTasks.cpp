@@ -186,7 +186,11 @@ void adcTask(void *arg) {
     while(1) {
 
         // Ciśnienie butli:
-        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) / 1.0; // Dorobić dzielnik lub mnożnik lub funkcję map!
+        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) * 0.1221; // * 2 * 250 / 4095
+        /* Mnożymy przez 2, bo na płytce mamy 2-krotny dzielnik napięcia,
+         * mnożymy przez 250, bo do 250 bar,
+         * dzielimy przez 4095 bo to max wartość z przetwornika
+         */
 
         // Akumulator:
         mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0;
