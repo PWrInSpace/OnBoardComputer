@@ -102,6 +102,8 @@ void uart2Handler() {
             queue.push(dataFrom3Ant);
         }
 
+
+
         /*------------------------------------*/
         // Sterowanie zaworem upustowym:
 

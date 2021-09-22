@@ -218,7 +218,10 @@ void loop() {
                 mainDataFrame.espNowErrorCounter++;
 
             // Otworzenie zaworu upustowego:
-            xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+           if(forceStateAction){
+                xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+                forceStateAction = false;
+           }
 
             String txData = countStructData();
             queue.push(txData);
