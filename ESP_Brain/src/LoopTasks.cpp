@@ -199,7 +199,7 @@ void adcTask(void *arg) {
         // Krańcówki:
         if (!digitalRead(GPIO_NUM_14))
             mainDataFrame.upust.valveState = CLOSED;
-        else if (!digitalRead(GPIO_NUM_17))
+        else if (!digitalRead(GPIO_NUM_27))
             mainDataFrame.upust.valveState = OPEN;
         else mainDataFrame.upust.valveState = MOVING;
 
