@@ -186,9 +186,9 @@ void adcTask(void *arg) {
     while(1) {
 
         // Ciśnienie butli:
-        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) * 0.1221; // * 2 * 250 / 4095
-        /* Mnożymy przez 2, bo na płytce mamy 2-krotny dzielnik napięcia,
-         * mnożymy przez 250, bo do 250 bar,
+        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) * 0.06105; // * 250 / 4095
+        /* 
+         * Mnożymy przez 250, bo do 250 bar,
          * dzielimy przez 4095 bo to max wartość z przetwornika
          */
 

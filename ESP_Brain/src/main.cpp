@@ -4,7 +4,7 @@
 #include "LoopTasks.h"
 #include "SingleTasks.h"
 
-#define SERVO_DELAY 100
+#define SERVO_DELAY 5000
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -15,7 +15,7 @@ Timer_ms frameTimer;
 volatile bool forceStateAction;
 
 // Odcięcie przy ciśnieniu w butli poniżej 36 barów (aby nie doszło do zassania gazów spalinowych i eksplozji butli):
-bool safetyCutoff_36atm = false;
+bool safetyCutoff_36atm = true;
 
 /**********************************************************************************************/
 
@@ -172,7 +172,7 @@ void loop() {
                 mainDataFrame.rocketState = FIRST_SEPAR;
 
             // Odcięcie bezpieczeństwa:
-            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0) {
+            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
 
                 // Każ serwu zamknąć zawór:
                 char messageOpen[] = "MNVL;0";
