@@ -186,9 +186,10 @@ void adcTask(void *arg) {
     while(1) {
 
         // Ciśnienie butli:
-        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) * 0.06105; // * 250 / 4095
+        mainDataFrame.tankPressure = analogRead(GPIO_NUM_34) * 0.0201465; // * 82.5 / 4095
         /* 
-         * Mnożymy przez 250, bo do 250 bar,
+         * Mnożymy przez 82.5, bo przy takim ciśnieniu będzie maksymalne napięcie na adc - 3.3v
+         * (Czujnik daje 10v przy 250 barach).
          * dzielimy przez 4095 bo to max wartość z przetwornika
          */
 
@@ -198,7 +199,7 @@ void adcTask(void *arg) {
         // Krańcówki:
         if (!digitalRead(GPIO_NUM_14))
             mainDataFrame.upust.valveState = CLOSED;
-        else if (!digitalRead(GPIO_NUM_17))
+        else if (!digitalRead(GPIO_NUM_27))
             mainDataFrame.upust.valveState = OPEN;
         else mainDataFrame.upust.valveState = MOVING;
 
