@@ -210,18 +210,18 @@ void loop() {
         
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
 
+        // Otworzenie zaworu upustowego:
+        if(forceStateAction){
+            xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+            forceStateAction = false;
+        }
+
         if (frameTimer.check()) {
 
             // Spowolnij jeszcze mocniej pomiary z pitota:
             uint16_t pitotPeriod = 8000;
             if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
                 mainDataFrame.espNowErrorCounter++;
-
-            // Otworzenie zaworu upustowego:
-           if(forceStateAction){
-                xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
-                forceStateAction = false;
-           }
 
             String txData = countStructData();
             queue.push(txData);

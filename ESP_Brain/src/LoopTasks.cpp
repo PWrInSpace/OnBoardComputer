@@ -116,7 +116,7 @@ void i2cTask(void *arg) {
             // Rozkaz separacji 2 st:
             else if (forceStateAction && mainDataFrame.rocketState == SECOND_SEPAR) {
 
-                forceStateAction = false;
+                //forceStateAction = false;
 
                 Wire.beginTransmission(3);
                 Wire.write((uint8_t) 56);
