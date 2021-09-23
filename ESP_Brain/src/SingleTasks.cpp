@@ -137,7 +137,7 @@ uint32_t lastSendTime = 0;
 
 void sendData(String txData) {
 
-    if (millis() - lastSendTime > 950) {
+    if (millis() - lastSendTime > 450) {
 
         Serial2.print(txData);
         lastSendTime = millis();
@@ -175,10 +175,13 @@ void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, con
     //wlaczenie silnika
     digitalWrite(highValvePIN, HIGH);
     ledcWrite(valvePWMChanel, valveSpeed);
-
+    
     //oczekiwanie az sie obroci
-    while(digitalRead(limitSwitchPIN)){
+    int16_t timeoutValve = 2300;
+
+    while(digitalRead(limitSwitchPIN) && timeoutValve > 0) {
         vTaskDelay(1 / portTICK_PERIOD_MS);
+        timeoutValve--;
     }
 
     //wylaczenie silnika

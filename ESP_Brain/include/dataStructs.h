@@ -78,7 +78,7 @@ enum States {
 };
 
 #define FLIGHT_DATA_PERIOD  (50)
-#define WAIT_DATA_PERIOD    (1000)
+#define WAIT_DATA_PERIOD    (500)
 #define END_DATA_PERIOD     (10000)
 
 #endif
