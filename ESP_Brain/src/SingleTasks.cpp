@@ -213,7 +213,7 @@ void valveTimeOpen(void *arg){
 
     valveTimer = millis();
     while(millis() - valveTimer < openTime){
-        Serial.println(String(millis() - valveTimer));
+        vTaskDelay(1 / portTICK_PERIOD_MS);
     }
     
     valveMove(GPIO_NUM_14, VALVE2);
