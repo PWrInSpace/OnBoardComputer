@@ -39,7 +39,12 @@ String countStructData() {
     
     frame += String(mainDataFrame.espNowErrorCounter) + ";";
     frame += String(mainDataFrame.sdErrorCounter) + ";";
-    frame += String((int) mainDataFrame.separationData) + ";";
+
+
+    uint8_t separation2Byte = mainDataFrame.separationData | 0xFF;
+    uint8_t separation1Byte = mainDataFrame.separationData >> 8;
+    frame += String((int) separation1Byte) + ";";
+    frame += String((int) separation2Byte) + ";";
     frame += String((int) mainDataFrame.countdown) + "\n";
 
     return frame;
