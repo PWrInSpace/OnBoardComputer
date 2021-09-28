@@ -223,4 +223,33 @@ void valveTimeOpen(void *arg){
     vTaskDelete(NULL);
 }
 
+void valvePotentiometrMove(void *arg){
+    int valveEnd = 2000;
+    int offset = 50;
+    
+    int position = (int) arg;
+    int currentPosition = analogRead(GPIO_NUM_39);
+    
+    if(position < 0 || position > valveEnd) return;
+    
+    if(position > currentPosition){
+        digitalWrite(GPIO_NUM_27, HIGH);
+        while(analogRead(GPIO_NUM_39) + offset < position){
+            vTaskDelay(1 / portTICK_PERIOD_MS);
+        }
+        
+    }else if(position < currentPosition){
+        digitalWrite(GPIO_NUM_14, HIGH);
+        while(analogRead(GPIO_NUM_39) - offset > position){
+            vTaskDelay(1 / portTICK_PERIOD_MS);
+        }
+        
+    }else{
+        return;
+    }
+    
+    digitalWrite(GPIO_NUM_27, LOW);
+    digitalWrite(GPIO_NUM_14, LOW);
 
+    vTaskDelete(NULL);
+}

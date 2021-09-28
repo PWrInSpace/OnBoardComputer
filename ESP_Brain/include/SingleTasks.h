@@ -25,6 +25,7 @@ const int valveResolution = 8;
 
 void valveInit();
 void valveMove(const uint8_t & limitSwitchPIN, const uint8_t & highValvePIN, const uint8_t & valveSpeed = 255);
+void valvePotentiometrMove(void *arg);
 void valveOpen(void *arg);
 void valveClose(void *arg);
 void valveTimeOpen(void *arg);
