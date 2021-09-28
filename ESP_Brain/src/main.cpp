@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-
 #include "LoopTasks.h"
 #include "SingleTasks.h"
+#include "ota.h"
 
 #define SERVO_DELAY_SECONDS 5
 
@@ -25,6 +25,9 @@ void setup() {
 
     Serial.begin(115200);
     delay(100);
+
+    initOtaSerwer();
+    if (useOta) serverOta.begin();
 
     valveInit();
 
@@ -65,6 +68,8 @@ void loop() {
     if (mainDataFrame.rocketState == IDLE) {
 
         frameTimer.setVal(WAIT_DATA_PERIOD*5);
+        
+        if (useOta) serverOta.handleClient();
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
