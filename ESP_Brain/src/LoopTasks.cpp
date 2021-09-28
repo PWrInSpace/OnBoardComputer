@@ -31,10 +31,10 @@ void i2cTask(void *arg) {
     mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
 
     // Sprawdzenie komunikacji z odzyskiem:
-    Wire.requestFrom(3, 1);
+    Wire.requestFrom(3, 2);
     vTaskDelay(10 / portTICK_PERIOD_MS);
     if (Wire.available()) {
-        mainDataFrame.separationData = Wire.read();
+        Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
     }
     vTaskDelay(10 / portTICK_PERIOD_MS);
 
@@ -66,10 +66,10 @@ void i2cTask(void *arg) {
             frameTimer.flag = false;
 
             // Komunikacja z odzyskiem:
-            Wire.requestFrom(3, 1);
+            Wire.requestFrom(3, 2);
             vTaskDelay(10 / portTICK_PERIOD_MS);
             if (Wire.available()) {
-                mainDataFrame.separationData = Wire.read();
+                Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
             }
             vTaskDelay(5 / portTICK_PERIOD_MS);
 

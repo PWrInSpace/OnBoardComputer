@@ -58,7 +58,7 @@ struct MainDataFrame {
     uint16_t espNowErrorCounter = 0;
     uint16_t sdErrorCounter = 0;
 
-    uint8_t separationData = 255;
+    uint16_t separationData = 65535;
     int8_t countdown = 8;
 };
 
