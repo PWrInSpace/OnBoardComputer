@@ -41,7 +41,7 @@ String countStructData() {
     frame += String(mainDataFrame.sdErrorCounter) + ";";
 
 
-    uint8_t separation2Byte = mainDataFrame.separationData | 0xFF;
+    uint8_t separation2Byte = mainDataFrame.separationData & 0xFF;
     uint8_t separation1Byte = mainDataFrame.separationData >> 8;
     frame += String((int) separation1Byte) + ";";
     frame += String((int) separation2Byte) + ";";
@@ -59,7 +59,7 @@ void saveFrameHeaders() {
     espFrame += "Pt_stat_press;Pt_dyna_press;Pt_alt;Pt_speed;Pt_temp;";
     espFrame += "Upust_state;Upust_analog;MValve_state;MValve_analog;Tank_press;";
     espFrame += "Press;Altitude;Speed;Acceleration;";
-    espFrame += "ESP_errors;SD_errors;Separation_frame;Countdown\n";
+    espFrame += "ESP_errors;SD_errors;Separation_byte1;Separation_byte2;Countdown\n";
 
     queue.push(espFrame);
 
