@@ -148,7 +148,11 @@ int main(void) {
 			ignite = 0;
 
 			xbee_transmit_char(xbeeIgnition, odp);
-			HAL_Delay(500);
+			HAL_Delay(100);
+			xbee_transmit_char(xbeeIgnition, odp);
+			HAL_Delay(100);
+			xbee_transmit_char(xbeeIgnition, odp);
+			HAL_Delay(200);
 		}
 
 		/* USER CODE END WHILE */
