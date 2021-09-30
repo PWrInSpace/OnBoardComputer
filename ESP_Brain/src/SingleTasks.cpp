@@ -2,8 +2,10 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
-extern bool forceStateAction;
+//extern bool forceStateAction;
 extern MaximumData maxData;
+
+StateChanger stateChanger;
 
 String countStructData() {
 
@@ -92,14 +94,22 @@ void uart2Handler() {
 
             if (oldState == mainDataFrame.rocketState) {
                 mainDataFrame.rocketState = newState;
-                forceStateAction = true;
+
+                switch (mainDataFrame.rocketState) {
+
+                case FUELING:      stateChanger.idle2fueling();      break;
+                case COUNTDOWN:    stateChanger.fueling2countdown(); break;
+                case FLIGHT:       stateChanger.countdown2flight();  break;
+                case FIRST_SEPAR:  stateChanger.flight2firstSepar(); break;
+                case SECOND_SEPAR: stateChanger.firstSep2secSep();   break;
+                }
             }
         }
 
         else if (strstr(dataFrom3Ant.c_str(), "MNCP;ABRT") != NULL) {
             
             mainDataFrame.rocketState = ABORT;
-            forceStateAction = true;
+            stateChanger.going2abort();
         }
 
         else if (strstr(dataFrom3Ant.c_str(), "R4TN") != NULL || strstr(dataFrom3Ant.c_str(), "R4GP") != NULL) {
@@ -107,12 +117,10 @@ void uart2Handler() {
             queue.push(dataFrom3Ant);
         }
 
-
-
         /*------------------------------------*/
         // Sterowanie zaworem upustowym:
 
-        else if (mainDataFrame.rocketState == FUELING) { 
+        else if (mainDataFrame.rocketState >= FUELING) { 
 
             if (strstr(dataFrom3Ant.c_str(), "MNCP;UPST") != NULL) {
 

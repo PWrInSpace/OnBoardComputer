@@ -12,7 +12,6 @@ volatile MaximumData maxData;
 
 Queue queue;
 Timer_ms frameTimer;
-volatile bool forceStateAction;
 
 // Odcięcie przy ciśnieniu w butli poniżej 36 barów (aby nie doszło do zassania gazów spalinowych i eksplozji butli):
 bool safetyCutoff_36atm = true;
@@ -52,9 +51,9 @@ void setup() {
  *   2. Stan Tanwy - do zapisu na SD,           [DONE]
  *   3. Polecenia przychodzące z LoRy,          [DONE]
  *   4. Ramki, które chcemy wysłać do LoRy,     [DONE]
- *   5. Sterowanie silnikiem zaworu upustowego, [TESTING]
+ *   5. Sterowanie silnikiem zaworu upustowego, [DONE]
  *   6. Obsługa maszyny stanów,                 [DONE]
- *   1. Pitot - ESP now,                        [TESTING]
+ *   1. Pitot - ESP now,                        [DONE]
  *   2. Główny zawór - ESP now.                 [DONE]
  */
 
@@ -78,18 +77,6 @@ void loop() {
     else if (mainDataFrame.rocketState == FUELING) {
     
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
-        if (forceStateAction) { // Jednorazowa akcja wykonywana tylko podczas przełączenia na FUELING.
-
-            forceStateAction = false;
-
-            // Każ serwu zamknąć zawór:
-            char messageOpen[] = "MNVL;0";
-            if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
-                mainDataFrame.espNowErrorCounter++;
-
-            // Zamknij także upustowy:
-            xTaskCreate(valveClose, "Task close valve", 4096, NULL, 2, NULL);
-        }
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FUELING.
 
@@ -103,7 +90,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == COUNTDOWN) {
         
-       frameTimer.setVal(WAIT_DATA_PERIOD);
+       frameTimer.setVal(1000);
 
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie COUNTDOWN.
@@ -141,12 +128,6 @@ void loop() {
     else if (mainDataFrame.rocketState == ABORT) {
         
         frameTimer.setVal(END_DATA_PERIOD);
-        if (forceStateAction) { // Jednorazowa akcja wykonywana tylko podczas przełączenia na ABORT.
-
-            forceStateAction = false;
-            // Otworzenie upustowego:
-            xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
-        }
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie ABORT.
 
@@ -209,12 +190,6 @@ void loop() {
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
         
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
-
-        // Otworzenie zaworu upustowego:
-        if(forceStateAction){
-            xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
-            forceStateAction = false;
-        }
 
         if (frameTimer.check()) {
 

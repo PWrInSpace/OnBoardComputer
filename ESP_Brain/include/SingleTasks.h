@@ -4,6 +4,7 @@
 #include "queue.h"
 #include "now.h"
 #include "Timer_ms.h"
+#include "StateChanger.h"
 
 String countStructData();
 
