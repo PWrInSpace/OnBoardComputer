@@ -2,7 +2,6 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
-//extern bool forceStateAction;
 extern Timer_ms frameTimer;
 extern MaximumData maxData;
 
@@ -103,9 +102,9 @@ void i2cTask(void *arg) {
             vTaskDelay(2 / portTICK_PERIOD_MS);
 
             // Rozkaz separacji 1 st:
-            if (forceStateAction && mainDataFrame.rocketState == FIRST_SEPAR) {
+            if (mainDataFrame.forceSeparation) {
 
-                forceStateAction = false;
+                mainDataFrame.forceSeparation = false;
 
                 Wire.beginTransmission(3);
                 Wire.write((uint8_t) 24);
@@ -114,9 +113,9 @@ void i2cTask(void *arg) {
             }
 
             // Rozkaz separacji 2 st:
-            else if (forceStateAction && mainDataFrame.rocketState == SECOND_SEPAR) {
+            else if (mainDataFrame.forceSeparation) {
 
-                //forceStateAction = false;
+                mainDataFrame.forceSeparation = false;
 
                 Wire.beginTransmission(3);
                 Wire.write((uint8_t) 56);

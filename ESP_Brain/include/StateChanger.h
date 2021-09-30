@@ -1,6 +1,9 @@
 #ifndef STATE_CHANGER_H
 #define STATE_CHANGER_H
 
+#include "now.h"
+#include "SingleTasks.h"
+
 class StateChanger {
 
 public:

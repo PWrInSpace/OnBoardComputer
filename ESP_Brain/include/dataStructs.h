@@ -60,6 +60,8 @@ struct MainDataFrame {
 
     uint16_t separationData = 65535;
     int8_t countdown = 8;
+
+    bool forceSeparation;
 };
 
 // Stany maszyny stanów:
