@@ -3,7 +3,7 @@
 extern MainDataFrame mainDataFrame;
 
 // Jednorazowa akcja wykonywana przy przechodzeniu do Abortu:
-void going2abort() {
+void StateChanger::going2abort() {
 
     // Otworzenie upustowego:
     xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
@@ -11,7 +11,7 @@ void going2abort() {
 
 /**********************************************************************************************/
 
-void idle2fueling() {
+void StateChanger::idle2fueling() {
 
     // Każ serwu zamknąć zawór:
     char messageOpen[] = "MNVL;0";
@@ -24,26 +24,26 @@ void idle2fueling() {
 
 /**********************************************************************************************/
 
-void fueling2countdown() {
+void StateChanger::fueling2countdown() {
 
 }
 
 /**********************************************************************************************/
 
-void countdown2flight() {
+void StateChanger::countdown2flight() {
 
 }
 
 /**********************************************************************************************/
 
-void flight2firstSepar() {
+void StateChanger::flight2firstSepar() {
 
     mainDataFrame.forceSeparation = true;
 }
 
 /**********************************************************************************************/
 
-void firstSep2secSep() {
+void StateChanger::firstSep2secSep() {
 
     mainDataFrame.forceSeparation = true;
 
