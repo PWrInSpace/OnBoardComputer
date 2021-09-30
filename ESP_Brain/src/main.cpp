@@ -149,11 +149,11 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<1))
-                mainDataFrame.rocketState = FIRST_SEPAR;
+            /*if (mainDataFrame.separationData & (1<<(1+8)))
+                mainDataFrame.rocketState = FIRST_SEPAR;*/
 
             // Odcięcie bezpieczeństwa:
-            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
+            /*else*/ if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
 
                 // Każ serwu zamknąć zawór:
                 char messageOpen[] = "MNVL;0";
@@ -180,7 +180,7 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<2))
+            if (mainDataFrame.separationData & (1<<(2+8)))
                 mainDataFrame.rocketState = SECOND_SEPAR;
         }
     }
