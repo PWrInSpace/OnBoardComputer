@@ -26,7 +26,6 @@ void idle2fueling() {
 
 void fueling2countdown() {
 
-
 }
 
 /**********************************************************************************************/
@@ -39,11 +38,14 @@ void countdown2flight() {
 
 void flight2firstSepar() {
 
+    mainDataFrame.forceSeparation = true;
 }
 
 /**********************************************************************************************/
 
 void firstSep2secSep() {
+
+    mainDataFrame.forceSeparation = true;
 
     // Otworzenie zaworu upustowego:
     xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
