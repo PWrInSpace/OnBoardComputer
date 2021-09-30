@@ -2,8 +2,10 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
-extern bool forceStateAction;
+//extern bool forceStateAction;
 extern MaximumData maxData;
+
+StateChanger stateChanger;
 
 String countStructData() {
 

@@ -2,7 +2,7 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
-extern bool forceStateAction;
+//extern bool forceStateAction;
 extern Timer_ms frameTimer;
 extern MaximumData maxData;
 

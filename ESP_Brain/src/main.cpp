@@ -12,7 +12,7 @@ volatile MaximumData maxData;
 
 Queue queue;
 Timer_ms frameTimer;
-volatile bool forceStateAction;
+//volatile bool forceStateAction;
 
 // Odcięcie przy ciśnieniu w butli poniżej 36 barów (aby nie doszło do zassania gazów spalinowych i eksplozji butli):
 bool safetyCutoff_36atm = true;
