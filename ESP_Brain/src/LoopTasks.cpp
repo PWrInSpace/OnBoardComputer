@@ -153,13 +153,13 @@ void sdTask(void *arg) {
         mainDataFrame.sdErrorCounter = 2137; // Fatalny błąd.
 
     while(1) {
-       
+
         while(queue.getNumberOfElements()){
-            
+
             String dataFrame = queue.pop();
 
             Serial.print(dataFrame); // Dla debugu
-            
+
             switch (dataFrame[2]) {
                 case 'M':
                     SD_write("/R4_data.txt", dataFrame);
@@ -171,7 +171,7 @@ void sdTask(void *arg) {
                     SD_write("/R4_gps.txt", dataFrame);
                     break;
             }
-        
+
             vTaskDelay(1 / portTICK_PERIOD_MS);
         }
         vTaskDelay(2 / portTICK_PERIOD_MS);
@@ -188,7 +188,7 @@ void sdTask(void *arg) {
  */
 
 void adcTask(void *arg) {
-    
+
     while(1) {
 
         // Ciśnienie butli:
