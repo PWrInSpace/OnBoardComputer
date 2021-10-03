@@ -8,17 +8,17 @@ bool SD_write(const String & path, const String & dataFrame){
     
     if(file) {
 
-        if(!file.write((uint8_t *) dataFrame.c_str(), dataFrame.length())) 
+        if(!file.write((uint8_t *) dataFrame.c_str(), dataFrame.length())) {
             
             mainDataFrame.sdErrorCounter++;
             return false;
         }
         
-        else {
+    }else {
             
-            mainDataFrame.sdErrorCounter++;
-            return false;
-        }
+        mainDataFrame.sdErrorCounter++;
+        return false;
+    }
     
     file.close();
 
