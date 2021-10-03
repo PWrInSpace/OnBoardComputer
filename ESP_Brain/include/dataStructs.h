@@ -46,7 +46,7 @@ struct MainDataFrame {
     PitotData pitotData = {};
     ValveData upust = {};
     ValveData mValve = {};
-    
+
     float tankPressure = -1;
 
     float initialPressure = 2137;
@@ -58,10 +58,10 @@ struct MainDataFrame {
     uint16_t espNowErrorCounter = 0;
     uint16_t sdErrorCounter = 0;
 
-    uint16_t separationData = 65535;
-    int8_t countdown = 8;
+    uint16_t separationData = 2047;
+    int8_t countdown = 16;
 
-    bool forceSeparation;
+    bool forceSeparation = false;
 };
 
 // Stany maszyny stanów:

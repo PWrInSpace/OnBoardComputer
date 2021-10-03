@@ -110,8 +110,6 @@ void i2cTask(void *arg) {
                 Wire.write((uint8_t) 24);
                 Wire.endTransmission();
                 vTaskDelay(10 / portTICK_PERIOD_MS);
-
-                Serial.println("\n\n\n\n\n\n\n\n\n\nPoszło1\n\n\n\n\n\n\n\n\n\n");
             }
 
             // Rozkaz separacji 2 st:
@@ -123,8 +121,6 @@ void i2cTask(void *arg) {
                 Wire.write((uint8_t) 56);
                 Wire.endTransmission();
                 vTaskDelay(10 / portTICK_PERIOD_MS);
-
-                Serial.println("\n\n\n\n\n\n\n\n\n\nPoszło2\n\n\n\n\n\n\n\n\n\n");
             }
 
         }
