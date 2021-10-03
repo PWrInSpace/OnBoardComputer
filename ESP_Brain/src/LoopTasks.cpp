@@ -14,28 +14,7 @@ void i2cTask(void *arg) {
     
     // Inicjalizacja wszystkiego do i2c:
     Adafruit_BME280 bme;
-
-    Wire.begin();
-
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-
-    if(!bme.begin(0x76))
-        mainDataFrame.sdErrorCounter++;
-
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-
-    // Pomiar początkowego ciśnienia:
-    mainDataFrame.pressure = bme.readPressure() / 100.0F;
-    mainDataFrame.initialPressure = mainDataFrame.pressure;
-    mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
-
-    // Sprawdzenie komunikacji z odzyskiem:
-    Wire.requestFrom(3, 2);
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-    if (Wire.available()) {
-        Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
-    }
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    i2cTaskInit(bme);    
 
     // Oczekiwanie:
     while (mainDataFrame.rocketState < FUELING) {
@@ -207,4 +186,31 @@ void adcTask(void *arg) {
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
+}
+
+/**********************************************************************************************/
+
+void i2cTaskInit(Adafruit_BME280 &bme) {
+
+    Wire.begin();
+
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    if(!bme.begin(0x76))
+        mainDataFrame.sdErrorCounter++;
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    // Pomiar początkowego ciśnienia:
+    mainDataFrame.pressure = bme.readPressure() / 100.0F;
+    mainDataFrame.initialPressure = mainDataFrame.pressure;
+    mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
+
+    // Sprawdzenie komunikacji z odzyskiem:
+    Wire.requestFrom(3, 2);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+    if (Wire.available()) {
+        Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
+    }
+    vTaskDelay(10 / portTICK_PERIOD_MS);
 }

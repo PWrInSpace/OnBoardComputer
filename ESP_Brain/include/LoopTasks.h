@@ -13,6 +13,7 @@
 #include "Timer_ms.h"
 
 void i2cTask(void *arg);
+void i2cTaskInit(Adafruit_BME280 &bme);
 
 void sdTask(void *arg);
 
