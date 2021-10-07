@@ -140,4 +140,6 @@ public:
 
 void thrustControllerTask(void* arg);
 
+extern bool closeValveRequest;
+
 #endif

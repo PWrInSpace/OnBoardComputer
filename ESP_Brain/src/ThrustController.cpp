@@ -3,6 +3,8 @@
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
 
+bool closeValveRequest = false;
+
 float ThrustController::calculateTemperature(float height)
 {
     return T0 - L * height;
@@ -109,7 +111,8 @@ void thrustControllerTask(void *arg) {
             {
                 running = 0;
                 if (simHeight[1] > 3000.0)
-                    queue.push(String("R4MC;ThrustControllerCloseRequest\n"));
+                    queue.push(String("R4MC;ThrustControllerClosedValve\n"));
+                    closeValveRequest = true;
             }
 
             if (mainDataFrame.rocketState != FLIGHT)
@@ -124,4 +127,6 @@ void thrustControllerTask(void *arg) {
         }
 
     }
+
+    vTaskDelete(NULL);
 }

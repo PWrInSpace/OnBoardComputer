@@ -157,7 +157,8 @@ void loop() {
                 mainDataFrame.rocketState = FIRST_SEPAR;
 
             // Odcięcie bezpieczeństwa:
-            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F && millis() - liftoffTime > 4000) {
+            else if ((safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F && millis() - liftoffTime > 4000)
+                    || (closeValveRequest && millis() - liftoffTime > 2500)) {
 
                 // Każ serwu zamknąć zawór:
                 char messageOpen[] = "MNVL;0";
