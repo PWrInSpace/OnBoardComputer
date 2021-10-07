@@ -2,6 +2,7 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
+extern uint32_t liftoffTime;
 
 bool closeValveRequest = false;
 
@@ -62,18 +63,6 @@ float ThrustController::calculateDragForce(float height, float velocity)
 void thrustControllerTask(void *arg) {
 
     ThrustController thrustController;
-    int i;
-
-    /*std::ifstream flight;
-    flight.open("lot.txt");*/
-    float flightData[2][400];
-    /*
-    for (i = 0; i < 400; ++i)
-    {
-        flight >> flightData[0][i];
-        flight >> flightData[1][i];
-        std::cout << flightData[0][i] << " " << flightData[1][i] << std::endl;
-    }*/
 
     while(mainDataFrame.rocketState != FLIGHT) {
         vTaskDelay(2 / portTICK_PERIOD_MS);
@@ -90,33 +79,40 @@ void thrustControllerTask(void *arg) {
      * propellantMass - mass of propellant at the time of launch
      * allMass - rocketMass + mass of propellant in time t
      */
-    float velocity, height, dragForce, simTime, thrustEndTime = 3.423, simHeight[2], rocketMass = 13.141, propellantMass = 2.500, allMass; // mass in kg
-    for (i = 1; i < 400; ++i)
-    {
-        height = flightData[1][i];
-        velocity = (flightData[1][i] - flightData[1][i - 1]) / 0.1; // v = (h1 - h0)/dt
+    float velocity, dragForce, simTime, thrustEndTime = 3.423, simHeight[2], rocketMass = 13.141, propellantMass = 2.500, allMass; // mass in kg
+    
+    while (1) {
+
+        velocity = mainDataFrame.pitotData.speed;
 
         running = 1;
 
-        simTime = flightData[0][i];
-        simHeight[1] = flightData[1][i];
-        simHeight[0] = flightData[1][i - 1];
+        simTime = liftoffTime / 1000.0;
+        simHeight[1] = mainDataFrame.pitotData.altitude;
+        simHeight[0] = mainDataFrame.pitotData.altitude - mainDataFrame.pitotData.speed * (FLIGHT_DATA_PERIOD / 1000.0);
         if (simTime < thrustEndTime)
             allMass = rocketMass + propellantMass * ((thrustEndTime - simTime) / thrustEndTime);
         else allMass = rocketMass;
-        while (running)
-        {
+
+        while (running) {
+
             velocity = (simHeight[1] - simHeight[0]) / TIMESTEP;
-            if (velocity < 0)   
-            {
+            if (velocity < 0) {
+
                 running = 0;
-                if (simHeight[1] > 3000.0)
+                if (simHeight[1] > 3000.0) {
                     queue.push(String("R4MC;ThrustControllerClosedValve\n"));
                     closeValveRequest = true;
+                    vTaskDelete(NULL);
+                    return;
+                }
             }
 
-            if (mainDataFrame.rocketState != FLIGHT)
+            if (mainDataFrame.rocketState != FLIGHT) {
                 running = 0;
+                vTaskDelete(NULL);
+                return;
+            }
 
             dragForce = thrustController.calculateDragForce(simHeight[1], velocity);
             simHeight[0] = simHeight[1];    // height in t(n) prepare for next step
@@ -126,6 +122,7 @@ void thrustControllerTask(void *arg) {
             vTaskDelay(1 / portTICK_PERIOD_MS);
         }
 
+        vTaskDelay((FLIGHT_DATA_PERIOD - 5) / portTICK_PERIOD_MS);
     }
 
     vTaskDelete(NULL);
