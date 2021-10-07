@@ -119,6 +119,8 @@ void thrustControllerTask(void *arg) {
             simHeight[0] = simHeight[1];    // height in t(n) prepare for next step
             simHeight[1] = simHeight[1] + velocity * TIMESTEP - 4.9 * TIMESTEPSQ - dragForce / allMass * TIMESTEPSQ * 0.5; // height in t(n+1)
             simTime += TIMESTEP;   // increase simTime
+
+            vTaskDelay(1 / portTICK_PERIOD_MS);
         }
 
     }
