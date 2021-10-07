@@ -11,6 +11,7 @@
 #include "queue.h"
 #include "SDcard.h"
 #include "Timer_ms.h"
+#include "ThrustController.h"
 
 void i2cTask(void *arg);
 void i2cTaskInit(Adafruit_BME280 &bme);
