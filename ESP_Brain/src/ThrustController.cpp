@@ -60,16 +60,7 @@ float ThrustController::calculateDragForce(float height, float velocity)
 void thrustControllerTask(void *arg) {
 
     ThrustController thrustController;
-
-    thrustController.CdOverMach[0] = 0.0; // for 0 Mach velocity
     int i;
-    /*std::ifstream data;
-    data.open("data.txt");
-    for (i = 1; i < 101; ++i) // save values from data sheet
-    {
-        data >> CdOverMach[i];
-    }
-    data.close();*/
 
     /*std::ifstream flight;
     flight.open("lot.txt");*/
