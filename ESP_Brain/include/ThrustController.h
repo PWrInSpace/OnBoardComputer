@@ -22,7 +22,7 @@ class ThrustController{
 
 public:
 
-    float CdOverMach[101] = {
+    const float CdOverMach[102] = {
         0.0,
         0.7104690365906882,
         0.6965515159858551,
