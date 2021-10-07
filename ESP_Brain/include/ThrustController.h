@@ -1,8 +1,11 @@
 #ifndef THRUST_CONTROLLER_H
 #define THRUST_CONTROLLER_H
 
+#include "dataStructs.h"
+#include "queue.h"
+#include <Arduino.h>
+
 #include <cmath>
-#define P0 101325             // sea level standard pressure,  can be changed to pressure on the launchpad, Pascal
 #define T0 288.15             // sea level standard temperature, can be changed to temperature on the launchpad, Kelvin
 #define L 0.0065              // temperature lapse rate, kelvin/meter
 #define G 9.80665             // gravitational acceleration, meter/second^2
@@ -31,5 +34,6 @@ public:
     float calculateDragForce(float height, float velocity);
 };
 
+void thrustControllerTask(void* arg);
 
 #endif
