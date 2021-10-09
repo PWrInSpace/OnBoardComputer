@@ -10,6 +10,7 @@ bool SD_write(const String & path, const String & dataFrame){
 
         if(!file.write((uint8_t *) dataFrame.c_str(), dataFrame.length())) {
             
+            file.close();
             mainDataFrame.sdErrorCounter++;
             return false;
         }

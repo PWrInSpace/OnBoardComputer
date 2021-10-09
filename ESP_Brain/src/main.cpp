@@ -24,7 +24,7 @@ void setup() {
     mainDataFrame.rocketState = INIT;
 
     Serial.begin(115200);
-    delay(100);
+    delay(10);
 
     initOtaSerwer();
     if (useOta) serverOta.begin();

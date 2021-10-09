@@ -16,6 +16,8 @@
 void i2cTask(void *arg);
 void i2cTaskInit(Adafruit_BME280 &bme);
 
+void i2cSendByte(uint8_t adress, uint8_t val, int8_t times);
+
 void sdTask(void *arg);
 
 void adcTask(void *arg);

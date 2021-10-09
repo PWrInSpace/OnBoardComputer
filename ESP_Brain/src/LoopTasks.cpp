@@ -14,20 +14,12 @@ void i2cTask(void *arg) {
     
     // Inicjalizacja wszystkiego do i2c:
     Adafruit_BME280 bme;
-    i2cTaskInit(bme);    
-
-    // Oczekiwanie:
-    while (mainDataFrame.rocketState < FUELING) {
-        vTaskDelay(10 / portTICK_PERIOD_MS);
-    }
+    i2cTaskInit(bme);
 
     /*------------------------------------*/
 
     // Uzbrojenie odzysku:
-    Wire.beginTransmission(3);
-    Wire.write((uint8_t) 8);
-    Wire.endTransmission();
-    vTaskDelay(40 / portTICK_PERIOD_MS);
+    i2cSendByte(3, 8, 3);
 
     uint32_t lastMeasuredTime = millis(); // Do wyliczania szybkości i przyspieszenia.
     
@@ -84,22 +76,14 @@ void i2cTask(void *arg) {
             if (mainDataFrame.forceSeparation && mainDataFrame.rocketState == FIRST_SEPAR) {
 
                 mainDataFrame.forceSeparation = false;
-
-                Wire.beginTransmission(3);
-                Wire.write((uint8_t) 24);
-                Wire.endTransmission();
-                vTaskDelay(10 / portTICK_PERIOD_MS);
+                i2cSendByte(3, 24, 3);
             }
 
             // Rozkaz separacji 2 st:
             else if (mainDataFrame.forceSeparation && mainDataFrame.rocketState == SECOND_SEPAR) {
 
                 mainDataFrame.forceSeparation = false;
-
-                Wire.beginTransmission(3);
-                Wire.write((uint8_t) 56);
-                Wire.endTransmission();
-                vTaskDelay(10 / portTICK_PERIOD_MS);
+                i2cSendByte(3, 56, 3);
             }
 
         }
@@ -132,6 +116,7 @@ void i2cTaskInit(Adafruit_BME280 &bme) {
     if (Wire.available()) {
         Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
     }
+    vTaskDelay(10 / portTICK_PERIOD_MS);
 }
 
 /**********************************************************************************************/
@@ -213,5 +198,17 @@ void adcTask(void *arg) {
         mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);        
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+/**********************************************************************************************/
+
+void i2cSendByte(uint8_t adress, uint8_t val, int8_t times) {
+
+    for (; times > 0; times--) {
+        Wire.beginTransmission(adress);
+        Wire.write(val);
+        Wire.endTransmission();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
