@@ -6,7 +6,7 @@
 #include <Update.h>
 
 #define HOST_NAME   "esp32maincomp"
-#define SSID        "AirboxKowal"
+#define SSID        "Redmi8T"
 #define PASS        "gta34567"
 
 extern bool useOta;
