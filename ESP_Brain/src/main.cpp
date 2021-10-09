@@ -161,14 +161,18 @@ void loop() {
             if (mainDataFrame.separationData & (1<<1))
                 mainDataFrame.rocketState = FIRST_SEPAR;
 
-            // Odcięcie bezpieczeństwa:
-            else if ((safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F && millis() - liftoffTime > 4000)
-                    || (closeValveRequest && millis() - liftoffTime > 2500)) {
+            // Odcięcie bezpieczeństwa (udawane):
+            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
+                
+                safetyCutoff_36atm = false;
+                queue.push(String("R4MC;Ponizej 36 barow\n"));
+            }
 
-                // Każ serwu zamknąć zawór:
-                char messageOpen[] = "MNVL;0";
-                if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
-                    mainDataFrame.espNowErrorCounter++;
+            // Odcięcie symulacji (udawane):
+            else if (closeValveRequest && millis() - liftoffTime > 2500) {
+
+                closeValveRequest = false;
+                queue.push(String("R4MC;Wystarczy do 3km\n"));
             }
         }
     }
