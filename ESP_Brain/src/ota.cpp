@@ -50,7 +50,7 @@ void initOtaSerwer() {
 
     WiFi.begin(SSID, PASS);
 
-    int8_t timeoutOta = 30;
+    int8_t timeoutOta = 20;
     while (WiFi.status() != WL_CONNECTED && timeoutOta > 0) {
         delay(500);
         timeoutOta--;
