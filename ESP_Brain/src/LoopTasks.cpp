@@ -18,8 +18,13 @@ void i2cTask(void *arg) {
 
     /*------------------------------------*/
 
+    // Oczekiwanie:
+    while (mainDataFrame.rocketState < FUELING) {
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+
     // Uzbrojenie odzysku:
-    i2cSendByte(3, 8, 3);
+    i2cSendByte(3, 8, 2);
 
     uint32_t lastMeasuredTime = millis(); // Do wyliczania szybkości i przyspieszenia.
     
@@ -83,7 +88,7 @@ void i2cTask(void *arg) {
             else if (mainDataFrame.forceSeparation && mainDataFrame.rocketState == SECOND_SEPAR) {
 
                 mainDataFrame.forceSeparation = false;
-                i2cSendByte(3, 56, 3);
+                i2cSendByte(3, 56, 2);
             }
 
         }
