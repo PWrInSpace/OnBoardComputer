@@ -79,8 +79,8 @@ void thrustControllerTask(void *arg) {
      * propellantMass - mass of propellant at the time of launch
      * allMass - rocketMass + mass of propellant in time t
      */
-    float velocity, dragForce, simTime, thrustEndTime = 3.423, simHeight[2], rocketMass = 13.141, propellantMass = 2.500, allMass; // mass in kg
-    
+    float velocity, dragForce, simTime, thrustEndTime = 3.423, simHeight[2], rocketMass = 27, propellantMass = 6, allMass; // mass in kg
+
     while (1) {
 
         velocity = mainDataFrame.pitotData.speed;
