@@ -14,41 +14,17 @@ void i2cTask(void *arg) {
     
     // Inicjalizacja wszystkiego do i2c:
     Adafruit_BME280 bme;
+    i2cTaskInit(bme);
 
-    Wire.begin();
-
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-
-    if(!bme.begin(0x76))
-        mainDataFrame.sdErrorCounter++;
-
-    vTaskDelay(100 / portTICK_PERIOD_MS);
-
-    // Pomiar początkowego ciśnienia:
-    mainDataFrame.pressure = bme.readPressure() / 100.0F;
-    mainDataFrame.initialPressure = mainDataFrame.pressure;
-    mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
-
-    // Sprawdzenie komunikacji z odzyskiem:
-    Wire.requestFrom(3, 2);
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-    if (Wire.available()) {
-        Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
-    }
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    /*------------------------------------*/
 
     // Oczekiwanie:
     while (mainDataFrame.rocketState < FUELING) {
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 
-    /*------------------------------------*/
-
     // Uzbrojenie odzysku:
-    Wire.beginTransmission(3);
-    Wire.write((uint8_t) 8);
-    Wire.endTransmission();
-    vTaskDelay(40 / portTICK_PERIOD_MS);
+    i2cSendByte(3, 8, 2);
 
     uint32_t lastMeasuredTime = millis(); // Do wyliczania szybkości i przyspieszenia.
     
@@ -105,26 +81,14 @@ void i2cTask(void *arg) {
             if (mainDataFrame.forceSeparation && mainDataFrame.rocketState == FIRST_SEPAR) {
 
                 mainDataFrame.forceSeparation = false;
-
-                Wire.beginTransmission(3);
-                Wire.write((uint8_t) 24);
-                Wire.endTransmission();
-                vTaskDelay(10 / portTICK_PERIOD_MS);
-
-                Serial.println("\n\n\n\n\n\n\n\n\n\nPoszło1\n\n\n\n\n\n\n\n\n\n");
+                i2cSendByte(3, 24, 3);
             }
 
             // Rozkaz separacji 2 st:
             else if (mainDataFrame.forceSeparation && mainDataFrame.rocketState == SECOND_SEPAR) {
 
                 mainDataFrame.forceSeparation = false;
-
-                Wire.beginTransmission(3);
-                Wire.write((uint8_t) 56);
-                Wire.endTransmission();
-                vTaskDelay(10 / portTICK_PERIOD_MS);
-
-                Serial.println("\n\n\n\n\n\n\n\n\n\nPoszło2\n\n\n\n\n\n\n\n\n\n");
+                i2cSendByte(3, 56, 2);
             }
 
         }
@@ -133,6 +97,35 @@ void i2cTask(void *arg) {
     }
 }
 
+/**********************************************************************************************/
+
+void i2cTaskInit(Adafruit_BME280 &bme) {
+
+    Wire.begin();
+
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    if(!bme.begin(0x76))
+        mainDataFrame.sdErrorCounter++;
+
+    vTaskDelay(100 / portTICK_PERIOD_MS);
+
+    // Pomiar początkowego ciśnienia:
+    mainDataFrame.pressure = bme.readPressure() / 100.0F;
+    mainDataFrame.initialPressure = mainDataFrame.pressure;
+    mainDataFrame.altitude = 44330.0 * (1.0 - pow(mainDataFrame.pressure / mainDataFrame.initialPressure, 0.1903));
+
+    // Sprawdzenie komunikacji z odzyskiem:
+    Wire.requestFrom(3, 2);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+    if (Wire.available()) {
+        Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
+    }
+    vTaskDelay(10 / portTICK_PERIOD_MS);
+}
+
+/**********************************************************************************************/
+/**********************************************************************************************/
 /**********************************************************************************************/
 
 /* Zadanie odpowiedzialne za logowanie wszystkiego na SD -> pobierając dane z kolejki. [DONE]
@@ -150,13 +143,13 @@ void sdTask(void *arg) {
         mainDataFrame.sdErrorCounter = 2137; // Fatalny błąd.
 
     while(1) {
-       
+
         while(queue.getNumberOfElements()){
-            
+
             String dataFrame = queue.pop();
 
             Serial.print(dataFrame); // Dla debugu
-            
+
             switch (dataFrame[2]) {
                 case 'M':
                     SD_write("/R4_data.txt", dataFrame);
@@ -168,7 +161,7 @@ void sdTask(void *arg) {
                     SD_write("/R4_gps.txt", dataFrame);
                     break;
             }
-        
+
             vTaskDelay(1 / portTICK_PERIOD_MS);
         }
         vTaskDelay(2 / portTICK_PERIOD_MS);
@@ -185,7 +178,7 @@ void sdTask(void *arg) {
  */
 
 void adcTask(void *arg) {
-    
+
     while(1) {
 
         // Ciśnienie butli:
@@ -210,5 +203,17 @@ void adcTask(void *arg) {
         mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);        
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+/**********************************************************************************************/
+
+void i2cSendByte(uint8_t adress, uint8_t val, int8_t times) {
+
+    for (; times > 0; times--) {
+        Wire.beginTransmission(adress);
+        Wire.write(val);
+        Wire.endTransmission();
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

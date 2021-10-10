@@ -2,7 +2,6 @@
 
 extern MainDataFrame mainDataFrame;
 extern Queue queue;
-//extern bool forceStateAction;
 extern MaximumData maxData;
 
 StateChanger stateChanger;
@@ -10,7 +9,7 @@ StateChanger stateChanger;
 String countStructData() {
 
     String frame = "R4MC;" + String((int) mainDataFrame.rocketState) + ";";
-    
+
     frame += String(millis()) + ";";
     frame += String(mainDataFrame.battery) + ";";
     frame += String(mainDataFrame.pitotData.staticPressure)  + ";";
@@ -38,7 +37,7 @@ String countStructData() {
         frame += String(mainDataFrame.speed) + ";";
         frame += String(mainDataFrame.gForce) + ";";
     }
-    
+
     frame += String(mainDataFrame.espNowErrorCounter) + ";";
     frame += String(mainDataFrame.sdErrorCounter) + ";";
 
@@ -235,5 +234,3 @@ void valveTimeOpen(void *arg){
     valveMove(GPIO_NUM_14, VALVE2);
     vTaskDelete(NULL);
 }
-
-

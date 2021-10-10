@@ -43,7 +43,7 @@ States state = IDLE_STATE;
 // Definicje pinów portu D:
 
 // Test wypadnięcia stożka:
-#define CONT_HEAD_Pin   (1<<3)
+#define CONT_HEAD_Pin   (1<<2)
 
 // Zapalnik 2A:
 #define SEPAR2A_Pin (1<<5)

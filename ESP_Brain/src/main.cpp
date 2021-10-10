@@ -1,10 +1,10 @@
 #include <Arduino.h>
 
-
 #include "LoopTasks.h"
 #include "SingleTasks.h"
+#include "ota.h"
 
-#define SERVO_DELAY 5000
+#define SERVO_DELAY_SECONDS 5
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -15,6 +15,7 @@ Timer_ms frameTimer;
 
 // Odcięcie przy ciśnieniu w butli poniżej 36 barów (aby nie doszło do zassania gazów spalinowych i eksplozji butli):
 bool safetyCutoff_36atm = true;
+uint32_t liftoffTime;
 
 /**********************************************************************************************/
 
@@ -23,13 +24,17 @@ void setup() {
     mainDataFrame.rocketState = INIT;
 
     Serial.begin(115200);
-    delay(100);
+    delay(10);
+
+    initOtaSerwer();
+    if (useOta) serverOta.begin();
 
     valveInit();
 
-    xTaskCreate(i2cTask,    "Task i2c",     65536,  NULL, 3, NULL);
-    xTaskCreate(sdTask,     "Task SD",      65536, NULL, 1, NULL);
-    xTaskCreate(adcTask,    "Task ADC",     4096,  NULL, 1, NULL);
+    xTaskCreate(i2cTask,                "Task i2c",     65536,  NULL, 3, NULL);
+    xTaskCreate(sdTask,                 "Task SD",      65536, NULL, 1, NULL);
+    xTaskCreate(adcTask,                "Task ADC",     4096,  NULL, 1, NULL);
+    xTaskCreate(thrustControllerTask,   "Task TC",      16384,  NULL, 1, NULL);
     
     if(!nowInit())
         mainDataFrame.espNowErrorCounter = 2137; // Fatalny błąd.
@@ -61,8 +66,10 @@ void loop() {
     uart2Handler();
 
     if (mainDataFrame.rocketState == IDLE) {
-        
+
         frameTimer.setVal(WAIT_DATA_PERIOD*5);
+        
+        if (useOta) serverOta.handleClient();
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
@@ -75,7 +82,7 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == FUELING) {
-    
+
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FUELING.
@@ -89,8 +96,8 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == COUNTDOWN) {
-        
-       frameTimer.setVal(1000);
+
+        frameTimer.setVal(1000);
 
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie COUNTDOWN.
@@ -101,6 +108,12 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
+            if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
+
+                // Odpal silnik:
+                Serial2.print("TNWN;DSTA\n");
+            }
+
             if(mainDataFrame.countdown < 1) {
 
                 // Przyspiesz pomiary z pitota:
@@ -108,16 +121,12 @@ void loop() {
                 if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
                     mainDataFrame.espNowErrorCounter++;
 
-                // Odpal silnik:
-                Serial2.print("TNWN;DSTA\n");
-
-                vTaskDelay(SERVO_DELAY / portTICK_PERIOD_MS);
-
                 // Każ serwu się otworzyć:
                 char messageOpen[] = "MNVL;1";
                 if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
                     mainDataFrame.espNowErrorCounter++;
 
+                liftoffTime = millis();
                 mainDataFrame.rocketState = FLIGHT;
             }
         }
@@ -126,7 +135,7 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == ABORT) {
-        
+
         frameTimer.setVal(END_DATA_PERIOD);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie ABORT.
@@ -140,8 +149,8 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == FLIGHT) {
-        
-       frameTimer.setVal(FLIGHT_DATA_PERIOD);
+
+        frameTimer.setVal(FLIGHT_DATA_PERIOD);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FLIGHT.
 
@@ -149,16 +158,21 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
-            /*if (mainDataFrame.separationData & (1<<(1+8)))
-                mainDataFrame.rocketState = FIRST_SEPAR;*/
+            if (mainDataFrame.separationData & (1<<1))
+                mainDataFrame.rocketState = FIRST_SEPAR;
 
-            // Odcięcie bezpieczeństwa:
-            /*else*/ if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
+            // Odcięcie bezpieczeństwa (udawane):
+            else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
+                
+                safetyCutoff_36atm = false;
+                queue.push(String("R4MC;Ponizej 36 barow\n"));
+            }
 
-                // Każ serwu zamknąć zawór:
-                char messageOpen[] = "MNVL;0";
-                if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
-                    mainDataFrame.espNowErrorCounter++;
+            // Odcięcie symulacji (udawane):
+            else if (closeValveRequest && millis() - liftoffTime > 2500) {
+
+                closeValveRequest = false;
+                queue.push(String("R4MC;Wystarczy do 3km\n"));
             }
         }
     }
@@ -166,7 +180,7 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == FIRST_SEPAR) {
-        
+
         frameTimer.setVal(FLIGHT_DATA_PERIOD*10);
 
         if (frameTimer.check()) {
@@ -180,7 +194,7 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<(2+8)))
+            if (mainDataFrame.separationData & (1<<2))
                 mainDataFrame.rocketState = SECOND_SEPAR;
         }
     }
@@ -188,7 +202,7 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
-        
+
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
 
         if (frameTimer.check()) {
@@ -207,7 +221,7 @@ void loop() {
     /*------------------------------------*/
 
     else if (mainDataFrame.rocketState == GROUND) {
-        
+
         frameTimer.setVal(END_DATA_PERIOD);
 
         if (frameTimer.check()) {
