@@ -202,7 +202,7 @@ void adcTask(void *arg) {
         // Potencjometr zaworu upustowego:
         mainDataFrame.upust.potentiometer = analogRead(GPIO_NUM_39);        
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(WAIT_DATA_PERIOD / portTICK_PERIOD_MS);
     }
 }
 
