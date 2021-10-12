@@ -5,7 +5,7 @@
 #include <ESPmDNS.h>
 #include <Update.h>
 
-#define HOST_NAME   "esp32maincomp"
+#define HOST_NAME   "e32mc"
 #define SSID        "Redmi8T"
 #define PASS        "gta34567"
 

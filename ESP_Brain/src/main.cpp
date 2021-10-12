@@ -2,7 +2,7 @@
 
 #include "LoopTasks.h"
 #include "SingleTasks.h"
-#include "ota.h"
+//#include "ota.h"
 
 #define SERVO_DELAY_SECONDS 5
 
@@ -24,10 +24,10 @@ void setup() {
     mainDataFrame.rocketState = INIT;
 
     Serial.begin(115200);
-    delay(10);
+    delay(500);
 
-    initOtaSerwer();
-    if (useOta) serverOta.begin();
+    //initOtaSerwer();
+    //if (useOta) serverOta.begin();
 
     valveInit();
 
@@ -65,11 +65,11 @@ void setup() {
 void loop() {
     uart2Handler();
 
+    //if (useOta) serverOta.handleClient();
+
     if (mainDataFrame.rocketState == IDLE) {
 
         frameTimer.setVal(WAIT_DATA_PERIOD*5);
-        
-        if (useOta) serverOta.handleClient();
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
@@ -104,15 +104,16 @@ void loop() {
 
             mainDataFrame.countdown--;
 
-            String txData = countStructData();
-            queue.push(txData);
-            sendData(txData);
-
             if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
 
                 // Odpal silnik:
                 Serial2.print("TNWN;DSTA\n");
+                vTaskDelay(300 / portTICK_PERIOD_MS);
             }
+
+            String txData = countStructData();
+            queue.push(txData);
+            sendData(txData);
 
             if(mainDataFrame.countdown < 1) {
 

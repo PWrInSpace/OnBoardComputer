@@ -50,13 +50,13 @@ void initOtaSerwer() {
 
     WiFi.begin(SSID, PASS);
 
-    int8_t timeoutOta = 10;
+    int8_t timeoutOta = 20;
     while (WiFi.status() != WL_CONNECTED && timeoutOta > 0) {
         delay(500);
         timeoutOta--;
     }
     if (timeoutOta > 0) useOta = true;
-
+    
     Serial.println(WiFi.localIP());
 
     MDNS.begin(HOST_NAME); //http://esp32.local

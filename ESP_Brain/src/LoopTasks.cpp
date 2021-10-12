@@ -42,11 +42,11 @@ void i2cTask(void *arg) {
 
             // Komunikacja z odzyskiem:
             Wire.requestFrom(3, 2);
-            vTaskDelay(10 / portTICK_PERIOD_MS);
+            vTaskDelay(1 / portTICK_PERIOD_MS);
             if (Wire.available()) {
                 Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
             }
-            vTaskDelay(5 / portTICK_PERIOD_MS);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
 
             // Pomiary ciśnienia i obliczenia:
 
@@ -81,7 +81,7 @@ void i2cTask(void *arg) {
             if (mainDataFrame.forceSeparation && mainDataFrame.rocketState == FIRST_SEPAR) {
 
                 mainDataFrame.forceSeparation = false;
-                i2cSendByte(3, 24, 3);
+                i2cSendByte(3, 24, 2);
             }
 
             // Rozkaz separacji 2 st:
@@ -214,6 +214,6 @@ void i2cSendByte(uint8_t adress, uint8_t val, int8_t times) {
         Wire.beginTransmission(adress);
         Wire.write(val);
         Wire.endTransmission();
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
     }
 }
