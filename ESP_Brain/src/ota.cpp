@@ -48,14 +48,9 @@ String serverIndex =
 
 void initOtaSerwer() {
 
-    WiFi.begin(SSID, PASS);
+    if (useOta || WiFi.status() != WL_CONNECTED) return;
 
-    int8_t timeoutOta = 10;
-    while (WiFi.status() != WL_CONNECTED && timeoutOta > 0) {
-        delay(500);
-        timeoutOta--;
-    }
-    if (timeoutOta > 0) useOta = true;
+    useOta = true;
 
     Serial.println(WiFi.localIP());
 
@@ -90,4 +85,6 @@ void initOtaSerwer() {
         }
         }
     });
+
+    serverOta.begin();
 }

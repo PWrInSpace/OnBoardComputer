@@ -26,8 +26,7 @@ void setup() {
     Serial.begin(115200);
     delay(10);
 
-    initOtaSerwer();
-    if (useOta) serverOta.begin();
+    WiFi.begin(SSID, PASS);
 
     valveInit();
 
@@ -69,6 +68,7 @@ void loop() {
 
         frameTimer.setVal(WAIT_DATA_PERIOD*5);
         
+        initOtaSerwer();
         if (useOta) serverOta.handleClient();
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
