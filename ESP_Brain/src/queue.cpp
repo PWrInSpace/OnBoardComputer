@@ -32,7 +32,7 @@ void Queue::push(const String & value){
     }
   }
   catch(std::bad_alloc & e){
-    mainDataFrame.sdErrorCounter += 3;
+    mainDataFrame.sdErrorCounter += 100;
     return;
   }
   

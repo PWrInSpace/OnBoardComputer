@@ -149,7 +149,7 @@ uint32_t lastSendTime = 0;
 
 void sendData(String txData) {
 
-    if (millis() - lastSendTime > 450) {
+    if (millis() - lastSendTime > 250) {
 
         Serial2.print(txData);
         lastSendTime = millis();

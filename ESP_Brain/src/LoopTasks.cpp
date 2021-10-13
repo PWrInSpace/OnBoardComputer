@@ -30,6 +30,9 @@ void i2cTask(void *arg) {
     
     // Powtórny pomiar początkowego ciśnienia - jakby od początkowego minęło za dużo czasu:
     mainDataFrame.initialPressure = bme.readPressure() / 100.0F;
+    
+    Timer_ms separCommTimer;
+    separCommTimer.setVal(WAIT_DATA_PERIOD*2);
 
     while (1) {
         
@@ -41,10 +44,12 @@ void i2cTask(void *arg) {
             frameTimer.flag = false;
 
             // Komunikacja z odzyskiem:
-            Wire.requestFrom(3, 2);
-            vTaskDelay(1 / portTICK_PERIOD_MS);
-            if (Wire.available()) {
-                Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
+            if (separCommTimer.check()) {
+                Wire.requestFrom(3, 2);
+                vTaskDelay(1 / portTICK_PERIOD_MS);
+                if (Wire.available()) {
+                    Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
+                }
             }
             vTaskDelay(10 / portTICK_PERIOD_MS);
 
@@ -101,7 +106,7 @@ void i2cTask(void *arg) {
 
 void i2cTaskInit(Adafruit_BME280 &bme) {
 
-    Wire.begin();
+    Wire.begin(GPIO_NUM_21, GPIO_NUM_22, 50000);
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 
@@ -117,7 +122,7 @@ void i2cTaskInit(Adafruit_BME280 &bme) {
 
     // Sprawdzenie komunikacji z odzyskiem:
     Wire.requestFrom(3, 2);
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(1 / portTICK_PERIOD_MS);
     if (Wire.available()) {
         Wire.readBytes((uint8_t*) &mainDataFrame.separationData, sizeof(mainDataFrame.separationData));
     }
@@ -138,9 +143,6 @@ void sdTask(void *arg) {
     SPIClass SPISD(HSPI);
     SPISD.begin(GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_15);
     SPI.setClockDivider(SPI_CLOCK_DIV2);
-    
-    if(!SD.begin(SD_CS, SPISD))
-        mainDataFrame.sdErrorCounter = 2137; // Fatalny błąd.
 
     while(1) {
 
@@ -151,15 +153,17 @@ void sdTask(void *arg) {
             Serial.print(dataFrame); // Dla debugu
 
             switch (dataFrame[2]) {
-                case 'M':
-                    SD_write("/R4_data.txt", dataFrame);
-                    break;
-                case 'T':
-                    SD_write("/R4_tanwa.txt", dataFrame);
-                    break;
-                case 'G':
-                    SD_write("/R4_gps.txt", dataFrame);
-                    break;
+            case 'M':
+                SD_write("/R4_data.txt", dataFrame, SPISD);
+                break;
+
+            case 'T':
+                SD_write("/R4_tanwa.txt", dataFrame, SPISD);
+                break;
+
+            case 'G':
+                SD_write("/R4_gps.txt", dataFrame, SPISD);
+                break;
             }
 
             vTaskDelay(1 / portTICK_PERIOD_MS);
@@ -190,7 +194,7 @@ void adcTask(void *arg) {
          */
 
         // Akumulator:
-        mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0;
+        mainDataFrame.battery = analogRead(GPIO_NUM_36) / 254.0 * 0.893;
 
         // Krańcówki:
         if (!digitalRead(GPIO_NUM_14))
@@ -214,6 +218,6 @@ void i2cSendByte(uint8_t adress, uint8_t val, int8_t times) {
         Wire.beginTransmission(adress);
         Wire.write(val);
         Wire.endTransmission();
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
