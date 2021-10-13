@@ -32,7 +32,7 @@ void setup() {
     valveInit();
 
     xTaskCreate(i2cTask,                "Task i2c",     65536,  NULL, 3, NULL);
-    xTaskCreate(sdTask,                 "Task SD",      65536, NULL, 1, NULL);
+    xTaskCreate(sdTask,                 "Task SD",      65536, NULL, 2, NULL);
     xTaskCreate(adcTask,                "Task ADC",     4096,  NULL, 1, NULL);
     xTaskCreate(thrustControllerTask,   "Task TC",      16384,  NULL, 1, NULL);
     

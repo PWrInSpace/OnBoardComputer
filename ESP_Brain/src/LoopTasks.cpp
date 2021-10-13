@@ -144,6 +144,9 @@ void sdTask(void *arg) {
     SPISD.begin(GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_15);
     SPI.setClockDivider(SPI_CLOCK_DIV2);
 
+    if(!SD.begin(SD_CS, SPISD))
+        mainDataFrame.sdErrorCounter = 2137; // Fatalny błąd.
+
     while(1) {
 
         while(queue.getNumberOfElements()){
@@ -154,15 +157,15 @@ void sdTask(void *arg) {
 
             switch (dataFrame[2]) {
             case 'M':
-                SD_write("/R4_data.txt", dataFrame, SPISD);
+                SD_write("/R4_data.txt", dataFrame);
                 break;
 
             case 'T':
-                SD_write("/R4_tanwa.txt", dataFrame, SPISD);
+                SD_write("/R4_tanwa.txt", dataFrame);
                 break;
 
             case 'G':
-                SD_write("/R4_gps.txt", dataFrame, SPISD);
+                SD_write("/R4_gps.txt", dataFrame);
                 break;
             }
 
