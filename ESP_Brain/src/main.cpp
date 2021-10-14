@@ -65,6 +65,11 @@ void setup() {
 void loop() {
     uart2Handler();
 
+    // Otworzenie zaworu upustowego w razie braku łączności przez długi czas:
+    if (mainDataFrame.abortTimerSec < 1) {
+        xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+    }
+
     //if (useOta) serverOta.handleClient();
 
     if (mainDataFrame.rocketState == IDLE) {
@@ -76,6 +81,7 @@ void loop() {
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+            mainDataFrame.abortTimerSec--;
         }
     }
 
@@ -90,6 +96,7 @@ void loop() {
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+            mainDataFrame.abortTimerSec--;
         }
     }
 

@@ -46,7 +46,8 @@ String countStructData() {
     uint8_t separation1Byte = mainDataFrame.separationData >> 8;
     frame += String((int) separation1Byte) + ";";
     frame += String((int) separation2Byte) + ";";
-    frame += String((int) mainDataFrame.countdown) + "\n";
+    frame += String((int) mainDataFrame.countdown) + ";";
+    frame += String((int) mainDataFrame.abortTimerSec) + "\n";
 
     return frame;
 }
@@ -88,6 +89,7 @@ void uart2Handler() {
 
         if (strstr(dataFrom3Ant.c_str(), "MNCP;STAT") != NULL) {
 
+            mainDataFrame.abortTimerSec = 900;
             int oldState, newState;
             sscanf(dataFrom3Ant.c_str(), "MNCP;STAT;%d;%d", &oldState, &newState);
 
@@ -119,8 +121,9 @@ void uart2Handler() {
         /*------------------------------------*/
         // Sterowanie zaworem upustowym:
 
-        else if (mainDataFrame.rocketState >= FUELING) { 
+        else if (mainDataFrame.rocketState >= IDLE) { 
 
+            mainDataFrame.abortTimerSec = 900;
             if (strstr(dataFrom3Ant.c_str(), "MNCP;UPST") != NULL) {
 
                 int upustMode = -1; // mode - 0 - zamykanie, 1 - otwieranie, upustTime - czas, gdy równy zero, to otwarcie na stałe.
