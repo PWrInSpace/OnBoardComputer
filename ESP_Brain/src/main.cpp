@@ -166,8 +166,15 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<1))
+            if (mainDataFrame.separationData & (1<<1)) {
+                
                 mainDataFrame.rocketState = FIRST_SEPAR;
+                
+                // Spowolnij pomiary z pitota:
+                uint16_t pitotPeriod = FLIGHT_DATA_PERIOD*10;
+                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
+                    mainDataFrame.espNowErrorCounter++;
+            }
 
             // Odcięcie bezpieczeństwa (udawane):
             else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
@@ -193,17 +200,19 @@ void loop() {
 
         if (frameTimer.check()) {
 
-            // Spowolnij pomiary z pitota:
-            uint16_t pitotPeriod = 400;
-            if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                mainDataFrame.espNowErrorCounter++;
-
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<2))
+            if (mainDataFrame.separationData & (1<<2)) {
+
                 mainDataFrame.rocketState = SECOND_SEPAR;
+
+                // Spowolnij jeszcze mocniej pomiary z pitota:
+                uint16_t pitotPeriod = 5000;
+                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
+                    mainDataFrame.espNowErrorCounter++;
+            }
         }
     }
 
@@ -214,11 +223,6 @@ void loop() {
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
 
         if (frameTimer.check()) {
-
-            // Spowolnij jeszcze mocniej pomiary z pitota:
-            uint16_t pitotPeriod = 8000;
-            if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                mainDataFrame.espNowErrorCounter++;
 
             String txData = countStructData();
             queue.push(txData);
