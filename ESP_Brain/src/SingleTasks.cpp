@@ -4,8 +4,6 @@ extern MainDataFrame mainDataFrame;
 extern Queue queue;
 extern MaximumData maxData;
 
-StateChanger stateChanger;
-
 String countStructData() {
 
     String frame = "R4MC;" + String((int) mainDataFrame.rocketState) + ";";
@@ -98,11 +96,18 @@ void uart2Handler() {
 
                 switch (mainDataFrame.rocketState) {
 
-                case FUELING:      stateChanger.idle2fueling();      break;
-                case COUNTDOWN:    stateChanger.fueling2countdown(); break;
-                case FLIGHT:       stateChanger.countdown2flight();  break;
-                case FIRST_SEPAR:  stateChanger.flight2firstSepar(); break;
-                case SECOND_SEPAR: stateChanger.firstSep2secSep();   break;
+                case FUELING:      stateChanger.idle2fueling();          break;
+                case COUNTDOWN:    stateChanger.fueling2countdown();     break;
+                case FLIGHT:       stateChanger.countdown2flight();      break;
+                case FIRST_SEPAR:  
+                    mainDataFrame.forceSeparation = true;
+                    stateChanger.flight2firstSepar();
+                    break;
+
+                case SECOND_SEPAR:
+                    mainDataFrame.forceSeparation = true;
+                    stateChanger.firstSep2secSep();
+                    break;
                 }
             }
         }

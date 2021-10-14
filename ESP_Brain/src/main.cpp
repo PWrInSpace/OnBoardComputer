@@ -169,11 +169,7 @@ void loop() {
             if (mainDataFrame.separationData & (1<<1)) {
                 
                 mainDataFrame.rocketState = FIRST_SEPAR;
-                
-                // Spowolnij pomiary z pitota:
-                uint16_t pitotPeriod = FLIGHT_DATA_PERIOD*10;
-                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                    mainDataFrame.espNowErrorCounter++;
+                stateChanger.flight2firstSepar();
             }
 
             // Odcięcie bezpieczeństwa (udawane):
@@ -207,11 +203,7 @@ void loop() {
             if (mainDataFrame.separationData & (1<<2)) {
 
                 mainDataFrame.rocketState = SECOND_SEPAR;
-
-                // Spowolnij jeszcze mocniej pomiary z pitota:
-                uint16_t pitotPeriod = 5000;
-                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                    mainDataFrame.espNowErrorCounter++;
+                stateChanger.firstSep2secSep();
             }
         }
     }
