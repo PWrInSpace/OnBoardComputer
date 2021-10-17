@@ -22,7 +22,7 @@ void initSeparationSystem() {
   Wire.begin(3);
   Wire.onRequest(sendData);
   Wire.onReceive(receiveData);
-  Wire.setTimeout(100);
+  Wire.setTimeout(20);
 }
 
 /*******************************************************/
@@ -39,9 +39,9 @@ void receiveData() {
   char rxByte = Wire.read();
   
   if(rxByte == 8) {
-    
-    state = ARMED;
+
     SeparationFrame |= FRAME_ARMED;
+    state = ARMED;
   }
   
   else if(rxByte == 24) doFirstSeparation();

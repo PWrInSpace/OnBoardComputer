@@ -4,8 +4,6 @@ extern MainDataFrame mainDataFrame;
 extern Queue queue;
 extern MaximumData maxData;
 
-StateChanger stateChanger;
-
 String countStructData() {
 
     String frame = "R4MC;" + String((int) mainDataFrame.rocketState) + ";";
@@ -46,7 +44,8 @@ String countStructData() {
     uint8_t separation1Byte = mainDataFrame.separationData >> 8;
     frame += String((int) separation1Byte) + ";";
     frame += String((int) separation2Byte) + ";";
-    frame += String((int) mainDataFrame.countdown) + "\n";
+    frame += String((int) mainDataFrame.countdown) + ";";
+    frame += String((int) mainDataFrame.abortTimerSec) + "\n";
 
     return frame;
 }
@@ -88,6 +87,7 @@ void uart2Handler() {
 
         if (strstr(dataFrom3Ant.c_str(), "MNCP;STAT") != NULL) {
 
+            mainDataFrame.abortTimerSec = 900;
             int oldState, newState;
             sscanf(dataFrom3Ant.c_str(), "MNCP;STAT;%d;%d", &oldState, &newState);
 
@@ -96,11 +96,18 @@ void uart2Handler() {
 
                 switch (mainDataFrame.rocketState) {
 
-                case FUELING:      stateChanger.idle2fueling();      break;
-                case COUNTDOWN:    stateChanger.fueling2countdown(); break;
-                case FLIGHT:       stateChanger.countdown2flight();  break;
-                case FIRST_SEPAR:  stateChanger.flight2firstSepar(); break;
-                case SECOND_SEPAR: stateChanger.firstSep2secSep();   break;
+                case FUELING:      stateChanger.idle2fueling();          break;
+                case COUNTDOWN:    stateChanger.fueling2countdown();     break;
+                case FLIGHT:       stateChanger.countdown2flight();      break;
+                case FIRST_SEPAR:  
+                    mainDataFrame.forceSeparation = true;
+                    stateChanger.flight2firstSepar();
+                    break;
+
+                case SECOND_SEPAR:
+                    mainDataFrame.forceSeparation = true;
+                    stateChanger.firstSep2secSep();
+                    break;
                 }
             }
         }
@@ -119,8 +126,9 @@ void uart2Handler() {
         /*------------------------------------*/
         // Sterowanie zaworem upustowym:
 
-        else if (mainDataFrame.rocketState >= FUELING) { 
+        else if (mainDataFrame.rocketState >= IDLE) { 
 
+            mainDataFrame.abortTimerSec = 900;
             if (strstr(dataFrom3Ant.c_str(), "MNCP;UPST") != NULL) {
 
                 int upustMode = -1; // mode - 0 - zamykanie, 1 - otwieranie, upustTime - czas, gdy równy zero, to otwarcie na stałe.
@@ -149,7 +157,7 @@ uint32_t lastSendTime = 0;
 
 void sendData(String txData) {
 
-    if (millis() - lastSendTime > 450) {
+    if (millis() - lastSendTime > 250) {
 
         Serial2.print(txData);
         lastSendTime = millis();

@@ -2,9 +2,9 @@
 
 #include "LoopTasks.h"
 #include "SingleTasks.h"
-#include "ota.h"
+//#include "ota.h"
 
-#define SERVO_DELAY_SECONDS 5
+#define SERVO_DELAY_SECONDS 3
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -24,14 +24,15 @@ void setup() {
     mainDataFrame.rocketState = INIT;
 
     Serial.begin(115200);
-    delay(10);
+    delay(500);
 
-    WiFi.begin(SSID, PASS);
+    //initOtaSerwer();
+    //if (useOta) serverOta.begin();
 
     valveInit();
 
     xTaskCreate(i2cTask,                "Task i2c",     65536,  NULL, 3, NULL);
-    xTaskCreate(sdTask,                 "Task SD",      65536, NULL, 1, NULL);
+    xTaskCreate(sdTask,                 "Task SD",      65536, NULL, 2, NULL);
     xTaskCreate(adcTask,                "Task ADC",     4096,  NULL, 1, NULL);
     xTaskCreate(thrustControllerTask,   "Task TC",      16384,  NULL, 1, NULL);
     
@@ -64,18 +65,23 @@ void setup() {
 void loop() {
     uart2Handler();
 
+    // Otworzenie zaworu upustowego w razie braku łączności przez długi czas:
+    if (mainDataFrame.abortTimerSec < 1) {
+        xTaskCreate(valveOpen, "Task open valve", 4096, NULL, 2, NULL);
+    }
+
+    //if (useOta) serverOta.handleClient();
+
     if (mainDataFrame.rocketState == IDLE) {
 
         frameTimer.setVal(WAIT_DATA_PERIOD*5);
-        
-        initOtaSerwer();
-        if (useOta) serverOta.handleClient();
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+            mainDataFrame.abortTimerSec--;
         }
     }
 
@@ -90,6 +96,7 @@ void loop() {
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
+            mainDataFrame.abortTimerSec--;
         }
     }
 
@@ -104,15 +111,18 @@ void loop() {
 
             mainDataFrame.countdown--;
 
-            String txData = countStructData();
-            queue.push(txData);
-            sendData(txData);
-
             if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
 
                 // Odpal silnik:
+                vTaskDelay(400 / portTICK_PERIOD_MS);
+                Serial.println("Zapalnik");
                 Serial2.print("TNWN;DSTA\n");
+                vTaskDelay(10 / portTICK_PERIOD_MS);
             }
+
+            String txData = countStructData();
+            queue.push(txData);
+            sendData(txData);
 
             if(mainDataFrame.countdown < 1) {
 
@@ -122,6 +132,7 @@ void loop() {
                     mainDataFrame.espNowErrorCounter++;
 
                 // Każ serwu się otworzyć:
+                Serial.println("Serwo");
                 char messageOpen[] = "MNVL;1";
                 if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
                     mainDataFrame.espNowErrorCounter++;
@@ -158,8 +169,11 @@ void loop() {
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<1))
+            if (mainDataFrame.separationData & (1<<1)) {
+                
                 mainDataFrame.rocketState = FIRST_SEPAR;
+                stateChanger.flight2firstSepar();
+            }
 
             // Odcięcie bezpieczeństwa (udawane):
             else if (safetyCutoff_36atm && mainDataFrame.tankPressure < 36.0F) {
@@ -185,17 +199,15 @@ void loop() {
 
         if (frameTimer.check()) {
 
-            // Spowolnij pomiary z pitota:
-            uint16_t pitotPeriod = 400;
-            if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                mainDataFrame.espNowErrorCounter++;
-
             String txData = countStructData();
             queue.push(txData);
             sendData(txData);
 
-            if (mainDataFrame.separationData & (1<<2))
+            if (mainDataFrame.separationData & (1<<2)) {
+
                 mainDataFrame.rocketState = SECOND_SEPAR;
+                stateChanger.firstSep2secSep();
+            }
         }
     }
 
@@ -206,11 +218,6 @@ void loop() {
         frameTimer.setVal(WAIT_DATA_PERIOD*2);
 
         if (frameTimer.check()) {
-
-            // Spowolnij jeszcze mocniej pomiary z pitota:
-            uint16_t pitotPeriod = 8000;
-            if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                mainDataFrame.espNowErrorCounter++;
 
             String txData = countStructData();
             queue.push(txData);

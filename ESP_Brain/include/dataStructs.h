@@ -62,6 +62,7 @@ struct MainDataFrame {
     int8_t countdown = 16;
 
     bool forceSeparation = false;
+    int16_t abortTimerSec = 900;
 };
 
 // Stany maszyny stanów:

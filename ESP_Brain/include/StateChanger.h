@@ -16,4 +16,6 @@ public:
     void firstSep2secSep();
 };
 
+extern StateChanger stateChanger;
+
 #endif

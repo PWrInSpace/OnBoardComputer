@@ -1,5 +1,7 @@
 #include "now.h"
 
+#define LAUNCHPAD_ALTITUDE 134.7
+
 extern MainDataFrame mainDataFrame;
 
 bool adressCompare(const uint8_t *addr1, const uint8_t *addr2);
@@ -44,6 +46,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   if(adressCompare(mac, adressPitot)) {
 
     memcpy(&mainDataFrame.pitotData, (PitotData*) incomingData, sizeof(mainDataFrame.pitotData));
+    mainDataFrame.pitotData.altitude -= LAUNCHPAD_ALTITUDE;
   }
 
   else if(adressCompare(mac, adressMValve)) {

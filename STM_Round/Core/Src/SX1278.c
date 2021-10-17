@@ -275,6 +275,7 @@ int SX1278_LoRaEntryTx(SX1278_t *module, uint16_t length, uint32_t timeout) {
 			SX1278_defaultConfig(module);
 			return 0;
 		}
+		SX1278_hw_DelayMs(1);
 	}
 }
 
