@@ -4,7 +4,7 @@
 #include "SingleTasks.h"
 //#include "ota.h"
 
-#define SERVO_DELAY_SECONDS 5
+#define SERVO_DELAY_SECONDS 3
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -114,8 +114,10 @@ void loop() {
             if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
 
                 // Odpal silnik:
+                vTaskDelay(400 / portTICK_PERIOD_MS);
+                Serial.println("Zapalnik");
                 Serial2.print("TNWN;DSTA\n");
-                vTaskDelay(300 / portTICK_PERIOD_MS);
+                vTaskDelay(10 / portTICK_PERIOD_MS);
             }
 
             String txData = countStructData();
@@ -130,6 +132,7 @@ void loop() {
                     mainDataFrame.espNowErrorCounter++;
 
                 // Każ serwu się otworzyć:
+                Serial.println("Serwo");
                 char messageOpen[] = "MNVL;1";
                 if(esp_now_send(adressMValve, (uint8_t *) messageOpen, strlen(messageOpen)))
                     mainDataFrame.espNowErrorCounter++;
