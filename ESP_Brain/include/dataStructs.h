@@ -44,6 +44,8 @@ struct MainDataFrame {
     float battery = -1;
 
     PitotData pitotData = {};
+    bool pitotReady = false;
+
     ValveData upust = {};
     ValveData mValve = {};
 

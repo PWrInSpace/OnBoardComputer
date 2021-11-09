@@ -14,6 +14,8 @@ void uart2Handler();
 
 void sendData(String txData);
 
+bool readyToLaunch();
+
 /*******************************************/
 
 #define VALVE_PWM 19

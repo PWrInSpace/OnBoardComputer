@@ -109,7 +109,7 @@ void loop() {
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie COUNTDOWN.
 
-            mainDataFrame.countdown--;
+            if (readyToLaunch()) mainDataFrame.countdown--;
 
             if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
 

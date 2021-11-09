@@ -49,6 +49,8 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
         
         if (esp_now_send(adressPitot, (uint8_t*) &mainDataFrame.pitotPeriod, sizeof(mainDataFrame.pitotPeriod)))
             mainDataFrame.espNowErrorCounter++;
+        
+        if (mainDataFrame.rocketState == COUNTDOWN) mainDataFrame.pitotReady = true;
     }
 
     else if(adressCompare(mac, adressMValve)) {

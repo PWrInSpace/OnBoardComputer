@@ -25,8 +25,8 @@ void StateChanger::idle2fueling() {
     // Zamknij także upustowy:
     xTaskCreate(valveClose, "Task close valve", 4096, NULL, 2, NULL);
 
-    // Ustawienie pitota co 5s:
-    mainDataFrame.pitotPeriod = 5000;
+    // Ustawienie pitota co 10s:
+    mainDataFrame.pitotPeriod = 10000;
 }
 
 /**********************************************************************************************/
