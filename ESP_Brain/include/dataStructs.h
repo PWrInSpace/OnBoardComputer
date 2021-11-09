@@ -63,6 +63,8 @@ struct MainDataFrame {
 
     bool forceSeparation = false;
     int16_t abortTimerSec = 900;
+
+    uint16_t pitotPeriod = 20000;
 };
 
 // Stany maszyny stanów:

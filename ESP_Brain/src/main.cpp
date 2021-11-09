@@ -113,6 +113,9 @@ void loop() {
 
             if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
 
+                // Ustawienie pitota co 50ms:
+                mainDataFrame.pitotPeriod = 50;
+
                 // Odpal silnik:
                 vTaskDelay(400 / portTICK_PERIOD_MS);
                 Serial.println("Zapalnik");
@@ -125,11 +128,6 @@ void loop() {
             sendData(txData);
 
             if(mainDataFrame.countdown < 1) {
-
-                // Przyspiesz pomiary z pitota:
-                uint16_t pitotPeriod = 50;
-                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                    mainDataFrame.espNowErrorCounter++;
 
                 // Każ serwu się otworzyć:
                 Serial.println("Serwo");
@@ -230,6 +228,7 @@ void loop() {
     else if (mainDataFrame.rocketState == GROUND) {
 
         frameTimer.setVal(END_DATA_PERIOD);
+        mainDataFrame.pitotPeriod = 30000;
 
         if (frameTimer.check()) {
 

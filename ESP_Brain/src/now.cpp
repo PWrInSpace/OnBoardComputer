@@ -36,42 +36,42 @@ bool nowAddPeer(const uint8_t* address, uint8_t channel) {
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
-  if (status) mainDataFrame.espNowErrorCounter++;
+    if (status) mainDataFrame.espNowErrorCounter++;
 }
 
 /**********************************************************************************************/
 
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   
-  if(adressCompare(mac, adressPitot)) {
+    if(adressCompare(mac, adressPitot)) {
 
-    memcpy(&mainDataFrame.pitotData, (PitotData*) incomingData, sizeof(mainDataFrame.pitotData));
-    mainDataFrame.pitotData.altitude -= LAUNCHPAD_ALTITUDE;
-  }
+        memcpy(&mainDataFrame.pitotData, (PitotData*) incomingData, sizeof(mainDataFrame.pitotData));
+        
+        if (esp_now_send(adressPitot, (uint8_t*) &mainDataFrame.pitotPeriod, sizeof(mainDataFrame.pitotPeriod)))
+            mainDataFrame.espNowErrorCounter++;
+    }
 
-  else if(adressCompare(mac, adressMValve)) {
+    else if(adressCompare(mac, adressMValve)) {
 
-    Serial.println((char*) incomingData);
+        Serial.println((char*) incomingData);
 
-    int mValveState, mValvePot;
-    int wart = sscanf((char*) incomingData, "R4MV;%d;%d", &mValveState, &mValvePot);
-    Serial.println(wart);
+        int mValveState, mValvePot;
+        int wart = sscanf((char*) incomingData, "R4MV;%d;%d", &mValveState, &mValvePot);
+        Serial.println(wart);
 
-    mainDataFrame.mValve.valveState = mValveState;
-    mainDataFrame.mValve.potentiometer = mValvePot;
-  }
-  
-
+        mainDataFrame.mValve.valveState = mValveState;
+        mainDataFrame.mValve.potentiometer = mValvePot;
+    }
 }
 
 /**********************************************************************************************/
 
 bool adressCompare(const uint8_t *addr1, const uint8_t *addr2) {
 
-  for(int8_t i = 0; i < 6; i++) {
+    for(int8_t i = 0; i < 6; i++) {
 
-    if(addr1[i] != addr2[i]) return false;
-  }
+        if(addr1[i] != addr2[i]) return false;
+    }
 
-  return true;
+    return true;
 }
