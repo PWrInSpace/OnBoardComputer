@@ -106,7 +106,7 @@ void i2cTask(void *arg) {
 
 void i2cTaskInit(Adafruit_BME280 &bme) {
 
-    Wire.begin(GPIO_NUM_21, GPIO_NUM_22, 50000);
+    Wire.begin(GPIO_NUM_21, GPIO_NUM_22);
 
     vTaskDelay(500 / portTICK_PERIOD_MS);
 

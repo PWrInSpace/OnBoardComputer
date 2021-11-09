@@ -58,7 +58,7 @@ struct MainDataFrame {
     uint16_t espNowErrorCounter = 0;
     uint16_t sdErrorCounter = 0;
 
-    uint16_t separationData = 2047;
+    uint16_t separationData = 0;//2047;
     int8_t countdown = 16;
 
     bool forceSeparation = false;
