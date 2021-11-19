@@ -4,7 +4,7 @@
 #include "SingleTasks.h"
 //#include "ota.h"
 
-#define SERVO_DELAY_SECONDS 3
+#define SERVO_DELAY_SECONDS 1
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};

@@ -32,6 +32,7 @@ TimersFlagsStrings tfsStruct;
 Xbee xbeeIgnition;
 
 uint16_t hallSensors[5];
+uint16_t badFrames;
 
 uint16_t gpsPeriod;
 

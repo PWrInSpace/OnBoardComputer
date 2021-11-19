@@ -98,6 +98,10 @@ void loraReaction(void) {
 		xbee_transmit_char(xbeeIgnition, loraBuffer);
 	}
 
+	else {
+		badFrames++;
+	}
+
 	HAL_Delay(20);
 	memset(loraBuffer, 0, BUFFER_SIZE);
 }
@@ -113,7 +117,7 @@ void sendGPSData(void) {
 			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
 			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec,
 			(int) hallSensors[0], (int) hallSensors[1], (int) hallSensors[2],
-			(int) hallSensors[3], (int) hallSensors[4]);
+			(int) hallSensors[3], (int) badFrames);
 
 	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
 
