@@ -108,6 +108,8 @@ void loraReaction(void) {
 
 /*******************************************************************************************/
 
+#define DEL_TIME 350
+
 void sendGPSData(void) {
 
 	GPS_Process();
@@ -123,7 +125,7 @@ void sendGPSData(void) {
 
 	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.gpsStringLora, len, 100);
 
-	HAL_Delay(100);
+	HAL_Delay(DEL_TIME);
 }
 
 /*******************************************************************************************/
@@ -132,7 +134,7 @@ void sendFromMaincompToLora(void) {
 
 	loraSendData((uint8_t*) tfsStruct.maincompStringLora,
 			strlen(tfsStruct.maincompStringLora));
-	HAL_Delay(100);
+	HAL_Delay(DEL_TIME);
 }
 
 /*******************************************************************************************/
@@ -145,5 +147,5 @@ void sendFromTanwaToLora(void) {
 
 	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.tanwaStringLora, len, 100);
 
-	HAL_Delay(100);
+	HAL_Delay(DEL_TIME);
 }

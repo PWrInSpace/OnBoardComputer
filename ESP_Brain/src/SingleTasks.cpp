@@ -45,7 +45,7 @@ String countStructData() {
     frame += String((int) separation1Byte) + ";";
     frame += String((int) separation2Byte) + ";";
     frame += String((int) mainDataFrame.countdown) + ";";
-    frame += String((int) mainDataFrame.abortTimerSec) + "\n";
+    frame += String((int) mainDataFrame.badFrames) + "\n";
 
     return frame;
 }
@@ -148,6 +148,7 @@ void uart2Handler() {
 
             }
         }
+        else mainDataFrame.badFrames++;
     }
 }
 
@@ -168,7 +169,7 @@ void sendData(String txData) {
 
 bool readyToLaunch() {
 
-    return (mainDataFrame.pitotReady);
+    return true; //(mainDataFrame.pitotReady);
 }
 
 /*********************************************************************************************/
