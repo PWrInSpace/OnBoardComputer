@@ -108,7 +108,7 @@ void loraReaction(void) {
 
 /*******************************************************************************************/
 
-#define DEL_TIME 350
+#define DEL_TIME 1
 
 void sendGPSData(void) {
 
