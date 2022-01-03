@@ -89,7 +89,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FUELING) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD);
+        frameTimer.setVal(FLIGHT_DATA_PERIOD*5);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FUELING.
 
