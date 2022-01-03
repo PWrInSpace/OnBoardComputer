@@ -21,10 +21,10 @@ uint32_t liftoffTime;
 
 void setup() {
 
+    delay(1500);
     mainDataFrame.rocketState = INIT;
 
     Serial.begin(115200);
-    delay(500);
 
     //initOtaSerwer();
     //if (useOta) serverOta.begin();
