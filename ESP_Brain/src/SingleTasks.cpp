@@ -45,7 +45,7 @@ String countStructData() {
     frame += String((int) separation1Byte) + ";";
     frame += String((int) separation2Byte) + ";";
     frame += String((int) mainDataFrame.countdown) + ";";
-    frame += String((int) mainDataFrame.badFrames) + "\n";
+    frame += String((int) mainDataFrame.abortTimerSec) + "\n";
 
     return frame;
 }
@@ -148,7 +148,6 @@ void uart2Handler() {
 
             }
         }
-        else mainDataFrame.badFrames++;
     }
 }
 
@@ -158,7 +157,7 @@ uint32_t lastSendTime = 0;
 
 void sendData(String txData) {
 
-    if (millis() - lastSendTime > 250) {
+    if (millis() - lastSendTime > 490) {
 
         Serial2.print(txData);
         lastSendTime = millis();

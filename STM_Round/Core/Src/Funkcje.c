@@ -121,7 +121,8 @@ void sendGPSData(void) {
 			(int) hallSensors[0], (int) hallSensors[1], (int) hallSensors[2],
 			(int) hallSensors[3], (int) badFrames);
 
-	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
+	// Nie wysyłamy tutaj, bo wolimy mieć wszystko w jednej, wspólnej ramce.
+	//loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
 
 	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.gpsStringLora, len, 100);
 
@@ -132,8 +133,11 @@ void sendGPSData(void) {
 
 void sendFromMaincompToLora(void) {
 
-	loraSendData((uint8_t*) tfsStruct.maincompStringLora,
-			strlen(tfsStruct.maincompStringLora));
+	char txString[250];
+	strcpy(txString, tfsStruct.maincompStringLora);
+	strcat(txString, tfsStruct.gpsStringLora);
+
+	loraSendData((uint8_t*) txString, strlen(txString));
 	HAL_Delay(DEL_TIME);
 }
 

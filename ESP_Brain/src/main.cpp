@@ -74,7 +74,7 @@ void loop() {
 
     if (mainDataFrame.rocketState == IDLE) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD*5);
+        frameTimer.setVal(WAIT_DATA_PERIOD);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
@@ -89,7 +89,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FUELING) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD*2);
+        frameTimer.setVal(WAIT_DATA_PERIOD);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FUELING.
 
@@ -193,7 +193,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FIRST_SEPAR) {
 
-        frameTimer.setVal(FLIGHT_DATA_PERIOD*10);
+        frameTimer.setVal(FLIGHT_DATA_PERIOD*5);
 
         if (frameTimer.check()) {
 
@@ -213,7 +213,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD*2);
+        frameTimer.setVal(WAIT_DATA_PERIOD);
 
         if (frameTimer.check()) {
 
