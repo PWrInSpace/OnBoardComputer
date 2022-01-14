@@ -36,42 +36,44 @@ bool nowAddPeer(const uint8_t* address, uint8_t channel) {
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
-  if (status) mainDataFrame.espNowErrorCounter++;
+    if (status) mainDataFrame.espNowErrorCounter++;
 }
 
 /**********************************************************************************************/
 
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
-  
-  if(adressCompare(mac, adressPitot)) {
 
-    memcpy(&mainDataFrame.pitotData, (PitotData*) incomingData, sizeof(mainDataFrame.pitotData));
-    mainDataFrame.pitotData.altitude -= LAUNCHPAD_ALTITUDE;
-  }
+    if(adressCompare(mac, adressPitot)) {
 
-  else if(adressCompare(mac, adressMValve)) {
+        memcpy(&mainDataFrame.pitotData, (PitotData*) incomingData, sizeof(mainDataFrame.pitotData));
+        
+        if (esp_now_send(adressPitot, (uint8_t*) &mainDataFrame.pitotPeriod, sizeof(mainDataFrame.pitotPeriod)))
+            mainDataFrame.espNowErrorCounter++;
+        
+        if (mainDataFrame.rocketState == COUNTDOWN) mainDataFrame.pitotReady = true;
+    }
 
-    Serial.println((char*) incomingData);
+    else if(adressCompare(mac, adressMValve)) {
 
-    int mValveState, mValvePot;
-    int wart = sscanf((char*) incomingData, "R4MV;%d;%d", &mValveState, &mValvePot);
-    Serial.println(wart);
+        Serial.println((char*) incomingData);
 
-    mainDataFrame.mValve.valveState = mValveState;
-    mainDataFrame.mValve.potentiometer = mValvePot;
-  }
-  
+        int mValveState, mValvePot;
+        int wart = sscanf((char*) incomingData, "R4MV;%d;%d", &mValveState, &mValvePot);
+        Serial.println(wart);
 
+        mainDataFrame.mValve.valveState = mValveState;
+        mainDataFrame.mValve.potentiometer = mValvePot;
+    }
 }
 
 /**********************************************************************************************/
 
 bool adressCompare(const uint8_t *addr1, const uint8_t *addr2) {
 
-  for(int8_t i = 0; i < 6; i++) {
+    for(int8_t i = 0; i < 6; i++) {
 
-    if(addr1[i] != addr2[i]) return false;
-  }
+        if(addr1[i] != addr2[i]) return false;
+    }
 
-  return true;
+    return true;
 }

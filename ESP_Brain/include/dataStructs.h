@@ -44,6 +44,8 @@ struct MainDataFrame {
     float battery = -1;
 
     PitotData pitotData = {};
+    bool pitotReady = false;
+
     ValveData upust = {};
     ValveData mValve = {};
 
@@ -58,11 +60,13 @@ struct MainDataFrame {
     uint16_t espNowErrorCounter = 0;
     uint16_t sdErrorCounter = 0;
 
-    uint16_t separationData = 2047;
+    uint16_t separationData = 0;//2047;
     int8_t countdown = 16;
 
     bool forceSeparation = false;
     int16_t abortTimerSec = 900;
+
+    uint16_t pitotPeriod = 20000;
 };
 
 // Stany maszyny stanów:
@@ -80,8 +84,8 @@ enum States {
     GROUND
 };
 
-#define FLIGHT_DATA_PERIOD  (50)
-#define WAIT_DATA_PERIOD    (500)
+#define FLIGHT_DATA_PERIOD  (100)
+#define WAIT_DATA_PERIOD    (1000)
 #define END_DATA_PERIOD     (10000)
 
 #endif

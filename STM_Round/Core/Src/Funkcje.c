@@ -98,11 +98,17 @@ void loraReaction(void) {
 		xbee_transmit_char(xbeeIgnition, loraBuffer);
 	}
 
+	else {
+		badFrames++;
+	}
+
 	HAL_Delay(20);
 	memset(loraBuffer, 0, BUFFER_SIZE);
 }
 
 /*******************************************************************************************/
+
+#define DEL_TIME 1
 
 void sendGPSData(void) {
 
@@ -113,22 +119,26 @@ void sendGPSData(void) {
 			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
 			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec,
 			(int) hallSensors[0], (int) hallSensors[1], (int) hallSensors[2],
-			(int) hallSensors[3], (int) hallSensors[4]);
+			(int) hallSensors[3], (int) badFrames);
 
-	loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
+	// Nie wysyłamy tutaj, bo wolimy mieć wszystko w jednej, wspólnej ramce.
+	//loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
 
 	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.gpsStringLora, len, 100);
 
-	HAL_Delay(100);
+	HAL_Delay(DEL_TIME);
 }
 
 /*******************************************************************************************/
 
 void sendFromMaincompToLora(void) {
 
-	loraSendData((uint8_t*) tfsStruct.maincompStringLora,
-			strlen(tfsStruct.maincompStringLora));
-	HAL_Delay(100);
+	char txString[250];
+	strcpy(txString, tfsStruct.maincompStringLora);
+	strcat(txString, tfsStruct.gpsStringLora);
+
+	loraSendData((uint8_t*) txString, strlen(txString));
+	HAL_Delay(DEL_TIME);
 }
 
 /*******************************************************************************************/
@@ -141,5 +151,5 @@ void sendFromTanwaToLora(void) {
 
 	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.tanwaStringLora, len, 100);
 
-	HAL_Delay(100);
+	HAL_Delay(DEL_TIME);
 }

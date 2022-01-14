@@ -4,7 +4,7 @@
 #include "SingleTasks.h"
 //#include "ota.h"
 
-#define SERVO_DELAY_SECONDS 3
+#define SERVO_DELAY_SECONDS 1
 
 // Główna struktura na wszelnie dane z rakiety:
 volatile MainDataFrame mainDataFrame = {};
@@ -21,10 +21,10 @@ uint32_t liftoffTime;
 
 void setup() {
 
+    delay(1500);
     mainDataFrame.rocketState = INIT;
 
     Serial.begin(115200);
-    delay(500);
 
     //initOtaSerwer();
     //if (useOta) serverOta.begin();
@@ -74,7 +74,7 @@ void loop() {
 
     if (mainDataFrame.rocketState == IDLE) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD*5);
+        frameTimer.setVal(WAIT_DATA_PERIOD);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie IDLE.
 
@@ -89,7 +89,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FUELING) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD*2);
+        frameTimer.setVal(FLIGHT_DATA_PERIOD*5);
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie FUELING.
 
@@ -109,9 +109,12 @@ void loop() {
 
         if (frameTimer.check()) { // Polecenia wykonywane cyklicznie w stanie COUNTDOWN.
 
-            mainDataFrame.countdown--;
+            if (readyToLaunch()) mainDataFrame.countdown--;
 
             if(mainDataFrame.countdown == SERVO_DELAY_SECONDS) {
+
+                // Ustawienie pitota co 50ms:
+                mainDataFrame.pitotPeriod = 50;
 
                 // Odpal silnik:
                 vTaskDelay(400 / portTICK_PERIOD_MS);
@@ -125,11 +128,6 @@ void loop() {
             sendData(txData);
 
             if(mainDataFrame.countdown < 1) {
-
-                // Przyspiesz pomiary z pitota:
-                uint16_t pitotPeriod = 50;
-                if(esp_now_send(adressPitot, (uint8_t *) &pitotPeriod, sizeof(pitotPeriod)))
-                    mainDataFrame.espNowErrorCounter++;
 
                 // Każ serwu się otworzyć:
                 Serial.println("Serwo");
@@ -195,7 +193,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == FIRST_SEPAR) {
 
-        frameTimer.setVal(FLIGHT_DATA_PERIOD*10);
+        frameTimer.setVal(FLIGHT_DATA_PERIOD*5);
 
         if (frameTimer.check()) {
 
@@ -215,7 +213,7 @@ void loop() {
 
     else if (mainDataFrame.rocketState == SECOND_SEPAR) {
 
-        frameTimer.setVal(WAIT_DATA_PERIOD*2);
+        frameTimer.setVal(WAIT_DATA_PERIOD);
 
         if (frameTimer.check()) {
 
@@ -230,6 +228,7 @@ void loop() {
     else if (mainDataFrame.rocketState == GROUND) {
 
         frameTimer.setVal(END_DATA_PERIOD);
+        mainDataFrame.pitotPeriod = 30000;
 
         if (frameTimer.check()) {
 

@@ -9,7 +9,7 @@ SX1278_hw_t SX1278_hw;
 SX1278_t SX1278;
 
 #define BUFFER_SIZE 512
-#define LORA_TIMEOUT 200
+#define LORA_TIMEOUT 500
 
 int loraRet;
 char loraBuffer[BUFFER_SIZE];

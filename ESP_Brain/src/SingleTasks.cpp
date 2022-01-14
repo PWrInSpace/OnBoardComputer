@@ -157,11 +157,18 @@ uint32_t lastSendTime = 0;
 
 void sendData(String txData) {
 
-    if (millis() - lastSendTime > 250) {
+    if (millis() - lastSendTime > 490) {
 
         Serial2.print(txData);
         lastSendTime = millis();
     }
+}
+
+/**********************************************************************************************/
+
+bool readyToLaunch() {
+
+    return true; //(mainDataFrame.pitotReady);
 }
 
 /*********************************************************************************************/
