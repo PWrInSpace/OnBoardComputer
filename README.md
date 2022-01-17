@@ -1,3 +1,3 @@
-# MainComputer R4 and R4S
+# OBC R4S, R4 and R5
 
-Main computer programs for R4 and R4S
+Onboard Computer programs for R4S, R4 and R5.
