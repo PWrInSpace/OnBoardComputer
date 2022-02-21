@@ -2,17 +2,13 @@
 #define LOOPTASKS_H
 
 #include <Arduino.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <Adafruit_Sensor.h>
+#include <LITTLEFS.h>
 
 #include "Adafruit_BME280.h"
-#include "now.h"
-#include "queue.h"
-#include "SDcard.h"
 #include "Timer_ms.h"
+#include "dataStructs.h"
 
-void sdTask(void *arg);
+void flashTask(void *arg);
 
 void adcMeasure();
 

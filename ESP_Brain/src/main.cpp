@@ -2,43 +2,27 @@
 
 #include "LoopTasks.h"
 #include "SingleTasks.h"
-//#include "ota.h"
-
-#define SERVO_DELAY_SECONDS 1
 
 // Główna struktura na wszelnie dane z rakiety:
-volatile MainDataFrame mainDataFrame = {};
-volatile MaximumData maxData;
-
-Queue queue;
+volatile DataFrame dataFrame = {};
+File file;
+QueueHandle_t queue;
 Timer_ms frameTimer;
-
-// Odcięcie przy ciśnieniu w butli poniżej 36 barów (aby nie doszło do zassania gazów spalinowych i eksplozji butli):
-bool safetyCutoff_36atm = true;
-uint32_t liftoffTime;
 
 /**********************************************************************************************/
 
 void setup() {
 
-    delay(1500);
-    mainDataFrame.rocketState = INIT;
+    delay(100);
 
     Serial.begin(115200);
+    LITTLEFS.begin(true);
 
-    xTaskCreate(sdTask,                 "Task SD",      65536, NULL, 2, NULL);
-    
-    /*if(!nowInit())
-        mainDataFrame.espNowErrorCounter = 2137; // Fatalny błąd.
+    queue = xQueueCreate(20, sizeof(DataFrame));
+    xTaskCreate(flashTask, "Task save to Flash", 8192, NULL, 1, NULL);
 
-    nowAddPeer(adressPitot, 0);
-    nowAddPeer(adressMValve, 0);
-
-    saveFrameHeaders();*/
-
-    mainDataFrame.rocketState = IDLE;
     Serial2.begin(115200);
-    Serial2.setTimeout(1);
+    Serial2.setTimeout(10);
 }
 
 /**********************************************************************************************/
@@ -50,10 +34,10 @@ void setup() {
  */
 
 void loop() {
+
     uart2Handler();
 
     adcMeasure();
-    // TODO funkcja wysyłająca pomiary
 
     vTaskDelay(2 / portTICK_PERIOD_MS);
 }

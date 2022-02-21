@@ -3,89 +3,37 @@
 
 #include <cstdint>
 
-// Stany zaworów:
+// Struktura do zapisu:
 
-enum ValveStates {
+struct DataFrame {
 
-    CLOSED = 0,
-    OPEN,
-    MOVING
+	uint32_t time_ms;
+	float batteryV;
+	float tankPressure;
+	float gpsLatitude;
+	float gpsLongitude;
+	float gpsAltitude;
+	uint8_t gpsSatNum;
+	uint8_t gpsTimeS;
+	uint16_t hallSensors[5];
+
+	float tanWaVoltage;
+	uint8_t tanWaState : 4;
+	_Bool tanWaIgniter : 1;
+	uint8_t tanWaFill : 2;
+	uint8_t tanWaDepr : 2;
+	uint8_t tanWaUpust : 2;
+	float rocketWeightKg;
+	float tankWeightKg;
+	uint32_t rocketWRaw;
+	uint32_t tankWRaw;
+
 };
 
-// Struktury pomocnicze:
+struct EspBinData {
 
-struct PitotData {
-
-    float staticPressure = -1;
-    float dynamicPressure = -1;
-    float temperature = -1;
-    float altitude = -1;
-    float speed = -1;
+	float batteryV;
+	float tankPressure;
 };
-
-struct ValveData {
-
-    uint8_t valveState = MOVING;
-    uint16_t potentiometer = 2137;
-};
-
-struct MaximumData {
-
-    int apogee = 1;
-    float maxSpeed = 1;
-    float maxAcc = 1;
-};
-
-// Główna struktura na przechowywanie danych całej rakiety:
-
-struct MainDataFrame {
-
-    uint8_t rocketState;
-    float battery = -1;
-
-    PitotData pitotData = {};
-    bool pitotReady = false;
-
-    ValveData upust = {};
-    ValveData mValve = {};
-
-    float tankPressure = -1;
-
-    float initialPressure = 2137;
-    float pressure = -1;
-    int altitude;
-    float speed;
-    float gForce;
-
-    uint16_t espNowErrorCounter = 0;
-    uint16_t sdErrorCounter = 0;
-
-    uint16_t separationData = 0;//2047;
-    int8_t countdown = 16;
-
-    bool forceSeparation = false;
-    int16_t abortTimerSec = 900;
-
-    uint16_t pitotPeriod = 20000;
-};
-
-// Stany maszyny stanów:
-
-enum States {
-
-    INIT = 0,
-    IDLE,
-    FUELING,
-    COUNTDOWN,
-    ABORT,
-    FLIGHT,
-    FIRST_SEPAR,
-    SECOND_SEPAR,
-    GROUND
-};
-
-#define FLIGHT_DATA_PERIOD  (100)
-#define WAIT_DATA_PERIOD    (1000)
-#define END_DATA_PERIOD     (10000)
 
 #endif
