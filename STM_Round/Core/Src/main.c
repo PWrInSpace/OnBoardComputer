@@ -121,18 +121,18 @@ int main(void)
 
 		GPS_Process();
 
+		// Zapisywanie każdej ramki we flashu ESP:
+		if (uwTick - tfsStruct.frameTimer > SAVE_PERIOD) {
+
+			tfsStruct.frameTimer = uwTick;
+			updateFrame();
+		}
+
 		// Wysyłanie jednej ramki co jakiś czas:
 		if (uwTick - tfsStruct.frameTimer > FRAME_PERIOD) {
 
 			tfsStruct.frameTimer = uwTick;
 			generateAndSendFrame();
-		}
-
-		// Zapisywanie każdej ramki we flashu ESP:
-		if (tfsStruct.launched && uwTick - tfsStruct.frameTimer > SAVE_PERIOD) {
-
-			tfsStruct.frameTimer = uwTick;
-			saveFrame();
 		}
 
     /* USER CODE END WHILE */

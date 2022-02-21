@@ -11,9 +11,28 @@
 
 #define RX_BUFFER_SIZE 128
 
-typedef struct { // TODO uzupełnić strukturę
+typedef struct {
 
+	uint32_t time_ms;
+	float batteryV;
+	float tankPressure;
+	float gpsLatitude;
+	float gpsLongitude;
+	float gpsAltitude;
+	uint8_t gpsSatNum;
+	uint8_t gpsTimeS;
 	uint16_t hallSensors[5];
+
+	float tanWaVoltage;
+	uint8_t tanWaState : 4;
+	_Bool tanWaIgniter : 1;
+	uint8_t tanWaFill : 2;
+	uint8_t tanWaDepr : 2;
+	uint8_t tanWaUpust : 2;
+	float rocketWeightKg;
+	float tankWeightKg;
+	uint32_t rocketWRaw;
+	uint32_t tankWRaw;
 
 } DataFrame;
 
@@ -57,16 +76,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void initAll(void);
 
-/*void sendGPSData(void);
-
-void sendFromMaincompToLora(void);
-
-void sendFromTanwaToLora(void);*/
-
 void loraReaction(void);
 
 void generateAndSendFrame(void);
 
-void saveFrame(void);
+void updateFrame(void);
 
 #endif /* INC_FUNKCJE_H_ */
