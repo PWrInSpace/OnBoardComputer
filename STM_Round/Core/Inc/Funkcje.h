@@ -11,30 +11,43 @@
 
 #define RX_BUFFER_SIZE 128
 
+typedef struct { // TODO uzupełnić strukturę
+
+	uint16_t hallSensors[5];
+
+} DataFrame;
+
 typedef struct {
 
-	uint32_t gpsFrameTimer;
+	float batteryV;
+	float tankPressure;
 
-	_Bool tanwaRxFlag;
-	_Bool maincompRxFlag;
+} EspBinData;
+
+typedef struct {
+
+	uint32_t frameTimer;
+	uint32_t saveTimer;
+
+	_Bool launched;
+
+	EspBinData espBinData;
 
 	char gpsStringLora[RX_BUFFER_SIZE];
-	char maincompStringDma[RX_BUFFER_SIZE];
 	char tanwaStringLora[RX_BUFFER_SIZE];
-	char maincompStringLora[RX_BUFFER_SIZE];
+	char txStringLora[RX_BUFFER_SIZE];
 
 } TimersFlagsStrings;
 
 /******************************/
 
+#define FRAME_PERIOD 500
+#define SAVE_PERIOD 100
+
 TimersFlagsStrings tfsStruct;
+DataFrame dataFrame;
 
 Xbee xbeeIgnition;
-
-uint16_t hallSensors[5];
-uint16_t badFrames;
-
-uint16_t gpsPeriod;
 
 _Bool ignite;
 
@@ -44,12 +57,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart);
 
 void initAll(void);
 
-void sendGPSData(void);
+/*void sendGPSData(void);
 
 void sendFromMaincompToLora(void);
 
-void sendFromTanwaToLora(void);
+void sendFromTanwaToLora(void);*/
 
 void loraReaction(void);
+
+void generateAndSendFrame(void);
+
+void saveFrame(void);
 
 #endif /* INC_FUNKCJE_H_ */

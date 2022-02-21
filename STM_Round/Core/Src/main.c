@@ -117,43 +117,22 @@ int main(void)
 
 		// Sprawdzanie, czy przyszły dane z LoRy:
 		loraLoop();
-		if (loraBuffer[0] != 0)
-			loraReaction();
+		if (loraBuffer[0] != 0)	loraReaction();
 
 		GPS_Process();
 
-		// Wysyłanie GPSa co jakiś czas:
-		if (uwTick - tfsStruct.gpsFrameTimer > gpsPeriod) {
+		// Wysyłanie jednej ramki co jakiś czas:
+		if (uwTick - tfsStruct.frameTimer > FRAME_PERIOD) {
 
-			tfsStruct.gpsFrameTimer = uwTick;
-			sendGPSData();
+			tfsStruct.frameTimer = uwTick;
+			generateAndSendFrame();
 		}
 
-		// Sprawdzanie, czy przyszły dane z Tanwy (xbee):
-		if (tfsStruct.tanwaRxFlag) {
+		// Zapisywanie każdej ramki we flashu ESP:
+		if (tfsStruct.launched && uwTick - tfsStruct.frameTimer > SAVE_PERIOD) {
 
-			tfsStruct.tanwaRxFlag = 0;
-			sendFromTanwaToLora();
-		}
-
-		// Sprawdzanie, czy przyszły dane z Maincompa (uart):
-		if (tfsStruct.maincompRxFlag) {
-
-			tfsStruct.maincompRxFlag = 0;
-			sendFromMaincompToLora();
-		}
-
-		// Sprawdzanie, czy należy odpalać:
-		if (ignite) {
-
-			ignite = 0;
-
-			xbee_transmit_char(xbeeIgnition, odp);
-			HAL_Delay(100);
-			xbee_transmit_char(xbeeIgnition, odp);
-			HAL_Delay(100);
-			xbee_transmit_char(xbeeIgnition, odp);
-			HAL_Delay(200);
+			tfsStruct.frameTimer = uwTick;
+			saveFrame();
 		}
 
     /* USER CODE END WHILE */

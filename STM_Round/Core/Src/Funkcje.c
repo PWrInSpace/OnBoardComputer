@@ -16,8 +16,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 			if (strstr(xbee_rx.data_array, "R4TN") != NULL) {
 
-				tfsStruct.tanwaRxFlag = 1;
-				strcpy(tfsStruct.tanwaStringLora, xbee_rx.data_array);
+				// TODO Parsowanie ramki tanwy
 			}
 
 		}
@@ -33,23 +32,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		if (strstr(tfsStruct.maincompStringDma, "R4MC") != NULL) {
+		// Tu raczej nic nie trzeba robić, bo DMA nam wpisze dane jak trzeba, TODO testy.
 
-			tfsStruct.maincompRxFlag = 1;
-			strcpy(tfsStruct.maincompStringLora, tfsStruct.maincompStringDma);
-
-			if (tfsStruct.maincompStringDma[5] == '2') gpsPeriod = 1000;
-			else gpsPeriod = 8000;
-		}
-
-		if (strstr(tfsStruct.maincompStringDma, "TNWN;DSTA") != NULL) {
-
-			ignite = 1;
-		}
-
-		memset(tfsStruct.maincompStringDma, 0, RX_BUFFER_SIZE);
-		HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
-		RX_BUFFER_SIZE);
+		HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData,
+		sizeof(tfsStruct.espBinData));
 	}
 
 }
@@ -61,45 +47,34 @@ void initAll(void) {
 	loraInit();
 	GPS_Init();
 
-	gpsPeriod = 1000;
-
 	// Inity uartów:
 
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.maincompStringDma,
-	RX_BUFFER_SIZE);
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData,
+	sizeof(tfsStruct.espBinData));
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 
-	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) hallSensors, 5);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) dataFrame.hallSensors, 5);
 
 	// Inity struktury:
-
-	tfsStruct.gpsFrameTimer = uwTick;
-	tfsStruct.tanwaRxFlag = 0;
-	tfsStruct.maincompRxFlag = 0;
+	tfsStruct.frameTimer = uwTick;
+	tfsStruct.saveTimer = uwTick;
 }
 
 /*******************************************************************************************/
 
 void loraReaction(void) {
 
-	// Przesyłanie wiadomości z LoRy do Maincompa:
-	if (strstr(loraBuffer, "MNCP") != NULL) {
-		HAL_UART_Transmit(&huart1, (uint8_t*) loraBuffer, strlen(loraBuffer),
-				100);
-	}
-
 	// Przesyłanie wiadomości z LoRy do Tanwy:
-	else if (strstr(loraBuffer, "TNWN") != NULL) {
-		xbee_transmit_char(xbeeIgnition, loraBuffer);
-	}
+	if (strstr(loraBuffer, "TNWN") != NULL) {
 
-	else {
-		badFrames++;
+		// TODO sprawdzenie czy przechodzi w 3 state
+
+		xbee_transmit_char(xbeeIgnition, loraBuffer);
 	}
 
 	HAL_Delay(20);
@@ -118,8 +93,9 @@ void sendGPSData(void) {
 			"R4GP;%.5f;%.5f;%.1f;%d;%d;%d;%d;%d;%d;%d\n",
 			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
 			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec,
-			(int) hallSensors[0], (int) hallSensors[1], (int) hallSensors[2],
-			(int) hallSensors[3], (int) badFrames);
+			(int) dataFrame.hallSensors[0], (int) dataFrame.hallSensors[1],
+			(int) dataFrame.hallSensors[2], (int) dataFrame.hallSensors[3],
+			(int) dataFrame.hallSensors[4]);
 
 	// Nie wysyłamy tutaj, bo wolimy mieć wszystko w jednej, wspólnej ramce.
 	//loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
@@ -133,23 +109,37 @@ void sendGPSData(void) {
 
 void sendFromMaincompToLora(void) {
 
-	char txString[250];
+	/*char txString[250];
 	strcpy(txString, tfsStruct.maincompStringLora);
 	strcat(txString, tfsStruct.gpsStringLora);
 
 	loraSendData((uint8_t*) txString, strlen(txString));
-	HAL_Delay(DEL_TIME);
+	HAL_Delay(DEL_TIME);*/
 }
 
 /*******************************************************************************************/
 
 void sendFromTanwaToLora(void) {
 
-	size_t len = strlen(tfsStruct.tanwaStringLora);
+	/*size_t len = strlen(tfsStruct.tanwaStringLora);
 
 	loraSendData((uint8_t*) tfsStruct.tanwaStringLora, len);
 
 	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.tanwaStringLora, len, 100);
 
-	HAL_Delay(DEL_TIME);
+	HAL_Delay(DEL_TIME);*/
+}
+
+/*******************************************************************************************/
+
+void generateAndSendFrame(void) { // TODO
+
+
+}
+
+/*******************************************************************************************/
+
+void saveFrame(void) { // TODO
+
+
 }
