@@ -2,6 +2,7 @@
 #define DATA_STRUCTS_H
 
 #include <cstdint>
+#include <Arduino.h>
 
 // Struktura do zapisu:
 
@@ -19,7 +20,7 @@ struct DataFrame {
 
 	float tanWaVoltage;
 	uint8_t tanWaState : 4;
-	_Bool tanWaIgniter : 1;
+	bool tanWaIgniter : 1;
 	uint8_t tanWaFill : 2;
 	uint8_t tanWaDepr : 2;
 	uint8_t tanWaUpust : 2;

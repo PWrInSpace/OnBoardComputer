@@ -1,7 +1,6 @@
 #include "LoopTasks.h"
 
 extern DataFrame dataFrame;
-extern Timer_ms frameTimer;
 extern File file;
 extern QueueHandle_t queue;
 
