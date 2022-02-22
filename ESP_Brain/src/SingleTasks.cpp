@@ -1,8 +1,7 @@
 #include "SingleTasks.h"
 
 extern DataFrame dataFrame;
-
-int upustTime_ms;
+extern QueueHandle_t queue;
 
 void uart2Handler() {
 
@@ -12,6 +11,6 @@ void uart2Handler() {
         vTaskDelay(2 / portTICK_PERIOD_MS);
         Serial2.readBytes((uint8_t*) &dataFrame, sizeof(dataFrame));
 
-    // TODO Dodanie danych do kolejki do zapisu we flashu
+        xQueueSend(queue, &dataFrame, portMAX_DELAY);
     }
 }
