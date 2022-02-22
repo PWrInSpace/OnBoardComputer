@@ -7,7 +7,7 @@
 volatile DataFrame dataFrame = {};
 File file;
 QueueHandle_t queue;
-Timer_ms frameTimer;
+uint32_t frameTimer;
 
 /**********************************************************************************************/
 
@@ -37,7 +37,11 @@ void loop() {
 
     uart2Handler();
 
-    adcMeasure();
+    if (millis() - frameTimer >= 100) {
+
+        frameTimer = millis();
+        adcMeasure();
+    }
 
     vTaskDelay(2 / portTICK_PERIOD_MS);
 }
