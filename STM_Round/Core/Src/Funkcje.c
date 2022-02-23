@@ -1,5 +1,7 @@
 #include "Funkcje.h"
 
+#define DEL_TIME 1
+
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	if (huart->Instance == _GPS_USART.Instance)
@@ -86,37 +88,11 @@ void loraReaction(void) {
 	// Przesyłanie wiadomości z LoRy do Tanwy:
 	if (strstr(loraBuffer, "TNWN") != NULL) {
 
-		// TODO sprawdzenie czy przechodzi w 3 state
-
 		xbee_transmit_char(xbeeIgnition, loraBuffer);
 	}
 
 	HAL_Delay(20);
 	memset(loraBuffer, 0, BUFFER_SIZE);
-}
-
-/*******************************************************************************************/
-
-#define DEL_TIME 1
-
-void sendGPSData(void) {
-
-	GPS_Process();
-
-	int len = sprintf(tfsStruct.gpsStringLora,
-			"R4GP;%.5f;%.5f;%.1f;%d;%d;%d;%d;%d;%d;%d\n",
-			GPS.GPGGA.LatitudeDecimal, GPS.GPGGA.LongitudeDecimal,
-			GPS.GPGGA.MSL_Altitude, GPS.GPGGA.SatellitesUsed, GPS.GPGGA.UTC_Sec,
-			(int) dataFrame.hallSensors[0], (int) dataFrame.hallSensors[1],
-			(int) dataFrame.hallSensors[2], (int) dataFrame.hallSensors[3],
-			(int) dataFrame.hallSensors[4]);
-
-	// Nie wysyłamy tutaj, bo wolimy mieć wszystko w jednej, wspólnej ramce.
-	//loraSendData((uint8_t*) tfsStruct.gpsStringLora, len);
-
-	HAL_UART_Transmit(&huart1, (uint8_t*) tfsStruct.gpsStringLora, len, 100);
-
-	HAL_Delay(DEL_TIME);
 }
 
 /*******************************************************************************************/
