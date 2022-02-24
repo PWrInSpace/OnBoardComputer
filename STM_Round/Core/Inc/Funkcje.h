@@ -52,6 +52,7 @@ typedef struct {
 
 	EspBinData espBinData;
 
+	char stringFromESP[RX_BUFFER_SIZE];
 	char gpsStringLora[RX_BUFFER_SIZE];
 	char tanwaStringLora[RX_BUFFER_SIZE];
 	char txStringLora[RX_BUFFER_SIZE];

@@ -50,5 +50,6 @@ void adcMeasure() {
     // Akumulator:
     measureData.batteryV = analogRead(GPIO_NUM_36) / 254.0 * 0.893;
 
-    Serial2.write((uint8_t*) &measureData, sizeof(measureData));
+    Serial2.printf("ESP;%f;%f", measureData.batteryV, measureData.tankPressure);
+    Serial.printf("ESP;%f;%f\n", measureData.batteryV, measureData.tankPressure);
 }

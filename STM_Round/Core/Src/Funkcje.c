@@ -48,10 +48,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
 		HAL_UART_DMAStop(&huart1);
 
-		// Tu raczej nic nie trzeba robić, bo DMA nam wpisze dane jak trzeba.
+		sscanf(tfsStruct.stringFromESP, "ESP;%f;%f", &dataFrame.batteryV, &dataFrame.tankPressure);
 
-		HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData,
-		sizeof(tfsStruct.espBinData));
+		HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.stringFromESP,
+		RX_BUFFER_SIZE);
 	}
 
 }
@@ -69,8 +69,8 @@ void initAll(void) {
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
 	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData,
-	sizeof(tfsStruct.espBinData));
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.stringFromESP,
+	RX_BUFFER_SIZE);
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 

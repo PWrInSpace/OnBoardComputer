@@ -16,12 +16,13 @@ void setup() {
     delay(100);
 
     Serial.begin(115200);
+    Serial2.begin(115200);
     LITTLEFS.begin(true);
 
     queue = xQueueCreate(20, sizeof(DataFrame));
     xTaskCreate(flashTask, "Task save to Flash", 8192, NULL, 1, NULL);
 
-    Serial2.begin(115200);
+    Serial.setTimeout(10);
     Serial2.setTimeout(10);
 }
 
