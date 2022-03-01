@@ -11,61 +11,69 @@ extern SPIClass mySPI;
 // [ ] states in other tasks can be in new state before state setup end
 
 void stateTask(void *arg){
-  StateMachine currentState = IDLE;  //prevent execute loop before setup
+  //StateMachineEvent currentEvent = IDLE_EVENT;  //prevent execute loop before setup
  
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 25)){
       //portENTER_CRITICAL(&rc.stateLock);
-      currentState = rc.state;
-      Serial.print("State task setup: "); //DEBUG
-      Serial.println(currentState); //DEBUG
+      //currentState = rc.state;
+      //Serial.print("State task setup: "); //DEBUG
+      //Serial.println(currentState); //DEBUG
       //setup
       
-      switch(currentState){
-        case INIT:
+      switch(rc.stateEvent){
+        case IDLE_EVENT:
+          rc.changeState(IDLE);
           break;
-        case IDLE:
-          break;
-        case ARMED:
+        case ARMED_EVENT:
           //recovery arm request
           //check recovery arm answer
+          
+          rc.changeState(ARMED);
           break;
-        case FUELING:
+        case FUELING_EVENT:
+          
+          rc.changeState(FUELING);
           break;
-        case RDY_TO_LAUNCH:
+        case RDY_TO_LAUNCH_EVENT:
+          rc.changeState(RDY_TO_LAUNCH);
           break;
-        case COUNTDOWN:
+        case COUNTDOWN_EVENT:
           //dataframe 
           //xTimerDelete(rc.disconnectTimer);
+          rc.changeState(COUNTDOWN);
           break;
-        case FLIGHT:
+        case FLIGHT_EVENT:
+          rc.changeState(FLIGHT);
           break;
-        case FIRST_STAGE_RECOVERY:
+        case FIRST_STAGE_RECOVERY_EVENT:
+          rc.changeState(FIRST_STAGE_RECOVERY);
           break;
-        case SECOND_STAGE_RECOVERY:
+        case SECOND_STAGE_RECOVERY_EVENT:
+          rc.changeState(SECOND_STAGE_RECOVERY);
           break;
-        case ON_GROUND:
+        case ON_GROUND_EVENT:
+        
+          rc.changeState(ON_GROUND);
           break;
-        case ABORT:
+        case ABORT_EVENT:
+          rc.changeState(ABORT);
           break;
         default:
           //TODO log error
           break;
       }
       //portEXIT_CRITICAL(&rc.stateLock);
-      if(currentState != rc.state){ //setup done and state changed to previous
-        rc.changeState(currentState);
-      }
     }
 
-    //Serial.println("State TASK"); //DEBUG
-    //loop
-    switch(currentState){
+    switch(rc.state){
       case COUNTDOWN:
         break;
       default:
         break;
     }
+
+    //Serial.println("State TASK"); //DEBUG
 
     wt.stateTaskFlag = true;
     vTaskDelay(50 / portTICK_PERIOD_MS);

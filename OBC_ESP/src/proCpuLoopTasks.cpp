@@ -42,23 +42,23 @@ void rxHandlingTask(void *arg){
 
     if(xQueueReceive(rc.espNowQueue, (void*)&unit, 25)){
       switch(unit){
-        case 1:
+        case TANWA:
           //TanWa
           Serial.println("TanWa notify"); //DEBUG
           break;
-        case 2:
+        case PITOT:
           //pitot
           Serial.println("Pitot notify"); //DEBUG
           break;
-        case 3:
+        case MAIN_VALVE:
           //mainValve
           Serial.println("MainValve notify"); //DEBUG
           break;
-        case 4:
+        case UPUST_VALVE:
           //upustValve
           Serial.println("UpustValve notify"); //DEBUG
           break;
-        case 5:
+        case BLACK_BOX:
           //blackBox
           Serial.println("Black Box notify"); //DEBUG
           break;

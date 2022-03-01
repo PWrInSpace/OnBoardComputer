@@ -23,10 +23,10 @@ void setup() {
 
 
   //create Queues and Mutex //TODO
-  rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(String)); //idk String or char[256]
-  rc.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(String)); //idk String or char[256]
+  rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(String));
+  rc.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(String));
   rc.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(DataFrame));
-  rc.flashQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(DataFrame)); //idk dataStruct String or char
+  rc.flashQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(DataFrame));
   rc.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
 
   rc.spiMutex = xSemaphoreCreateMutex();
@@ -87,9 +87,9 @@ void setup() {
     
     //check wachdog timer previous state
   if(wt.previousState != INIT){
-      rc.state = (StateMachine) wt.previousState;
+    rc.state = (StateMachine) wt.previousState;
   }else{
-        rc.state = IDLE;
+    rc.state = IDLE;
   }
 
     //start timers
