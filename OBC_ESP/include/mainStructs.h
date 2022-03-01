@@ -1,7 +1,14 @@
 #ifndef ROCKET_MAIN_STRUCTS
 #define ROCKET_MAIN_STRUCTS
 
+#include <Arduino.h>
 #include "FreeRTOS.h"
+
+#define LORA_RX_QUEUE_LENGTH 10
+#define LORA_TX_QUEUE_LENGTH 10
+#define SD_QUEUE_LENGTH 10
+#define FLASH_QUEUE_LENGTH 10
+#define ESP_NOW_QUEUE_LENGTH 3
 
 enum StateMachine{
   INIT = 0,
@@ -28,41 +35,39 @@ struct Options{
 	uint16_t dataFramePeriod; //data frame creating period
 	uint16_t upustValveTime;
 	uint16_t mainValveTime;
-
 };
 
 struct RocketControl{
-	StateMachine state;
-	Options options;
+  StateMachine state;
+	Options options;  //TODO set options value
 
 	//tasks
-	TaskHandle_t LoRaTask;
+	TaskHandle_t loraTask;
 	TaskHandle_t rxHandlingTask;
 	TaskHandle_t stateTask;
 	TaskHandle_t dataTask;
 	TaskHandle_t sdTask;
 	TaskHandle_t flashTask;
 	//queues
-	QueueHandle_t LoRaRxQueue;
-	QueueHandle_t LoRaTxQueue;
+	QueueHandle_t loraRxQueue;
+	QueueHandle_t loraTxQueue;
 	QueueHandle_t sdQueue;
 	QueueHandle_t flashQueue;
+  QueueHandle_t espNowQueue; //best solution XD
 	//mutex
-	//SemaphoreHandle_t spiMutex = NULL;
+	SemaphoreHandle_t spiMutex = NULL;
 	//SemaphoreHandle_t i2cMutex_1 = NULL;
 	//SemaphoreHandle_t i2cMutex_2 = NULL;
 
 	//spinlock
-	//portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
+	portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
 
 	//software timers
 	TimerHandle_t watchdogTimer;
 	TimerHandle_t disconnectTimer;
 
-	//TODO
-	//constructor 
-	//RocketControl();
-
+	//TODO new constructor with options or begin method
+	RocketControl() = default;
 	void changeState(StateMachine newState){
 		//portENTER_CRITICAL(&stateLock);
     this->state = newState;
@@ -70,13 +75,5 @@ struct RocketControl{
     //xTaskNotifyGive(this->stateTask);
 	}
 };
-
-
-//Tasks
-
-//Timers
-void watchdogTimerCallback(TimerHandle_t xTimer);
-
-void disconnectTimerCallback(TimerHandle_t xTimer);
 
 #endif

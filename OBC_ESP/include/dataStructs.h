@@ -78,6 +78,10 @@ struct DataFrame {
   uint8_t GPSSat;
   uint8_t GPSsec;
   uint16_t errors;
+
+  bool allDevicesWokeUp(){
+    return (pitotData.wakeUp && mainValveData.wakeUp && upustValveData.wakeUp);
+  }
 };
 
 

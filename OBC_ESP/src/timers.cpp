@@ -1,6 +1,7 @@
 #include "timers.h"
 
 //watchdog timer struct
+/*
 WatchdogTimer::WatchdogTimer() : 
   LoRaTaskFlag(false),
   rxHandlingTaskFlag(false),
@@ -10,6 +11,7 @@ WatchdogTimer::WatchdogTimer() :
   flashTaskFlag(false),
   resetCounter(0),
   previousState(0) {}
+*/
 
 void WatchdogTimer::begin(){
   EEPROM.begin(WATCHDOG_EEPROM_SIZE);
@@ -18,7 +20,7 @@ void WatchdogTimer::begin(){
 void WatchdogTimer::EEPROMwrite(uint8_t state){
   EEPROM.write(0, resetCounter);
   EEPROM.write(1, state);
-
+  
   EEPROM.commit();
 }
 
@@ -33,7 +35,7 @@ uint8_t WatchdogTimer::EEPROMread(){
 }
 
 void WatchdogTimer::setFlags(bool state){
-  LoRaTaskFlag = state;
+  loraTaskFlag = state;
   rxHandlingTaskFlag = state;
   stateTaskFlag = state;
   dataTaskFlag = state;
@@ -42,6 +44,7 @@ void WatchdogTimer::setFlags(bool state){
 }
 
 void WatchdogTimer::reset(uint8_t state){
+  Serial.println("WATCHDOG RESET"); //DEBUG
   resetCounter += 1;
   EEPROMwrite(state);
   ESP.restart();
