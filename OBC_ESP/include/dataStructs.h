@@ -1,6 +1,8 @@
 #ifndef DATA_STRUCTS_HH
 #define DATA_STRUCTS_HH
 
+#include <cstdint>
+
 /**   RX    **/
 
 struct PitotData {

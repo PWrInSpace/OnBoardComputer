@@ -1,6 +1,11 @@
 #ifndef TASKS_AND_TIMERS
 #define TASKS_AND_TIMERS
 
+#include "mainStructs.h"
+#include "dataStructs.h"
+#include "timers.h"
+#include "now.h"
+
 //Tasks
 void loraTask(void *arg);
 void rxHandlingTask(void *arg);

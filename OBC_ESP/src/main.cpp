@@ -5,10 +5,12 @@
 #include "mainStructs.h"
 #include "dataStructs.h"
 #include "tasksAndTimers.h"
+#include "now.h"
 
 WatchdogTimer wt;
 RocketControl rc;
 SPIClass mySPI(VSPI);
+volatile DataFrame dataFrame;
 
 void setup() {
   Serial.begin(115200); //DEBUG
@@ -17,7 +19,12 @@ void setup() {
   Serial.println(rc.state); //DEBUG
 
   //set esp now
-
+  nowInit();
+  nowAddPeer(adressPitot, 0);
+  nowAddPeer(adressMValve, 0);
+  nowAddPeer(adressUpust, 0);
+  nowAddPeer(adressBlackBox, 0);
+  nowAddPeer(adressTanWa, 0);
 
   //init all components
 
