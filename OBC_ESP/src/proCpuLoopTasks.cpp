@@ -70,7 +70,6 @@ void rxHandlingTask(void *arg){
         case UPUST_VALVE:
           //upustValve
           Serial.println("UpustValve notify"); //DEBUG
-          Serial.println("MainValve notify"); //DEBUG
           if (rc.state < FUELING && rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
           else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
           else txDataEspNow.sleepTime = 500;
