@@ -1,10 +1,7 @@
-#include "mainStructs.h"
-#include "timers.h"
 #include "tasksAndTimers.h"
 
 extern RocketControl rc;
 extern WatchdogTimer wt;
-
 
 void loraTask(void *arg){
   String loraRx;
@@ -25,11 +22,11 @@ void loraTask(void *arg){
   }
 }
 
-
+/**********************************************************************************************/
 
 void rxHandlingTask(void *arg){
   String loraData;
-  uint8_t unit;
+  uint8_t rxEspNumber = 0;
 
   while(1){
     //Serial.println("RX handling tasks"); //DEBUG
@@ -40,28 +37,53 @@ void rxHandlingTask(void *arg){
       }
     }
 
-    if(xQueueReceive(rc.espNowQueue, (void*)&unit, 25)){
-      switch(unit){
+    if(xQueueReceive(rc.espNowQueue, (void*) &rxEspNumber, 25)){
+
+      TxDataEspNow txDataEspNow;
+
+      switch(rxEspNumber){
         case TANWA:
           //TanWa
           Serial.println("TanWa notify"); //DEBUG
           break;
+
         case PITOT:
           //pitot
           Serial.println("Pitot notify"); //DEBUG
+          if (rc.state < COUNTDOWN && rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
+          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
+          else txDataEspNow.sleepTime = 500;
+          esp_now_send(adressPitot, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           break;
+
         case MAIN_VALVE:
           //mainValve
           Serial.println("MainValve notify"); //DEBUG
+          if (rc.state < FUELING && rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
+          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
+          else txDataEspNow.sleepTime = 500;
+          txDataEspNow.command      = rc.options.mainValveRequestState;
+          txDataEspNow.commandTime  = rc.options.mainValveTime;
+          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           break;
+
         case UPUST_VALVE:
           //upustValve
           Serial.println("UpustValve notify"); //DEBUG
+          Serial.println("MainValve notify"); //DEBUG
+          if (rc.state < FUELING && rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
+          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
+          else txDataEspNow.sleepTime = 500;
+          txDataEspNow.command      = rc.options.upustValveRequestState;
+          txDataEspNow.commandTime  = rc.options.upustValveTime;
+          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           break;
+
         case BLACK_BOX:
-          //blackBox
+          //blackBox TODO wymyśleć co i jak.
           Serial.println("Black Box notify"); //DEBUG
           break;
+
         default:
           //TODO log error
           break;
