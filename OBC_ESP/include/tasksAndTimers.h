@@ -5,6 +5,7 @@
 #include "dataStructs.h"
 #include "timers.h"
 #include "now.h"
+#include "pinout.h"
 
 //Tasks
 void loraTask(void *arg);

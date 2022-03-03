@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "FreeRTOS.h"
+#include "missionTimer.h"
 
 #define LORA_RX_QUEUE_LENGTH 10
 #define LORA_TX_QUEUE_LENGTH 10
@@ -51,7 +52,8 @@ struct Options{
 	uint8_t mainValveRequestState : 2;
 	
 	uint16_t LoRaFrequencyMHz;
-	uint16_t launchDelay; //time between ignition and lift off
+  uint16_t countdownTime = 30000;
+	int16_t ignitionTime = -3000; //ignition time
 	uint16_t dataFramePeriod; //data frame creating period
 	uint16_t upustValveTime;
 	uint16_t mainValveTime;
@@ -61,6 +63,7 @@ struct RocketControl{
   StateMachineEvent stateEvent;
   StateMachine state;
 	Options options;  //TODO set options value
+  Timer missionTimer;
 
 	//tasks
 	TaskHandle_t loraTask;
@@ -89,30 +92,10 @@ struct RocketControl{
 
 	//TODO new constructor with options or begin method
 	RocketControl() = default;
-
-  //notify that changing state event occure
-	bool changeStateEvent(StateMachineEvent newEvent){
-		//portENTER_CRITICAL(&stateLock);
-    if((newEvent - 1) != stateEvent && newEvent != ABORT_EVENT){
-      return false;
-    }
-    
-    this->stateEvent = newEvent;
-    //portEXIT_CRITICAL(&stateLock);
-    //xTaskNotifyGive(this->stateTask);
-    return true;
-  }
-
+  bool changeStateEvent(StateMachineEvent newEvent);
   //Use only in stateTask
-  void changeState(StateMachine newState){
-    if((newState - 1) != state && newState != ABORT){
-      return;
-    }
-    
-    //portENTER_CRITICAL(&stateLock);
-    this->state = newState;
-    //portEXIT_CRITICAL(&stateLock);
-  }
+  void changeState(StateMachine newState);
+  void unsuccessfulEvent();
 };
 
 #endif

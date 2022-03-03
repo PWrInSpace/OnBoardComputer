@@ -38,10 +38,21 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
     //watchdog log //TODO
   }
   */
+
+  //DEBUG
+  if(!(wt.loraTaskFlag && wt.rxHandlingTaskFlag && wt.stateTaskFlag && wt.sdTaskFlag && wt.flashTaskFlag)){
+    ESP.restart();
+  }
+
+
   wt.setFlags(false);
 }
 
 
 void disconnectTimerCallback(TimerHandle_t xTimer){
-  rc.changeState(ABORT);
+  if(rc.state <= COUNTDOWN){
+    rc.changeState(ABORT);
+  }else{
+    //TODO error handling
+  }
 }

@@ -46,30 +46,30 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   if(adressCompare(mac, adressPitot)) {
 
-    memcpy(&dataFrame.pitotData, (PitotData*) incomingData, sizeof(dataFrame.pitotData));
+    memcpy(&dataFrame.pitot, (PitotData*) incomingData, sizeof(dataFrame.pitot));
     adressToQueue = PITOT;
   }
 
   else if(adressCompare(mac, adressTanWa)) {
 
-    memcpy(&dataFrame.tanWaData, (TanWaData*) incomingData, sizeof(dataFrame.tanWaData));
+    memcpy(&dataFrame.tanWa, (TanWaData*) incomingData, sizeof(dataFrame.tanWa));
     adressToQueue = TANWA;
   }
 
   else if(adressCompare(mac, adressMValve)) {
 
-    memcpy(&dataFrame.mainValveData, (MainValveData*) incomingData, sizeof(dataFrame.mainValveData));
+    memcpy(&dataFrame.mainValve, (MainValveData*) incomingData, sizeof(dataFrame.mainValve));
     adressToQueue = MAIN_VALVE;
   }
 
   else if(adressCompare(mac, adressUpust)) {
 
-    memcpy(&dataFrame.upustValveData, (UpustValveData*) incomingData, sizeof(dataFrame.upustValveData));
+    memcpy(&dataFrame.upustValve, (UpustValveData*) incomingData, sizeof(dataFrame.upustValve));
     adressToQueue = UPUST_VALVE;
   }
 
   else if(adressCompare(mac, adressBlackBox)) {
-
+    //TODO
     // Wymyśleć co z tym:
     //memcpy(&dataFrame.upustValveData, (UpustValveData*) incomingData, sizeof(dataFrame.upustValveData));
     adressToQueue = BLACK_BOX;

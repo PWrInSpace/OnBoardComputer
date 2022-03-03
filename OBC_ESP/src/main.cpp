@@ -14,9 +14,14 @@ volatile DataFrame dataFrame;
 
 void setup() {
   Serial.begin(115200); //DEBUG
-  //rc.state = INIT;
+  
+  //OPTIMIZE move to rc constructor
+  rc.state = INIT;
+  rc.stateEvent = IDLE_EVENT;
+
   Serial.print("Setup state: "); //DEBUG
   Serial.println(rc.state); //DEBUG
+  rc.options.forceLaunch = true; //DEBUG
 
   //set esp now
   nowInit();
