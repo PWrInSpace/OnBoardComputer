@@ -88,11 +88,12 @@ struct DataFrame {
   uint8_t GPSSat;
   uint8_t GPSsec;
   uint16_t errors;
-  bool ignition;
+  bool ignition = false;
 
   bool allDevicesWokeUp(){
     return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
   }
+  String createLoRaFrame();
 };
 
 

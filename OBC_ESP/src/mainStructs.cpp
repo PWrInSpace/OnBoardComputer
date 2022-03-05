@@ -3,6 +3,11 @@
   //notify that changing state event occure
 bool RocketControl::changeStateEvent(StateMachineEvent newEvent){
 		//portENTER_CRITICAL(&stateLock);
+  //out of range
+  if(newEvent < IDLE_EVENT || newEvent > ABORT_EVENT){
+    return false;
+  }
+
   if((newEvent - 1) != stateEvent && newEvent != ABORT_EVENT){
     return false;
   }

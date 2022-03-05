@@ -44,18 +44,24 @@ enum StateMachineEvent{
   ABORT_EVENT
 };
 
-
+//options are change only in stateTasks, and in handlingTask obviously
 struct Options{
-	bool flashWrite : 1;
+	bool flashWrite = true;
 	bool forceLaunch : 1; 
-	uint8_t upustValveRequestState : 2;
-	uint8_t mainValveRequestState : 2;
 	
+  //change in statTask
+  uint8_t upustValveRequestState : 2;
+	uint8_t mainValveRequestState : 2;
+	TickType_t dataFramePeriod = 5000; //it's also sd write data period
+  TickType_t loraDataPeriod = 500;
+  TickType_t flashDataPeriod = 500;
+  //
+
 	uint16_t LoRaFrequencyMHz;
-  uint16_t countdownTime = 30000;
-	int16_t ignitionTime = -3000; //ignition time
-	uint16_t dataFramePeriod; //data frame creating period
-	uint16_t upustValveTime;
+  uint16_t countdownTime = 5000;
+	int32_t ignitionTime = -3000; //ignition time
+  uint8_t tankMinPressure = 35; //bar
+  uint16_t upustValveTime;
 	uint16_t mainValveTime;
 };
 
