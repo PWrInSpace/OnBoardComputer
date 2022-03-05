@@ -2,6 +2,7 @@
 #define DATA_STRUCTS_HH
 
 #include <cstdint>
+#include <Arduino.h>
 
 #define VALVE_OPEN 0x01
 #define VALVE_CLOSE 0x00
@@ -90,10 +91,9 @@ struct DataFrame {
   uint16_t errors;
   bool ignition = false;
 
-  bool allDevicesWokeUp(){
-    return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
-  }
+  bool allDevicesWokeUp();
   String createLoRaFrame();
+  String createSDFrame();
 };
 
 

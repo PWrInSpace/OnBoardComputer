@@ -52,9 +52,10 @@ struct Options{
   //change in statTask
   uint8_t upustValveRequestState : 2;
 	uint8_t mainValveRequestState : 2;
-	TickType_t dataFramePeriod = 5000; //it's also sd write data period
+	TickType_t dataFramePeriod = 100; 
   TickType_t loraDataPeriod = 500;
   TickType_t flashDataPeriod = 500;
+  TickType_t sdFramePeriod = 1000;
   //
 
 	uint16_t LoRaFrequencyMHz;
