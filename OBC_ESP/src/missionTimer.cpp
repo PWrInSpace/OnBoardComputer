@@ -23,7 +23,7 @@ void Timer::startTimer(uint32_t _timer){
  */
 int32_t Timer::getTime() const{
   if(enable) return (millis() - timer);
-  else return NAN;
+  else return -999;
 }
 
 /**

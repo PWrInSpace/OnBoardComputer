@@ -51,7 +51,7 @@ void stateTask(void *arg){
             
             //set options
             rc.options.upustValveRequestState = VALVE_CLOSE; //mayby good idea //IDK at the moment is usless, becaus slaves has while loop block 
-            rc.options.sdFramePeriod = 100; //dataFrame create period
+            rc.options.sdDataPeriod = 100; //dataFrame create period
 
             //turn on mission timer
             rc.missionTimer.startTimer(millis() + rc.options.countdownTime);
@@ -103,7 +103,7 @@ void stateTask(void *arg){
           break;
 
         case ON_GROUND_EVENT:
-          rc.options.sdFramePeriod = 10000;
+          rc.options.sdDataPeriod = 10000;
           rc.options.dataFramePeriod = 10000;
           rc.options.loraDataPeriod = 5000;
           
@@ -118,7 +118,7 @@ void stateTask(void *arg){
 
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
 
-          rc.options.sdFramePeriod = 10000;
+          rc.options.sdDataPeriod = 10000;
           rc.options.dataFramePeriod = 10000;
           rc.options.loraDataPeriod = 5000;
 
@@ -126,7 +126,7 @@ void stateTask(void *arg){
           break;
 
         default:
-          //TODO log error
+          rc.sendLog("Unknown state event, State_event: " +  String(rc.stateEvent));
           ESP.restart();
           break;
       }
@@ -154,7 +154,6 @@ void stateTask(void *arg){
         }
 
         break;
-
       default:
         break;
     }
@@ -168,7 +167,6 @@ void stateTask(void *arg){
 }
 
 
-//fix timer bugss, get data in const freq
 void dataTask(void *arg){
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
@@ -182,18 +180,19 @@ void dataTask(void *arg){
     //data
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataFramePeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      Serial.print("DATA: "); Serial.println(xTaskGetTickCount()); //DEBUG
+      //Serial.print("DATA: "); Serial.println(xTaskGetTickCount()); //DEBUG
 
       //read data from sensors and gps
       uint32_t rand = esp_random() % 100; //DEBUG
-      Serial.println(rand); //DEBUG
-      data = String(rand);
+      //Serial.println(rand); //DEBUG
+      //data = String(rand);
       vTaskDelay(rand / portTICK_PERIOD_MS); //DEBUG
 
       //i2c spi ect...
+      data = dataFrame.createSDFrame();
       
       //read i2c comm data
-      
+      //rc.sendLog("Hello space!");
       //filters
 
       //compute data
@@ -212,9 +211,10 @@ void dataTask(void *arg){
     //LoRa
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraDataPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
-      Serial.print("LoRa data "); Serial.println(xTaskGetTickCount());
+      //Serial.print("LoRa data "); Serial.println(xTaskGetTickCount());//DEBUG
       if(xQueueSend(rc.loraTxQueue, (void*)&data, 0) != pdTRUE){
-        //TODO LOG error
+        dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
+        rc.sendLog("LoRa queue full");
       }
     }
 
@@ -222,9 +222,10 @@ void dataTask(void *arg){
     if((rc.state > COUNTDOWN && rc.state < ON_GROUND) && rc.options.flashWrite){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-        Serial.print("Flash save ");  Serial.println(xTaskGetTickCount());
+        //Serial.print("Flash save ");  Serial.println(xTaskGetTickCount()); //DEBUG
         if(xQueueSend(rc.flashQueue, (void*)&dataFrame, 0) != pdTRUE){
-          //TODO LOG error
+          dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
+          rc.sendLog("Flash queue full");
         }
       }
         
@@ -232,13 +233,15 @@ void dataTask(void *arg){
     }
 
     //SD
-    if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdFramePeriod){
+    if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataPeriod){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      Serial.print("SD save "); Serial.println(xTaskGetTickCount());
+      //Serial.print("SD save "); Serial.println(xTaskGetTickCount()); //DEBUG
       if(xQueueSend(rc.sdQueue, (void*)&data, 0) != pdTRUE){ //data to SD
-        Serial.println("Log"); //DEBUG
-        //TODO LOG error
-      }       
+        //Serial.println("Log"); //DEBUG
+        dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
+      }  
+
+      dataFrame.errors.reset(); //reset errors after save   //IDK
     }
   
     wt.dataTaskFlag = true;
@@ -251,15 +254,14 @@ void sdTask(void *arg){
   String data;
   while(1){
     //Serial.println("sd TASK"); //DEBUG
-    while(xQueueReceive(rc.sdQueue, (void*)&data, 0)){
+    if(xQueueReceive(rc.sdQueue, (void*)&data, 0) == pdTRUE){
       if(data.startsWith("LOG")){
-        Serial.println("LOG");
+        Serial.println(data);
         //SD write log
       }else{
-        Serial.println("SD data");
+        Serial.println(data);
         //SD write data
       }
-      vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 
     wt.sdTaskFlag = true;

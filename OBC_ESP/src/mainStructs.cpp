@@ -32,3 +32,8 @@ void RocketControl::changeState(StateMachine newState){
 void RocketControl::unsuccessfulEvent(){
   this->stateEvent = (StateMachineEvent)((uint8_t)stateEvent - 1);
 }
+
+void RocketControl::sendLog(const String & message){
+  String log = "LOG: " + message + "[ " + String(state) + " , " + String(millis()) + " ]";
+  xQueueSend(sdQueue, (void*)&log, 0);
+}

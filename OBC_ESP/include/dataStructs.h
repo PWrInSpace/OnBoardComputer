@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <Arduino.h>
+#include "errors.h"
 
 #define VALVE_OPEN 0x01
 #define VALVE_CLOSE 0x00
@@ -29,7 +30,7 @@ struct PitotData {
 struct MainValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
-  float temocouple[2];
+  float thermocouple[2];
   float batteryVoltage;
 };
 
@@ -47,8 +48,8 @@ struct TanWaData {
 };
 
 struct UpustValveData {
-  uint8_t valveState : 2;
   bool wakeUp : 1;
+  uint8_t valveState : 2;
   uint16_t hall[5];
   float tankPressure;
   float batteryVoltage;
@@ -76,7 +77,7 @@ struct DataFrame {
   TanWaData       tanWa;
   UpustValveData  upustValve;
   RecoveryData    recovery;
-
+  Errors          errors;
   //float imuData[12]; //TODO
   float pressure;
   uint8_t temp;
@@ -88,7 +89,7 @@ struct DataFrame {
   float GPSalt;
   uint8_t GPSSat;
   uint8_t GPSsec;
-  uint16_t errors;
+  //uint16_t errors;
   bool ignition = false;
 
   bool allDevicesWokeUp();

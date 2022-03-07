@@ -48,22 +48,20 @@ enum StateMachineEvent{
 struct Options{
 	bool flashWrite = true;
 	bool forceLaunch : 1; 
-	
-  //change in statTask
-  uint8_t upustValveRequestState : 2;
-	uint8_t mainValveRequestState : 2;
-	TickType_t dataFramePeriod = 100; 
-  TickType_t loraDataPeriod = 500;
-  TickType_t flashDataPeriod = 500;
-  TickType_t sdFramePeriod = 1000;
-  //
-
-	uint16_t LoRaFrequencyMHz;
-  uint16_t countdownTime = 5000;
-	int32_t ignitionTime = -3000; //ignition time
+	uint16_t LoRaFrequencyMHz; //IDK uint32_t
+  uint32_t countdownTime = 5000;
+	int16_t ignitionTime = -3000; //ignition time
   uint8_t tankMinPressure = 35; //bar
   uint16_t upustValveTime;
 	uint16_t mainValveTime;
+	
+  //change in statTask
+	uint8_t mainValveRequestState : 2;
+  uint8_t upustValveRequestState : 2;
+	TickType_t dataFramePeriod = 100; 
+  TickType_t loraDataPeriod = 500;
+  TickType_t flashDataPeriod = 500;
+  TickType_t sdDataPeriod = 1000;
 };
 
 struct RocketControl{
@@ -103,6 +101,7 @@ struct RocketControl{
   //Use only in stateTask
   void changeState(StateMachine newState);
   void unsuccessfulEvent();
+  void sendLog(const String & message);
 };
 
 #endif

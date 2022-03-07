@@ -74,8 +74,8 @@ void rxHandlingTask(void *arg){
           Serial.println("Main valve data");
           Serial.print("wake up: "); Serial.println(dataFrame.mainValve.wakeUp);
           Serial.print("valve state: "); Serial.println(dataFrame.mainValve.valveState);
-          Serial.print("thermocuple 0: "); Serial.println(dataFrame.mainValve.temocouple[0]);
-          Serial.print("thermocuple 1: "); Serial.println(dataFrame.mainValve.temocouple[1]);
+          Serial.print("thermocuple 0: "); Serial.println(dataFrame.mainValve.thermocouple[0]);
+          Serial.print("thermocuple 1: "); Serial.println(dataFrame.mainValve.thermocouple[1]);
           Serial.print("batt : "); Serial.println(dataFrame.mainValve.batteryVoltage);
           //DEBUG GIGA
 
@@ -106,7 +106,7 @@ void rxHandlingTask(void *arg){
           break;
 
         default:
-          //TODO log error
+          rc.sendLog("Unknown esp now device: " + String(rxEspNumber));
           break;
       }
     }
