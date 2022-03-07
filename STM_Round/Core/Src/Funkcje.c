@@ -45,15 +45,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 	if (huart->Instance == USART1) {
 
-		__HAL_UART_CLEAR_IDLEFLAG(&huart1);
-		HAL_UART_DMAStop(&huart1);
+		HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData, sizeof(EspBinData));
 
-		sscanf(tfsStruct.stringFromESP, "ESP;%f;%f", &dataFrame.batteryV, &dataFrame.tankPressure);
-
-		HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.stringFromESP,
-		RX_BUFFER_SIZE);
+		//memcpy(&tfsStruct.espBinData, tfsStruct.stringFromESP, sizeof(EspBinData));
+		dataFrame.batteryV = tfsStruct.espBinData.batteryV;
+		dataFrame.tankPressure = tfsStruct.espBinData.tankPressure;
 	}
-
 }
 
 /*******************************************************************************************/
@@ -68,9 +65,7 @@ void initAll(void) {
 	__HAL_UART_ENABLE_IT(&huart2, UART_IT_IDLE);
 	HAL_UART_Receive_DMA(&huart2, (uint8_t*) xbee_rx.mess_loaded, DATA_LENGTH);
 
-	__HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
-	HAL_UART_Receive_DMA(&huart1, (uint8_t*) tfsStruct.stringFromESP,
-	RX_BUFFER_SIZE);
+	HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData, sizeof(EspBinData));
 
 	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
 

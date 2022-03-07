@@ -22,8 +22,8 @@ void setup() {
     queue = xQueueCreate(20, sizeof(DataFrame));
     xTaskCreate(flashTask, "Task save to Flash", 8192, NULL, 1, NULL);
 
-    Serial.setTimeout(10);
-    Serial2.setTimeout(10);
+    Serial.setTimeout(40);
+    Serial2.setTimeout(40);
 }
 
 /**********************************************************************************************/
