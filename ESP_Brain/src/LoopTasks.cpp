@@ -9,20 +9,23 @@ extern QueueHandle_t queue;
 
 void flashTask(void *arg) {
 
+    char writeMode[2] = "w";
+
     while (1) {
 
         if (uxQueueMessagesWaiting(queue) > 10) {
 
             DataFrame data;
 
-            file = LITTLEFS.open("/file.txt", "a");
-            
+            file = LITTLEFS.open("/file.txt", writeMode);
+            writeMode[0] = 'a'; // zmiana na append po pierwszym zapisie.
+
             while (uxQueueMessagesWaiting(queue) > 0) {
 
                 xQueueReceive(queue, &data, portMAX_DELAY);
                 file.write((uint8_t*) &data, sizeof(data));
             }
-            
+
             file.close();
         }
 

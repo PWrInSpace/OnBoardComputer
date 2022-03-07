@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <Arduino.h>
+#include <LITTLEFS.h>
 
 // Struktura do zapisu:
 

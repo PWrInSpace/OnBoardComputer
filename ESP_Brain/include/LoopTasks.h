@@ -2,7 +2,6 @@
 #define LOOPTASKS_H
 
 #include <Arduino.h>
-#include <LITTLEFS.h>
 
 #include "dataStructs.h"
 
