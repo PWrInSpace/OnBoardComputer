@@ -2,7 +2,7 @@
 
   //notify that changing state event occure
 bool RocketControl::changeStateEvent(StateMachineEvent newEvent){
-		//portENTER_CRITICAL(&stateLock);
+	//portENTER_CRITICAL(&stateLock);
   //out of range
   if(newEvent < IDLE_EVENT || newEvent > ABORT_EVENT){
     return false;
@@ -35,5 +35,6 @@ void RocketControl::unsuccessfulEvent(){
 
 void RocketControl::sendLog(const String & message){
   String log = "LOG: " + message + "[ " + String(state) + " , " + String(millis()) + " ]";
+  Serial.println(log); //DEBUG
   xQueueSend(sdQueue, (void*)&log, 0);
 }

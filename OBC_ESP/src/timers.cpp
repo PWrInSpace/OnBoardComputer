@@ -28,6 +28,7 @@ uint8_t WatchdogTimer::EEPROMread(){
   resetCounter = EEPROM.read(0);
   previousState = EEPROM.read(1);
 
+  //EEPROM.write(0, 0); //reset resetCounter
   EEPROM.write(1, 0); //set INIT state (reset previousState eeprom data - INIT - default)
   EEPROM.commit();
 

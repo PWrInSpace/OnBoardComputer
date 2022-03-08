@@ -4,9 +4,10 @@
 #include <cstdint>
 #include <Arduino.h>
 #include "errors.h"
+#include "missionTimer.h"
 
-#define VALVE_OPEN 0x01
-#define VALVE_CLOSE 0x00
+#define VALVE_OPEN 0x00
+#define VALVE_CLOSE 0x01
 #define VALVE_UNKNOWN 0x02
 
 #define VALVE_CLOSE_COMMAND 0x10
@@ -78,6 +79,7 @@ struct DataFrame {
   UpustValveData  upustValve;
   RecoveryData    recovery;
   Errors          errors;
+  Timer missionTimer;
   //float imuData[12]; //TODO
   float pressure;
   uint8_t temp;

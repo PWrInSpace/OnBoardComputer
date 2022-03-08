@@ -7,7 +7,7 @@ extern RocketControl rc;
 extern DataFrame dataFrame;
 
 void watchdogTimerCallback(TimerHandle_t xTimer){
-  Serial.println("WATCHDOG TIMER"); //DEBUG
+ //Serial.println("WATCHDOG TIMER"); //DEBUG
   
   if(wt.loraTaskFlag == false){
     if(rc.state < COUNTDOWN || rc.state > FIRST_STAGE_RECOVERY){

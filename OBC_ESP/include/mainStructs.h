@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include "FreeRTOS.h"
-#include "missionTimer.h"
+
 
 #define LORA_RX_QUEUE_LENGTH 10
 #define LORA_TX_QUEUE_LENGTH 10
@@ -46,20 +46,20 @@ enum StateMachineEvent{
 
 //options are change only in stateTasks, and in handlingTask obviously
 struct Options{
-	bool flashWrite = true;
-	bool forceLaunch : 1; 
 	uint16_t LoRaFrequencyMHz; //IDK uint32_t
   uint32_t countdownTime = 5000;
 	int16_t ignitionTime = -3000; //ignition time
   uint8_t tankMinPressure = 35; //bar
-  uint16_t upustValveTime;
+  uint16_t upustValveTime;  //czy konieczne, aktualnie nie używane, ewentualnie zmiana na high mid low 
 	uint16_t mainValveTime;
 	
+	bool flashWrite : 1;
+	bool forceLaunch : 1; 
   //change in statTask
 	uint8_t mainValveRequestState : 2;
   uint8_t upustValveRequestState : 2;
 	TickType_t dataFramePeriod = 100; 
-  TickType_t loraDataPeriod = 500;
+  TickType_t loraDataPeriod = 1000;
   TickType_t flashDataPeriod = 500;
   TickType_t sdDataPeriod = 1000;
 };
@@ -68,8 +68,7 @@ struct RocketControl{
   StateMachineEvent stateEvent;
   StateMachine state;
 	Options options;  //TODO set options value
-  Timer missionTimer;
-
+ 
 	//tasks
 	TaskHandle_t loraTask;
 	TaskHandle_t rxHandlingTask;

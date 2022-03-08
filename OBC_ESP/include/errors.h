@@ -16,6 +16,7 @@ enum FlashError{
 enum RTOSError{
   RTOS_NO_ERROR = 0,
   RTOS_QUEUE_ADD_ERROR,
+  RTOS_SPI_MUTEX_ERROR,
 };
 
 enum EspNowError{
@@ -42,8 +43,11 @@ enum SensorsError{
 enum LastException{
   NO_EXCEPTION = 0,
   WAKE_UP_EXCEPTION,
-  INVALID_PREFIX, //FRAME
-}
+  MISSION_TIMER_EXCEPTION,
+  INVALID_PREFIX_EXCEPTION, //FRAME
+  DEVICE_NOT_ARMED_EXCEPTION,
+  INVALID_STATE_CHANGE_EXCEPTION,
+};
 
 struct Errors{
   SDError sd;
@@ -52,6 +56,7 @@ struct Errors{
   EspNowError espnow;
   WatchDogError watchdog;
   SensorsError sensors;
+  LastException exceptions;
 
   void reset(){
     sd = SD_NO_ERROR;

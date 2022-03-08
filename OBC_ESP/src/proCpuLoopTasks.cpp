@@ -9,23 +9,37 @@ void loraTask(void *arg){
   String loraTx;
 
   while(1){
-    //Serial.println("LoRa TASK"); //DEBUG
-
-    //if lora.available()
     //DEBUG GIGA
     if(Serial.available()){
       int x = Serial.readStringUntil('\n').toInt();
-      Serial.print("DEBUG: "); Serial.println(x);
-      rc.changeStateEvent((StateMachineEvent)x);
+      if(!rc.changeStateEvent((StateMachineEvent)x)){
+        dataFrame.errors.exceptions = INVALID_STATE_CHANGE_EXCEPTION;
+      }
     }
     //DEBUG GIGA
+    
+    if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
+      //if lora.available()
 
-    if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 25) == pdTRUE){
-      //lora send
+      xSemaphoreGive(rc.spiMutex);
+    }else{
+      dataFrame.errors.rtos = RTOS_SPI_MUTEX_ERROR;
+      Serial.println("MUTEX ERROR");//DEBUG
+    }
+
+    if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
+      Serial.println(loraTx); //DEBUG
+      if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
+        //LORA SEND
+        xSemaphoreGive(rc.spiMutex);
+      }else{
+        dataFrame.errors.rtos = RTOS_SPI_MUTEX_ERROR;
+        Serial.println("MUTEX ERROR"); //DEBUG
+      }
     }
 
     wt.loraTaskFlag = true;
-    vTaskDelay(50 / portTICK_PERIOD_MS);
+    vTaskDelay(10 / portTICK_PERIOD_MS);
   }
 }
 

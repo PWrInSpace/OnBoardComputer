@@ -7,6 +7,13 @@
 #include "tasksAndTimers.h"
 #include "now.h"
 
+//TO DO LIST
+// w lora rx nie dać możliwości przejścia ze stanu 5 na 6
+// przemyśleć w jaki sposób zerować errory, prawdopodbnie mieszanka tych dwóch pomysłów
+// -> po zapisie na sd wszystkie - moze nadal być ale nie zdąży wskoczyć przez jakieś opóźnienie
+// -> ustawaić brak errora gdy jest gt
+// przy testach sprawdzać działanie spi mutex
+
 WatchdogTimer wt;
 RocketControl rc;
 SPIClass mySPI(VSPI);
@@ -98,13 +105,13 @@ void setup() {
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
     
     //check wachdog timer previous state
-  if(wt.previousState != INIT){
+  if(wt.previousState != INIT && wt.previousState != COUNTDOWN){
     rc.state = (StateMachine) wt.previousState;
   }else{
     rc.state = IDLE;
   }
 
-    //start timers
+  //start timers
   xTimerStart(rc.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.disconnectTimer, portMAX_DELAY);
     
