@@ -7,6 +7,7 @@
 volatile DataFrame dataFrame = {};
 File file;
 QueueHandle_t queue;
+QueueHandle_t sdQueue;
 uint32_t frameTimer;
 
 /**********************************************************************************************/
@@ -20,7 +21,9 @@ void setup() {
     LITTLEFS.begin(true);
 
     queue = xQueueCreate(20, sizeof(DataFrame));
-    xTaskCreate(flashTask, "Task save to Flash", 8192, NULL, 1, NULL);
+    sdQueue = xQueueCreate(10, sizeof(DataFrame));
+    xTaskCreate(flashTask, "Task save to Flash", 8192,  NULL, 1, NULL);
+    xTaskCreate(sdTask,    "Task SD",            65536, NULL, 1, NULL);
 
     Serial.setTimeout(10);
     Serial2.setTimeout(40);

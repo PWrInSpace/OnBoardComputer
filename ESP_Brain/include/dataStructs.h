@@ -38,4 +38,6 @@ struct EspBinData {
 	float tankPressure;
 };
 
+String data2String(DataFrame data);
+
 #endif

@@ -3,6 +3,51 @@
 extern DataFrame dataFrame;
 extern File file;
 extern QueueHandle_t queue;
+extern QueueHandle_t sdQueue;
+
+void sdTask(void *arg) {
+
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+    SPIClass SPISD(HSPI);
+    SPISD.begin(GPIO_NUM_25, GPIO_NUM_26, GPIO_NUM_15);
+    SPI.setClockDivider(SPI_CLOCK_DIV2);
+    
+    SD.begin(SD_CS, SPISD);
+
+    while(1) {
+    
+        if (uxQueueMessagesWaiting(queue) > 0) {
+
+            DataFrame data;
+            xQueueReceive(sdQueue, &data, portMAX_DELAY);
+
+            sdWrite("/R4_data.txt", data2String(data));        
+        }
+        vTaskDelay(2 / portTICK_PERIOD_MS);
+    }
+}
+
+/**********************************************************************************************/
+
+String data2String(DataFrame data) {
+
+    char txString[250];
+
+	sprintf(txString, "R4OR;%d;%f;%f;%f;%f;%f;%d;%d;%d;%d;%d;%d;%d;%f;%d;%d;%d;%d;%d;%f;%f;%d;%d\n",
+        (int)data.time_ms, 	    data.batteryV, 		    data.tankPressure,
+        data.gpsLatitude, 		data.gpsLongitude, 	    data.gpsAltitude,
+        data.gpsSatNum, 		data.gpsTimeS,			data.hallSensors[0],
+        data.hallSensors[1], 	data.hallSensors[2],	data.hallSensors[3],
+        data.hallSensors[4], 	data.tanWaVoltage,		data.tanWaState,
+        data.tanWaIgniter,		data.tanWaFill,		    data.tanWaDepr,
+        data.tanWaUpust, 		data.rocketWeightKg, 	data.tankWeightKg,
+        (int)data.rocketWRaw, 	(int)data.tankWRaw);
+
+    return String(txString);
+}
+
+/**********************************************************************************************/
 
 /* Zadanie odpowiedzialne za logowanie wszystkiego na Flashu -> pobierając dane z kolejki.
  */

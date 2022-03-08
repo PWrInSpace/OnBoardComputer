@@ -96,29 +96,15 @@ void generateAndSendFrame(void) { // TODO
 
 	char txString[250];
 
-	if (tfsStruct.launched) {
-
-		sprintf(txString, "R4IF;%d;%f;%f;%d;%d;%d;%d;%d;%f;%d;%d;%d;%d;%f;%f;%d;%d\n",
-				(int)dataFrame.time_ms, 	dataFrame.batteryV, 		dataFrame.tankPressure,
-				dataFrame.hallSensors[0], 	dataFrame.hallSensors[1], 	dataFrame.hallSensors[2],
-				dataFrame.hallSensors[3], 	dataFrame.hallSensors[4], 	dataFrame.tanWaVoltage,
-				dataFrame.tanWaState, 		dataFrame.tanWaFill, 		dataFrame.tanWaDepr,
-				dataFrame.tanWaUpust, 		dataFrame.rocketWeightKg, 	dataFrame.tankWeightKg,
-				(int)dataFrame.rocketWRaw, 	(int)dataFrame.tankWRaw);
-	}
-
-	else {
-
-		sprintf(txString, "R4OR;%d;%f;%f;%f;%f;%f;%d;%d;%d;%d;%d;%d;%d;%f;%d;%d;%d;%d;%d;%f;%f;%d;%d\n",
-				(int)dataFrame.time_ms, 	dataFrame.batteryV, 		dataFrame.tankPressure,
-				dataFrame.gpsLatitude, 		dataFrame.gpsLongitude, 	dataFrame.gpsAltitude,
-				dataFrame.gpsSatNum, 		dataFrame.gpsTimeS,			dataFrame.hallSensors[0],
-				dataFrame.hallSensors[1], 	dataFrame.hallSensors[2],	dataFrame.hallSensors[3],
-				dataFrame.hallSensors[4], 	dataFrame.tanWaVoltage,		dataFrame.tanWaState,
-				dataFrame.tanWaIgniter,		dataFrame.tanWaFill,		dataFrame.tanWaDepr,
-				dataFrame.tanWaUpust, 		dataFrame.rocketWeightKg, 	dataFrame.tankWeightKg,
-				(int)dataFrame.rocketWRaw, 	(int)dataFrame.tankWRaw);
-	}
+	sprintf(txString, "R4OR;%d;%f;%f;%f;%f;%f;%d;%d;%d;%d;%d;%d;%d;%f;%d;%d;%d;%d;%d;%f;%f;%d;%d\n",
+			(int)dataFrame.time_ms, 	dataFrame.batteryV, 		dataFrame.tankPressure,
+			dataFrame.gpsLatitude, 		dataFrame.gpsLongitude, 	dataFrame.gpsAltitude,
+			dataFrame.gpsSatNum, 		dataFrame.gpsTimeS,			dataFrame.hallSensors[0],
+			dataFrame.hallSensors[1], 	dataFrame.hallSensors[2],	dataFrame.hallSensors[3],
+			dataFrame.hallSensors[4], 	dataFrame.tanWaVoltage,		dataFrame.tanWaState,
+			dataFrame.tanWaIgniter,		dataFrame.tanWaFill,		dataFrame.tanWaDepr,
+			dataFrame.tanWaUpust, 		dataFrame.rocketWeightKg, 	dataFrame.tankWeightKg,
+			(int)dataFrame.rocketWRaw, 	(int)dataFrame.tankWRaw);
 
 	loraSendData((uint8_t*) txString, strlen(txString));
 	HAL_Delay(DEL_TIME);
