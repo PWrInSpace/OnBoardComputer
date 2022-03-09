@@ -67,7 +67,7 @@ void initAll(void) {
 
 	HAL_UART_Receive_DMA(&huart1, (uint8_t*) &tfsStruct.espBinData, sizeof(EspBinData));
 
-	xbee_init(&xbeeIgnition, 0x0013A20041A26FA2, &huart2);
+	xbee_init(&xbeeIgnition, 0x0013A20041A26FDD, &huart2);
 
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) dataFrame.hallSensors, 5);
 
