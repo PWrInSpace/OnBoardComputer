@@ -21,14 +21,8 @@ volatile DataFrame dataFrame;
 
 void setup() {
   Serial.begin(115200); //DEBUG
-  
-  //OPTIMIZE move to rc constructor
-  rc.state = INIT;
-  rc.stateEvent = IDLE_EVENT;
-
   Serial.print("Setup state: "); //DEBUG
   Serial.println(rc.state); //DEBUG
-  rc.options.forceLaunch = true; //DEBUG
 
   //set esp now
   nowInit();
@@ -105,10 +99,10 @@ void setup() {
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
     
     //check wachdog timer previous state
-  if(wt.previousState != INIT && wt.previousState != COUNTDOWN){
-    rc.state = (StateMachine) wt.previousState;
+  if(wt.previousState != INIT_EVENT && wt.previousState != COUNTDOWN_EVENT){
+    rc.changeStateEvent((StateMachineEvent) wt.previousState);
   }else{
-    rc.state = IDLE;
+    rc.changeStateEvent(StateMachineEvent::IDLE_EVENT);
   }
 
   //start timers

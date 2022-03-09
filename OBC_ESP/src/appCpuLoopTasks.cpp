@@ -42,18 +42,22 @@ void stateTask(void *arg){
         case COUNTDOWN_EVENT:
           //dataframe 
           if(dataFrame.allDevicesWokeUp() || rc.options.forceLaunch == true){
-            xTimerDelete(rc.disconnectTimer, 25); //turn off disconnectTimer
             digitalWrite(CAMERA, HIGH); //turn on camera
             
             //set options
             rc.options.upustValveRequestState = VALVE_CLOSE; //mayby good idea //IDK at the moment is usless, becaus slaves has while loop block 
-            rc.options.sdDataPeriod = 100; //dataFrame create period
-            rc.options.loraDataPeriod = 500;
+            rc.options.sdDataPeriod = rc.options.sdFastPeriod * portTICK_PERIOD_MS;
+            rc.options.loraDataPeriod = rc.options.loraFastPeriod * portTICK_PERIOD_MS;
 
             //turn on mission timer
             dataFrame.missionTimer.startTimer(millis() + rc.options.countdownTime);
 
             if(dataFrame.missionTimer.isEnable()){
+              if(xTimerDelete(rc.disconnectTimer, 25) == pdFALSE){
+                rc.sendLog("Timer delete error");
+              } //turn off disconnectTimer
+              rc.disconnectTimer = NULL;
+              
               rc.changeState(COUNTDOWN);
             }else{
               dataFrame.errors.exceptions = MISSION_TIMER_EXCEPTION;
@@ -75,8 +79,7 @@ void stateTask(void *arg){
           esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
           
           //set options
-          rc.options.loraDataPeriod = 500;
-          rc.options.flashDataPeriod = 100; 
+          rc.options.flashDataPeriod = rc.options.flashFastPeriod * portTICK_PERIOD_MS;
 
           rc.changeState(FLIGHT);
           break;
@@ -85,8 +88,8 @@ void stateTask(void *arg){
           //i2c force 1 stage recovery
           txDataEspNow.setVal(500, VALVE_CLOSE, 0);
           rc.options.mainValveRequestState = VALVE_CLOSE;
-          //rc.options.dataFramePeriod = 250;
-          rc.options.flashDataPeriod = 500;
+          
+          rc.options.flashDataPeriod = rc.options.flashSlowPeriod * portTICK_PERIOD_MS;
 
           esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
           
@@ -104,11 +107,11 @@ void stateTask(void *arg){
           break;
 
         case ON_GROUND_EVENT:
-          rc.options.sdDataPeriod = 10000;
-          rc.options.dataFramePeriod = 1000;
-          rc.options.loraDataPeriod = 10000;
+          rc.options.sdDataPeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
+          rc.options.dataFramePeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
+          rc.options.loraDataPeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
 
-          dataFrame.missionTimer.turnOffTimer();
+          //dataFrame.missionTimer.turnOffTimer();
           
           rc.changeState(ON_GROUND);
           break;
@@ -121,9 +124,9 @@ void stateTask(void *arg){
 
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
 
-          rc.options.sdDataPeriod = 10000;
-          rc.options.dataFramePeriod = 10000;
-          rc.options.loraDataPeriod = 10000;
+          rc.options.sdDataPeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
+          rc.options.dataFramePeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
+          rc.options.loraDataPeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
 
           rc.changeState(ABORT);
           break;
@@ -203,12 +206,13 @@ void dataTask(void *arg){
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraDataPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       //Serial.print("LoRa data "); Serial.println(xTaskGetTickCount());//DEBUG
-      lora = dataFrame.createLoRaFrame();
+      lora = dataFrame.createLoRaFrame(rc.state, rc.getDisconnectRemainingTime());
 
       if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
         dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
         rc.sendLog("LoRa queue full");
       }
+      dataFrame.errors.reset(ERROR_RESET_LORA);
     }
 
     //FLASH
@@ -230,14 +234,14 @@ void dataTask(void *arg){
       //Serial.println(xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) ;
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       //Serial.print("SD save "); Serial.println(xTaskGetTickCount()); //DEBUG
-      sd = dataFrame.createSDFrame();
+      sd = dataFrame.createSDFrame(rc.state, rc.getDisconnectRemainingTime(), rc.options);
       
       if(xQueueSend(rc.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         //Serial.println("Log"); //DEBUG
         dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
       }  
 
-      //dataFrame.errors.reset(); //reset errors after save   //IDK
+      dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save   //IDK
     }
   
     wt.dataTaskFlag = true;

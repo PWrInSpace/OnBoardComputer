@@ -1,25 +1,20 @@
 #include "dataStructs.h"
 
-#include "mainStructs.h"
-extern RocketControl rc;
-
-/****** MAINSTRUCT *******/
-
-
 
 /****** DATAFRAME ******/
 bool DataFrame::allDevicesWokeUp(){
     return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
 }
 
-String DataFrame::createLoRaFrame(){
+String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
   uint8_t byte_data = 0x00;
   String frame;
   
   frame = "R4D;";
-  frame += String(rc.state) + ';'; //State
+  frame += String(state) + ';'; //State
   frame += String(millis()) + ';'; //Work time
   frame += String(missionTimer.getTime()) + ';';//Mission time
+  frame += String(disconnectTime) + ';';
   frame += String(batteryVoltage, 2) + ';';
   frame += String(GPSlal, 4) + ';';
   frame += String(GPSlong, 4) + ';';
@@ -97,21 +92,21 @@ String DataFrame::createLoRaFrame(){
 
   //error first byte  
   byte_data = 0x00;
-  byte_data |= (errors.exceptions << 1);
+  byte_data |= (errors.exceptions << 3);
   byte_data |= (errors.espnow << 0);
   frame += String((int)byte_data); //DEBUG
 
   return frame;
 }
 
-String DataFrame::createSDFrame(){
+String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options){
   String frame;
   //Serial.print("Start: "); Serial.println(millis()); //DEBUG
   //MCB
-  frame = String(rc.state) + ';'; //State
+  frame = String(state) + ';'; //State
   frame += String(millis()) + ';'; //Work time
   frame += String(missionTimer.getTime()) + ';';//Mission time
-  frame += String((xTimerGetExpiryTime(rc.disconnectTimer) - xTaskGetTickCount()) * portTICK_PERIOD_MS) + ';';
+  frame += String(disconnectTime) + ';';
   frame += String(batteryVoltage, 2) + ';';
   frame += String(GPSlal, 4) + ';';
   frame += String(GPSlong, 4) + ';';
@@ -182,20 +177,31 @@ String DataFrame::createSDFrame(){
   */
   //OPTIONS
   //mutex ??
-  frame += String(rc.options.flashWrite) + ';';
-  frame += String(rc.options.forceLaunch) + ';';
-  frame += String(rc.options.LoRaFrequencyMHz) + ';';
-  frame += String(rc.options.countdownTime) + ';';
-  frame += String(rc.options.ignitionTime) + ';';
-  frame += String(rc.options.tankMinPressure) + ';';
-  frame += String(rc.options.mainValveTime) + ';';
-  frame += String(rc.options.upustValveTime) + ';';
-  frame += String(rc.options.mainValveRequestState) + ';';
-  frame += String(rc.options.upustValveRequestState) + ';';
-  frame += String((uint16_t)rc.options.dataFramePeriod) + ';';
-  frame += String((uint16_t)rc.options.loraDataPeriod) + ';';
-  frame += String((uint16_t)rc.options.flashDataPeriod) + ';';
-  frame += String((uint16_t)rc.options.sdDataPeriod) + ';';
+  frame += String(options.LoRaFrequencyMHz) + ';';
+  frame += String(options.countdownTime) + ';';
+  frame += String(options.ignitionTime) + ';';
+  frame += String(options.tankMinPressure) + ';';
+  frame += String(options.espnowSleepTime) + ';';
+  frame += String(options.espnowSlowPeriod) + ';';
+  frame += String(options.espnowFastPeriod) + ';';
+  frame += String(options.flashWrite) + ';';
+  frame += String(options.forceLaunch) + ';';
+  frame += String(options.mainValveRequestState) + ';';
+  frame += String(options.upustValveRequestState) + ';';
+  frame += String(options.mainValveCommandTime) + ';';
+  frame += String(options.upustValveCommandTime) + ';';
+  frame += String((uint16_t)options.loraFastPeriod) + ';';
+  frame += String((uint16_t)options.loraSlowPeriod) + ';';
+  frame += String((uint16_t)options.dataFastPeriod) + ';';
+  frame += String((uint16_t)options.flashFastPeriod) + ';';
+  frame += String((uint16_t)options.flashSlowPeriod) + ';';
+  frame += String((uint16_t)options.sdFastPeriod) + ';';
+  frame += String((uint16_t)options.sdSlowPeriod) + ';';
+  frame += String((uint16_t)options.sharedPeriod) + ';';
+  frame += String((uint16_t)options.dataFramePeriod) + ';';
+  frame += String((uint16_t)options.loraDataPeriod) + ';';
+  frame += String((uint16_t)options.flashDataPeriod) + ';';
+  frame += String((uint16_t)options.sdDataPeriod) + ';';
 
 
   //ERRORS
@@ -214,4 +220,14 @@ String DataFrame::createSDFrame(){
 }
 
 
-/****** ERRORSTRUCT *******/
+/****** TXDATAESPNOW *******/
+TxDataEspNow::TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime):
+  sleepTime(_sleepTime),
+  command(_command),
+  commandTime(_commandTime) {}
+
+void TxDataEspNow::setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime){
+  sleepTime = _sleepTime;
+  command = _command;
+  commandTime = _commandTime;
+}

@@ -12,7 +12,9 @@ void loraTask(void *arg){
     //DEBUG GIGA
     if(Serial.available()){
       int x = Serial.readStringUntil('\n').toInt();
-      if(!rc.changeStateEvent((StateMachineEvent)x)){
+      if(x == 0){
+        dataFrame.errors.espnow = ESPNOW_ADD_PEER_ERROR;
+      }else if(!rc.changeStateEvent((StateMachineEvent)x)){
         dataFrame.errors.exceptions = INVALID_STATE_CHANGE_EXCEPTION;
       }
     }
@@ -70,9 +72,9 @@ void rxHandlingTask(void *arg){
 
         case PITOT:
           Serial.println("Pitot notify"); //DEBUG
-          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
-          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
-          else txDataEspNow.sleepTime = 500;
+          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) txDataEspNow.sleepTime = rc.options.espnowSleepTime;
+          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = rc.options.espnowFastPeriod;
+          else txDataEspNow.sleepTime = rc.options.espnowSlowPeriod;
 
           esp_now_send(adressPitot, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           
@@ -80,9 +82,9 @@ void rxHandlingTask(void *arg){
 
         case MAIN_VALVE:
           Serial.println("MainValve notify"); //DEBUG
-          if (rc.state < FUELING || rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
-          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
-          else txDataEspNow.sleepTime = 500;
+          if (rc.state < FUELING || rc.state >= ON_GROUND) txDataEspNow.sleepTime = rc.options.espnowSleepTime;
+          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = rc.options.espnowFastPeriod;
+          else txDataEspNow.sleepTime = rc.options.espnowSlowPeriod;
 
           //DEBUG GIGA
           Serial.println("Main valve data");
@@ -94,7 +96,7 @@ void rxHandlingTask(void *arg){
           //DEBUG GIGA
 
           txDataEspNow.command      = rc.options.mainValveRequestState;
-          txDataEspNow.commandTime  = rc.options.mainValveTime;
+          txDataEspNow.commandTime  = rc.options.mainValveCommandTime;
           
           esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           
@@ -102,12 +104,12 @@ void rxHandlingTask(void *arg){
 
         case UPUST_VALVE:
           Serial.println("UpustValve notify"); //DEBUG
-          if (rc.state < FUELING || rc.state >= ON_GROUND) txDataEspNow.sleepTime = 30000;
-          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = 100;
-          else txDataEspNow.sleepTime = 500;
+          if (rc.state < FUELING || rc.state >= ON_GROUND) txDataEspNow.sleepTime = rc.options.espnowSleepTime;
+          else if (rc.state == FLIGHT) txDataEspNow.sleepTime = rc.options.espnowFastPeriod;
+          else txDataEspNow.sleepTime = rc.options.espnowSlowPeriod;
           
           txDataEspNow.command      = rc.options.upustValveRequestState;
-          txDataEspNow.commandTime  = rc.options.upustValveTime;
+          txDataEspNow.commandTime  = rc.options.upustValveCommandTime;
           
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           

@@ -3,19 +3,13 @@
 
 #include <Arduino.h>
 #include "FreeRTOS.h"
-
+#include "config.h"
 
 #define LORA_RX_QUEUE_LENGTH 10
 #define LORA_TX_QUEUE_LENGTH 10
 #define SD_QUEUE_LENGTH 10
 #define FLASH_QUEUE_LENGTH 10
-#define ESP_NOW_QUEUE_LENGTH 3
-
-#define TANWA 1
-#define PITOT 2
-#define MAIN_VALVE 3
-#define UPUST_VALVE 4
-#define BLACK_BOX 5
+#define ESP_NOW_QUEUE_LENGTH 5
 
 enum StateMachine{
   INIT = 0,
@@ -32,7 +26,8 @@ enum StateMachine{
 };
 
 enum StateMachineEvent{
-  IDLE_EVENT = 1,
+  INIT_EVENT = 0,
+  IDLE_EVENT,
   ARMED_EVENT,
   FUELING_EVENT,
   RDY_TO_LAUNCH_EVENT,
@@ -44,24 +39,40 @@ enum StateMachineEvent{
   ABORT_EVENT
 };
 
+
 //options are change only in stateTasks, and in handlingTask obviously
 struct Options{
 	uint16_t LoRaFrequencyMHz; //IDK uint32_t
-  uint32_t countdownTime = 5000;
-	int16_t ignitionTime = -3000; //ignition time
-  uint8_t tankMinPressure = 35; //bar
-  uint16_t upustValveTime;  //czy konieczne, aktualnie nie używane, ewentualnie zmiana na high mid low 
-	uint16_t mainValveTime;
-	
+  uint32_t countdownTime;
+	int16_t ignitionTime; //ignition time
+  uint8_t tankMinPressure; //bar
+  uint16_t espnowSleepTime;
+  uint16_t espnowFastPeriod;
+  uint16_t espnowSlowPeriod;
+
 	bool flashWrite : 1;
 	bool forceLaunch : 1; 
   //change in statTask
 	uint8_t mainValveRequestState : 2;
   uint8_t upustValveRequestState : 2;
-	TickType_t dataFramePeriod = 100; 
-  TickType_t loraDataPeriod = 1000;
-  TickType_t flashDataPeriod = 500;
-  TickType_t sdDataPeriod = 1000;
+  uint16_t mainValveCommandTime;
+  uint16_t upustValveCommandTime;
+
+
+  TickType_t loraFastPeriod;
+  TickType_t loraSlowPeriod;
+  TickType_t dataFastPeriod;
+  TickType_t flashFastPeriod;
+  TickType_t flashSlowPeriod;
+  TickType_t sdFastPeriod;
+  TickType_t sdSlowPeriod;
+  TickType_t sharedPeriod;
+	TickType_t dataFramePeriod;
+  TickType_t loraDataPeriod;
+  TickType_t flashDataPeriod;
+  TickType_t sdDataPeriod;
+  
+  Options();
 };
 
 struct RocketControl{
@@ -83,24 +94,25 @@ struct RocketControl{
 	QueueHandle_t flashQueue;
   QueueHandle_t espNowQueue; //best solution XD
 	//mutex
-	SemaphoreHandle_t spiMutex = NULL;
+	SemaphoreHandle_t spiMutex;
 	//SemaphoreHandle_t i2cMutex_1 = NULL;
 	//SemaphoreHandle_t i2cMutex_2 = NULL;
 
 	//spinlock
-	portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
+	//portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
 
 	//software timers
 	TimerHandle_t watchdogTimer;
 	TimerHandle_t disconnectTimer;
 
 	//TODO new constructor with options or begin method
-	RocketControl() = default;
+	RocketControl();
   bool changeStateEvent(StateMachineEvent newEvent);
   //Use only in stateTask
   void changeState(StateMachine newState);
   void unsuccessfulEvent();
   void sendLog(const String & message);
+  uint32_t getDisconnectRemainingTime();
 };
 
 #endif

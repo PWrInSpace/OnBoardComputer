@@ -6,8 +6,7 @@
 
 #define WATCHDOG_EEPROM_SIZE 2
 
-static const TickType_t watchdogDelay = 250 / portTICK_PERIOD_MS; //2s
-static const TickType_t disconnectDelay = 15 * 60 * 1000 / portTICK_PERIOD_MS; //15min
+
 
 struct WatchdogTimer{
   bool loraTaskFlag : 1;

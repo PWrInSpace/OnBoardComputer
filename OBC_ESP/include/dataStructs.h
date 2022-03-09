@@ -3,16 +3,9 @@
 
 #include <cstdint>
 #include <Arduino.h>
+#include "mainStructs.h"
 #include "errors.h"
 #include "missionTimer.h"
-
-#define VALVE_OPEN 0x00
-#define VALVE_CLOSE 0x01
-#define VALVE_UNKNOWN 0x02
-
-#define VALVE_CLOSE_COMMAND 0x10
-#define VALVE_OPEN_COMMAND  0x11
-#define IGNITION_COMMAND 0x32
 
 /**   RX    **/
 
@@ -92,11 +85,12 @@ struct DataFrame {
   uint8_t GPSSat;
   uint8_t GPSsec;
   //uint16_t errors;
-  bool ignition = false;
+  bool ignition;
 
+  DataFrame() = default;
   bool allDevicesWokeUp();
-  String createLoRaFrame();
-  String createSDFrame();
+  String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
+  String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
 };
 
 
@@ -108,16 +102,8 @@ struct TxDataEspNow{
   uint16_t commandTime;
 
   TxDataEspNow() = default;
-  TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime):
-    sleepTime(_sleepTime),
-    command(_command),
-    commandTime(_commandTime) {}
-
-  void setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime){
-    sleepTime = _sleepTime;
-    command = _command;
-    commandTime = _commandTime;
-  }
+  TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime);
+  void setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime);
 };
 
 #endif
