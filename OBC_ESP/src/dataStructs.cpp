@@ -15,7 +15,7 @@ String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
   frame += String(millis()) + ';'; //Work time
   frame += String(missionTimer.getTime()) + ';';//Mission time
   frame += String(disconnectTime) + ';';
-  frame += String(batteryVoltage, 2) + ';';
+/*  frame += String(batteryVoltage, 2) + ';';
   frame += String(GPSlal, 4) + ';';
   frame += String(GPSlong, 4) + ';';
   frame += String(GPSalt, 4) + ';';
@@ -60,7 +60,7 @@ String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
   frame += String(tanWa.butlaWeightRaw) + ';';
   frame += String(tanWa.rocketWeight) + ';';
   frame += String(tanWa.butlaWeight) + ';';
-
+*/
   //recovery first byte
   byte_data = 0x00;
   byte_data |= (recovery.isArmed << 6);
@@ -107,6 +107,7 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String(millis()) + ';'; //Work time
   frame += String(missionTimer.getTime()) + ';';//Mission time
   frame += String(disconnectTime) + ';';
+  /*
   frame += String(batteryVoltage, 2) + ';';
   frame += String(GPSlal, 4) + ';';
   frame += String(GPSlong, 4) + ';';
@@ -119,7 +120,6 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String(velocity, 2) + ';';
   frame += String(ignition) + ';';
   //IMU DATA
-  /*
   //PITOT
   frame += String(pitot.wakeUp) + ';';
   frame += String(pitot.batteryVoltage, 2) + ';';
@@ -174,7 +174,6 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String(recovery.apogemixSecondStage) + ';';
   frame += String(recovery.firstStageDone) + ';';
   frame += String(recovery.secondStageDone) + ';';
-  */
   //OPTIONS
   //mutex ??
   frame += String(options.LoRaFrequencyMHz) + ';';
@@ -203,6 +202,7 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String((uint16_t)options.flashDataPeriod) + ';';
   frame += String((uint16_t)options.sdDataPeriod) + ';';
 
+  */
 
   //ERRORS
   frame += String(errors.sd) + ';';

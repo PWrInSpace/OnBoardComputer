@@ -13,9 +13,9 @@ void loraTask(void *arg){
     if(Serial.available()){
       int x = Serial.readStringUntil('\n').toInt();
       if(x == 0){
-        dataFrame.errors.espnow = ESPNOW_ADD_PEER_ERROR;
+        dataFrame.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
       }else if(!rc.changeStateEvent((StateMachineEvent)x)){
-        dataFrame.errors.exceptions = INVALID_STATE_CHANGE_EXCEPTION;
+        dataFrame.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
       }
     }
     //DEBUG GIGA
@@ -25,7 +25,7 @@ void loraTask(void *arg){
 
       xSemaphoreGive(rc.spiMutex);
     }else{
-      dataFrame.errors.rtos = RTOS_SPI_MUTEX_ERROR;
+      dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
       Serial.println("MUTEX ERROR");//DEBUG
     }
 
@@ -35,7 +35,7 @@ void loraTask(void *arg){
         //LORA SEND
         xSemaphoreGive(rc.spiMutex);
       }else{
-        dataFrame.errors.rtos = RTOS_SPI_MUTEX_ERROR;
+        dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
         Serial.println("MUTEX ERROR"); //DEBUG
       }
     }

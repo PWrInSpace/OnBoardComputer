@@ -60,11 +60,11 @@ void stateTask(void *arg){
               
               rc.changeState(COUNTDOWN);
             }else{
-              dataFrame.errors.exceptions = MISSION_TIMER_EXCEPTION;
+              dataFrame.errors.setLastException(MISSION_TIMER_EXCEPTION);
               rc.unsuccessfulEvent();
             }
           }else{
-            dataFrame.errors.exceptions = WAKE_UP_EXCEPTION;
+            dataFrame.errors.setLastException(WAKE_UP_EXCEPTION);
             rc.unsuccessfulEvent();
           }
 
@@ -209,7 +209,7 @@ void dataTask(void *arg){
       lora = dataFrame.createLoRaFrame(rc.state, rc.getDisconnectRemainingTime());
 
       if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
-        dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
+        dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
         rc.sendLog("LoRa queue full");
       }
       dataFrame.errors.reset(ERROR_RESET_LORA);
@@ -221,7 +221,7 @@ void dataTask(void *arg){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
        // Serial.print("Flash save ");  Serial.println(xTaskGetTickCount()); //DEBUG
         if(xQueueSend(rc.flashQueue, (void*)&dataFrame, 0) != pdTRUE){
-          dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
+          dataFrame.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
           rc.sendLog("Flash queue full");
         }
       }
@@ -238,7 +238,7 @@ void dataTask(void *arg){
       
       if(xQueueSend(rc.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         //Serial.println("Log"); //DEBUG
-        dataFrame.errors.rtos = RTOS_QUEUE_ADD_ERROR;
+        dataFrame.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
       }  
 
       dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save   //IDK
@@ -255,22 +255,24 @@ void sdTask(void *arg){
   while(1){
     //Serial.println("sd TASK"); //DEBUG
     if(xQueueReceive(rc.sdQueue, (void*)&data, 10) == pdTRUE){
+      
       if(data.startsWith("LOG")){
-        Serial.println(data);
+        Serial.println(data); //DEBUG
         if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
           //sdwrite
           xSemaphoreGive(rc.spiMutex);
         }else{
-          dataFrame.errors.rtos = RTOS_SPI_MUTEX_ERROR; 
+          dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
           Serial.println("MUTEX ERROR"); //DEBUG
         }
       }else{
-        Serial.println(data);
+        Serial.println(data); //DEBUG
         if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
           //sdwrite
           xSemaphoreGive(rc.spiMutex);
         }else{
-          dataFrame.errors.rtos = RTOS_SPI_MUTEX_ERROR;
+          dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
+          
           Serial.println("MUTEX ERROR"); //DEBUG
         }
       }
@@ -287,9 +289,7 @@ void flashTask(void *arg){
   while(1){
     //Serial.println("flash TASK"); //DEBUG
     if(xQueueReceive(rc.flashQueue, (void*)&frame, 10) == pdTRUE){
-      xSemaphoreTake(rc.spiMutex, 10);
         //sdwrite
-      xSemaphoreGive(rc.spiMutex);
     }
 
     wt.flashTaskFlag = true;

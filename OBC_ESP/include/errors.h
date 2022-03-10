@@ -5,6 +5,8 @@
 #define ERROR_RESET_LORA 0x21
 #define ERROR_RESET_SD 0x22
 
+#include <stdint.h>
+#include <Arduino.h> //DEBUG
 //loop error
 enum SDError{
   SD_NO_ERROR = 0,
@@ -22,7 +24,9 @@ enum FlashError{
 //loop error
 enum RTOSError{
   RTOS_NO_ERROR = 0,
-  RTOS_QUEUE_ADD_ERROR,
+  RTOS_SD_QUEUE_ADD_ERROR,
+  RTOS_LORA_QUEUE_ADD_ERROR,
+  RTOS_FLASH_QUEUE_ADD_ERROR,
   RTOS_SPI_MUTEX_ERROR,
 };
 
@@ -69,43 +73,15 @@ struct Errors{
   LastException exceptions;
   bool newError;
 
-
-  void setSDError(SDError error){
-    if(sd != error){
-      newError = true;
-      sd = error;
-    }
-  }
-  void reset(uint8_t triger){
-    static bool loraTriger = false;
-    static bool sdTriger = false; 
-
-    //new error reset previous trigers, to provide save error to sd and lora before reset error
-    if(newError){ 
-      loraTriger = false;
-      sdTriger = false;
-    }
-
-    //error reset double triger
-    if(triger == ERROR_RESET_LORA){
-      loraTriger = true;
-    }else if(triger == ERROR_RESET_SD){
-      sdTriger = true;
-    }
-
-    if(loraTriger && sdTriger){
-      sd = SD_NO_ERROR;
-      flash = FLASH_NO_ERROR;
-      rtos = RTOS_NO_ERROR;
-      espnow = ESPNOW_NO_ERROR;
-      watchdog = WATCHDOG_NO_ERROR;
-      sensors = SENSORS_NO_ERROR;
-
-      loraTriger = false;
-      sdTriger = false;
-      Serial.print("ERRORS reset: "); Serial.println((int)triger);
-    }
-  }
+  Errors() = default;
+  void setSDError(SDError error);
+  void setFlashError(FlashError error);
+  void setRTOSError(RTOSError error);
+  void setEspNowError(EspNowError error);
+  void setWatchDogError(WatchDogError error);
+  void setSensorError(SensorsError error);
+  void setLastException(LastException error); 
+  void reset(uint8_t triger);
 };
 
 

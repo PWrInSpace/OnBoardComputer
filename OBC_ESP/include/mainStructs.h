@@ -78,7 +78,7 @@ struct Options{
 struct RocketControl{
   StateMachineEvent stateEvent;
   StateMachine state;
-	Options options;  //TODO set options value
+	Options options;  
  
 	//tasks
 	TaskHandle_t loraTask;
@@ -105,7 +105,6 @@ struct RocketControl{
 	TimerHandle_t watchdogTimer;
 	TimerHandle_t disconnectTimer;
 
-	//TODO new constructor with options or begin method
 	RocketControl();
   bool changeStateEvent(StateMachineEvent newEvent);
   //Use only in stateTask
