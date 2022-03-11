@@ -85,7 +85,8 @@ void RocketControl::unsuccessfulEvent(){
 }
 
 void RocketControl::sendLog(const String & message){
-  String log = "LOG: " + message + "[ " + String(state) + " , " + String(millis()) + " ]";
+  static String log;
+  log = "LOG: " + message + "[ " + String(state) + " , " + String(millis()) + " ]\n";
   Serial.println(log); //DEBUG
   xQueueSend(sdQueue, (void*)&log, 0);
 }
@@ -93,6 +94,8 @@ void RocketControl::sendLog(const String & message){
 uint32_t RocketControl::getDisconnectRemainingTime(){
   if(disconnectTimer == NULL){
     return disconnectDelay;
+  }else if(xTimerIsTimerActive(disconnectTimer) == pdFALSE){
+    return 0;
   }
   
   return (xTimerGetExpiryTime(disconnectTimer) - xTaskGetTickCount()) * portTICK_PERIOD_MS;

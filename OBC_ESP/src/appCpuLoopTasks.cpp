@@ -171,8 +171,8 @@ void dataTask(void *arg){
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
   TickType_t sdTimer = 0;
-  String sd;
-  String lora;
+  String sd = "";
+  static String lora;
 
   while(1){
 
@@ -250,36 +250,48 @@ void dataTask(void *arg){
 }
 
 void sdTask(void *arg){
-  //SDCard sd(mySPI, SD_CS);
+  SDCard mySD(mySPI, SD_CS);
   String data;
+  String dataPath = dataFileName;
+  String logPath = logFileName;
+  uint8_t sd_i = 0;
+
+  vTaskDelay(100 / portTICK_RATE_MS);
+
+  while(!mySD.init()){
+    dataFrame.errors.setSDError(SD_INIT_ERROR);
+    Serial.println("SD INIT ERROR!");
+    vTaskDelay(50 / portTICK_PERIOD_MS);
+  }
+
+  while(mySD.fileExists(dataPath + String(sd_i) + ".txt")){
+    sd_i++;
+  }
+  dataPath = dataPath + String(sd_i) + ".txt";
+  logPath = logPath + String(sd_i) + ".txt";
+  Serial.println(dataPath);
+  Serial.println(logPath);
+
+  vTaskDelay(100 / portTICK_PERIOD_MS);
+  
   while(1){
-    //Serial.println("sd TASK"); //DEBUG
-    if(xQueueReceive(rc.sdQueue, (void*)&data, 10) == pdTRUE){
-      
+    //jezeli kiedykolwiek sie wykrzaczy wrzucam spinlocka
+    if(xQueueReceive(rc.sdQueue,&data, 0) == pdTRUE){
       if(data.startsWith("LOG")){
-        Serial.println(data); //DEBUG
-        if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
-          //sdwrite
-          xSemaphoreGive(rc.spiMutex);
-        }else{
-          dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
-          Serial.println("MUTEX ERROR"); //DEBUG
+        Serial.println(data);
+        if(!mySD.write(logPath, data)){
+          dataFrame.errors.setSDError(SD_WRITE_ERROR);
         }
-      }else{
-        Serial.println(data); //DEBUG
-        if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
-          //sdwrite
-          xSemaphoreGive(rc.spiMutex);
-        }else{
-          dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
-          
-          Serial.println("MUTEX ERROR"); //DEBUG
+      }else{ 
+        //Serial.println(data);
+        if(!mySD.write(dataPath, data)){
+          dataFrame.errors.setSDError(SD_WRITE_ERROR);
         }
       }
-    }
+    } 
 
     wt.sdTaskFlag = true;
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
 

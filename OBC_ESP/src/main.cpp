@@ -38,8 +38,8 @@ void setup() {
   //create Queues and Mutex //TODO
   rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(String));
   rc.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(String));
-  rc.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(DataFrame));
-  rc.flashQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(DataFrame));
+  rc.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(String));
+  rc.flashQueue = xQueueCreate(FLASH_QUEUE_LENGTH, sizeof(DataFrame));
   rc.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
 
   rc.spiMutex = xSemaphoreCreateMutex();
@@ -51,9 +51,9 @@ void setup() {
   xTaskCreatePinnedToCore(rxHandlingTask, "RX handling task", 8192, NULL, 2, &rc.rxHandlingTask, PRO_CPU_NUM);
 
   //app cpu
-  xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 3, &rc.stateTask, APP_CPU_NUM);
-  xTaskCreatePinnedToCore(dataTask,  "Data task",  8192, NULL, 2, &rc.dataTask,  APP_CPU_NUM);
-  xTaskCreatePinnedToCore(sdTask,    "SD task",    8192, NULL, 1, &rc.sdTask,    APP_CPU_NUM);
+  xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.stateTask, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.dataTask,  APP_CPU_NUM);
+  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &rc.sdTask,    APP_CPU_NUM);
   xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
 
   //create Timers

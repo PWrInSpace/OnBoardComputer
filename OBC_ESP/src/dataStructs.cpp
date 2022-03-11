@@ -211,7 +211,7 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String(errors.espnow) + ';';
   frame += String(errors.watchdog) + ';';
   frame += String(errors.sensors) + ';';
-  frame += String(errors.exceptions);
+  frame += String(errors.exceptions) + '\n';
   
   
   //Serial.print("Stop: "); Serial.println(millis());  //DEBUG

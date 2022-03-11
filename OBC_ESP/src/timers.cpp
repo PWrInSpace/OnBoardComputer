@@ -46,6 +46,7 @@ void WatchdogTimer::setFlags(bool state){
 
 void WatchdogTimer::reset(uint8_t state){
   Serial.println("WATCHDOG RESET"); //DEBUG
+  delay(1000);
   resetCounter += 1;
   EEPROMwrite(state);
   ESP.restart();

@@ -13,7 +13,7 @@ void loraTask(void *arg){
     if(Serial.available()){
       int x = Serial.readStringUntil('\n').toInt();
       if(x == 0){
-        dataFrame.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+        ESP.restart();
       }else if(!rc.changeStateEvent((StateMachineEvent)x)){
         dataFrame.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
       }
@@ -30,7 +30,7 @@ void loraTask(void *arg){
     }
 
     if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
-      Serial.println(loraTx); //DEBUG
+      //Serial.println(loraTx); //DEBUG
       if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
         //LORA SEND
         xSemaphoreGive(rc.spiMutex);

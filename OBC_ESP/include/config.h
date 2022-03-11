@@ -41,8 +41,11 @@
 #define UPUST_VALVE 4
 #define BLACK_BOX 5
 
+static String dataFileName= "/data_";
+static String logFileName = "/log_";
+
 //TIMERS
-static const TickType_t watchdogDelay = 250 / portTICK_PERIOD_MS; //250ms
-static const TickType_t disconnectDelay = 15 * 60 * 1000 / portTICK_PERIOD_MS; //15min
+static const TickType_t watchdogDelay = 1000 / portTICK_PERIOD_MS; //250ms
+static const TickType_t disconnectDelay = 0.5 * 60 * 1000 / portTICK_PERIOD_MS; //15min
 
 #endif

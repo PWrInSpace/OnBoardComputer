@@ -62,5 +62,5 @@ void disconnectTimerCallback(TimerHandle_t xTimer){
   if(rc.state <= COUNTDOWN){
     rc.changeState(ABORT);
   }
-  rc.sendLog("Disconnect Timer");
+  //rc.sendLog("Disconnect Timer");
 }
