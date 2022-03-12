@@ -5,7 +5,228 @@
 bool DataFrame::allDevicesWokeUp(){
     return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
 }
+void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, char* data){
+  uint8_t byteData[4] = {};
+  char mcbFrame[100] = {};
+  char pitotFrame[60] = {};
+  char mvFrame[40] = {};
+  char uvFrame[40] = {};
+  char tanwaFrame[60] = {};
+  char recoveryFrame[20] = {};
+  char errorsFrame[20] = {};
 
+  strcpy(data, LORA_TX_PREFIX);
+
+  //MCB
+  snprintf(mcbFrame, 100, "%d;%lu;%d;%d;%0.2f;%0.4f;%0.4f;%0.4f;%d;%d;",
+    state, millis(), missionTimer.getTime(), disconnectTime,
+    batteryVoltage, GPSlal, GPSlong, GPSalt, GPSsat, GPSsec);
+
+  strcat(data, mcbFrame);
+
+  //PITOT
+  snprintf(pitotFrame, 60, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+    pitot.wakeUp, pitot.batteryVoltage, pitot.staticPressure, pitot.dynamicPressure,
+    pitot.temperature, pitot.altitude, pitot.velocity, pitot.predictedApogee);
+  
+  strcat(data, pitotFrame);
+
+  //MAIN VALVE
+  snprintf(mvFrame, 40, "%d;%0.2f;%d;%0.2f;%0.2f;",
+    mainValve.wakeUp, mainValve.batteryVoltage, mainValve.valveState,
+    mainValve.thermocouple[0], mainValve.thermocouple[1]);
+  
+  strcat(data, mvFrame);
+
+
+  //UPUST VALVE
+  snprintf(uvFrame, 40, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+    upustValve.wakeUp, upustValve.batteryVoltage, upustValve.valveState,
+    upustValve.tankPressure, upustValve.hall[0], upustValve.hall[1],
+    upustValve.hall[2], upustValve.hall[3], upustValve.hall[4]);
+  
+  strcat(data, uvFrame);   
+
+  //TANWA
+  snprintf(tanwaFrame, 60, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f",
+    tanWa.tanWaState, tanWa.batteryVoltage, tanWa.igniterContinouity,
+    tanWa.fillValveState, tanWa.deprValveState, tanWa.pullState,
+    tanWa.rocketWeightRaw, tanWa.butlaWeightRaw, tanWa.rocketWeight,
+    tanWa.butlaWeight);
+  
+  strcat(data, tanwaFrame);
+
+  //recovery first byte
+  memset(byteData, 0, 4);
+  byteData[0] |= (recovery.isArmed << 6);
+  byteData[0] |= (recovery.firstStageContinouity << 5);
+  byteData[0] |= (recovery.secondStageContinouity << 4);
+  byteData[0] |= (recovery.separationSwitch1 << 3);
+  byteData[0] |= (recovery.separationSwitch2 << 2);
+  byteData[0] |= (recovery.telemetrumFirstStage << 1);
+  byteData[0] |= (recovery.telemetrumSecondStage << 0);
+  
+  //recovery second byte  
+  byteData[1] |= (recovery.altimaxFirstStage << 5);
+  byteData[1] |= (recovery.altimaxSecondStage << 4);
+  byteData[1] |= (recovery.apogemixFirstStage << 3);
+  byteData[1] |= (recovery.apogemixSecondStage << 2);
+  byteData[1] |= (recovery.firstStageDone << 1);
+  byteData[1] |= (recovery.secondStageDone << 0);
+  
+  //int cast for //DEBUG
+  snprintf(recoveryFrame, 20, "%d;%d;", byteData[0], byteData[1]);
+  strcat(data, recoveryFrame);
+
+  
+  //error first byte  
+  memset(byteData, 0, 4);
+  byteData[0] |= (errors.sd << 6);
+  byteData[0] |= (errors.flash << 4);
+  byteData[0] |= (errors.watchdog << 1);
+  byteData[0] |= (errors.rtos << 0);
+
+  //error second byte  
+  byteData[1] |= (errors.exceptions << 3);
+  byteData[1] |= (errors.espnow << 0);
+  
+  //int cast for //DEBUG
+  snprintf(errorsFrame, 20, "%d;%d\n", byteData[0], byteData[1]);
+  strcat(data, errorsFrame);
+
+  Serial.print("MCB SIZE: "); //DEBUG
+  Serial.print(strlen(mcbFrame));
+  Serial.print("\tPITOT SIZE: "); //DEBUG
+  Serial.print(strlen(pitotFrame));
+  Serial.print("\tMAIN VALVE SIZE: "); //DEBUG
+  Serial.print(strlen(mvFrame));
+  Serial.print("\tPupst valve SIZE: "); //DEBUG
+  Serial.print(strlen(uvFrame));
+  Serial.print("\tTanWa SIZE: "); //DEBUG
+  Serial.print(strlen(tanwaFrame));
+  Serial.print("\tRecovery SIZE: "); //DEBUG
+  Serial.print(strlen(recoveryFrame));
+  Serial.print("\tErrors SIZE: "); //DEBUG
+  Serial.print(strlen(errorsFrame));
+  Serial.print("\tTOTAL SIZE: "); //DEBUG
+  Serial.println(strlen(data));
+}
+
+
+void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data){
+  char mcbFrame[100] = {};
+  char pitotFrame[60] = {};
+  char mvFrame[40] = {};
+  char uvFrame[40] = {};
+  char tanwaFrame[60] = {};
+  char recoveryFrame[30] = {};
+  char optionsFrame[120] = {};
+  char errorsFrame[20] = {};
+  
+  //MCB
+  snprintf(mcbFrame, 100, "%d;%lu;%d;%d;%0.2f;%0.4f;%0.4f;%0.2f;%d;%d;%d;%0.2f;%0.2f;%0.2f;%d;",
+    state, millis(), missionTimer.getTime(), disconnectTime, batteryVoltage,
+    GPSlal, GPSlong, GPSalt, GPSsat, GPSsec, temp,
+    pressure, altitude, velocity, ignition);
+
+  strcpy(data, mcbFrame);
+  
+  //PITOT
+  snprintf(pitotFrame, 60, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+    pitot.wakeUp, pitot.batteryVoltage, pitot.staticPressure, pitot.dynamicPressure,
+    pitot.temperature, pitot.altitude, pitot.velocity, pitot.predictedApogee);
+  
+  strcat(data, pitotFrame);
+
+  //MAIN VALV
+  snprintf(mvFrame, 40, "%d;%0.2f;%d;%0.2f;%0.2f;",
+    mainValve.wakeUp, mainValve.batteryVoltage, mainValve.valveState,
+    mainValve.thermocouple[0], mainValve.thermocouple[1]);
+  strcat(data, mvFrame);
+
+
+  //UPUST VALVE
+  snprintf(uvFrame, 40, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+    upustValve.wakeUp, upustValve.batteryVoltage, upustValve.valveState,
+    upustValve.tankPressure, upustValve.hall[0], upustValve.hall[1],
+    upustValve.hall[2], upustValve.hall[3], upustValve.hall[4]);
+  
+  strcat(data, uvFrame);   
+
+  //TANWA
+  snprintf(tanwaFrame, 60, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;",
+    tanWa.tanWaState, tanWa.batteryVoltage, tanWa.igniterContinouity,
+    tanWa.fillValveState, tanWa.deprValveState, tanWa.pullState,
+    tanWa.rocketWeightRaw, tanWa.butlaWeightRaw, tanWa.rocketWeight,
+    tanWa.butlaWeight);
+  
+  strcat(data, tanwaFrame);
+  
+  //RECOVERY
+  snprintf(recoveryFrame, 30, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
+    recovery.isArmed, recovery.firstStageContinouity, recovery.secondStageContinouity,
+    recovery.separationSwitch1, recovery.separationSwitch2,
+    recovery.telemetrumFirstStage, recovery.telemetrumSecondStage,
+    recovery.altimaxFirstStage, recovery.altimaxSecondStage,
+    recovery.apogemixFirstStage, recovery.apogemixSecondStage,
+    recovery.firstStageDone, recovery.secondStageDone);
+  
+  strcat(data, recoveryFrame);
+  
+  //OPTIONS
+  snprintf(optionsFrame, 120, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d:%d;%d;%d;%d;%d;%d;",
+    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime, options.tankMinPressure,
+    options.flashWrite, options.forceLaunch, options.mainValveRequestState, options.upustValveRequestState,
+    options.mainValveCommandTime, options.upustValveCommandTime, options.espnowSleepTime, options.espnowSlowPeriod,
+    options.espnowFastPeriod, options.loraFastPeriod, options.loraSlowPeriod, options.dataFastPeriod, 
+    options.flashFastPeriod, options.flashSlowPeriod, options.sdFastPeriod, options.sdSlowPeriod,
+    options.sharedPeriod, options.dataFramePeriod, options.loraDataPeriod, options.flashDataPeriod,
+    options.sdDataPeriod);
+  
+  strcat(data, optionsFrame);
+
+  //ERRORS
+  snprintf(errorsFrame, 20, "%d;%d;%d;%d;%d;%d;%d\n",
+    errors.sd, errors.flash, errors.rtos, errors.espnow,
+    errors.watchdog, errors.sensors, errors.exceptions);
+  
+  strcat(data, errorsFrame);
+  /*
+  Serial.print("MCB SIZE: "); //DEBUG
+  Serial.print(strlen(mcbFrame));
+  Serial.print("\tPITOT SIZE: "); //DEBUG
+  Serial.print(strlen(pitotFrame));
+  Serial.print("\tMAIN VALVE SIZE: "); //DEBUG
+  Serial.print(strlen(mvFrame));
+  Serial.print("\tPupst valve SIZE: "); //DEBUG
+  Serial.print(strlen(uvFrame));
+  Serial.print("\tTanWa SIZE: "); //DEBUG
+  Serial.print(strlen(tanwaFrame));
+  Serial.print("\tRecovery SIZE: "); //DEBUG
+  Serial.print(strlen(recoveryFrame));
+  Serial.print("\tOptions SIZE: "); //DEBUG
+  Serial.print(strlen(optionsFrame));
+  Serial.print("\tErrors SIZE: "); //DEBUG
+  Serial.print(strlen(errorsFrame));
+  Serial.print("\tTOTAL SIZE: "); //DEBUG
+  Serial.println(strlen(data));
+  */
+}
+
+
+/****** TXDATAESPNOW *******/
+TxDataEspNow::TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime):
+  sleepTime(_sleepTime),
+  command(_command),
+  commandTime(_commandTime) {}
+
+void TxDataEspNow::setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime){
+  sleepTime = _sleepTime;
+  command = _command;
+  commandTime = _commandTime;
+}
+
+/*
 String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
   uint8_t byte_data = 0x00;
   String frame;
@@ -15,7 +236,7 @@ String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
   frame += String(millis()) + ';'; //Work time
   frame += String(missionTimer.getTime()) + ';';//Mission time
   frame += String(disconnectTime) + ';';
-/*  frame += String(batteryVoltage, 2) + ';';
+ frame += String(batteryVoltage, 2) + ';';
   frame += String(GPSlal, 4) + ';';
   frame += String(GPSlong, 4) + ';';
   frame += String(GPSalt, 4) + ';';
@@ -60,7 +281,7 @@ String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
   frame += String(tanWa.butlaWeightRaw) + ';';
   frame += String(tanWa.rocketWeight) + ';';
   frame += String(tanWa.butlaWeight) + ';';
-*/
+
   //recovery first byte
   byte_data = 0x00;
   byte_data |= (recovery.isArmed << 6);
@@ -98,7 +319,8 @@ String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){
 
   return frame;
 }
-
+*/
+/*
 String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options){
   String frame;
   //Serial.print("Start: "); Serial.println(millis()); //DEBUG
@@ -107,7 +329,7 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String(millis()) + ';'; //Work time
   frame += String(missionTimer.getTime()) + ';';//Mission time
   frame += String(disconnectTime) + ';';
-  /*
+
   frame += String(batteryVoltage, 2) + ';';
   frame += String(GPSlal, 4) + ';';
   frame += String(GPSlong, 4) + ';';
@@ -200,9 +422,10 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String((uint16_t)options.dataFramePeriod) + ';';
   frame += String((uint16_t)options.loraDataPeriod) + ';';
   frame += String((uint16_t)options.flashDataPeriod) + ';';
+
   frame += String((uint16_t)options.sdDataPeriod) + ';';
 
-  */
+
 
   //ERRORS
   frame += String(errors.sd) + ';';
@@ -218,21 +441,4 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   //Serial.println(frame.length()); //DEBUG
   return frame;
 }
-
-void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data){
-  snprintf(data, FRAME_ARRAY_SIZE, "%d; %lu; %d; %d\n",
-     state, millis(), missionTimer.getTime(), disconnectTime);
-}
-
-
-/****** TXDATAESPNOW *******/
-TxDataEspNow::TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime):
-  sleepTime(_sleepTime),
-  command(_command),
-  commandTime(_commandTime) {}
-
-void TxDataEspNow::setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime){
-  sleepTime = _sleepTime;
-  command = _command;
-  commandTime = _commandTime;
-}
+*/

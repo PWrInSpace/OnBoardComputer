@@ -31,7 +31,7 @@ struct MainValveData {
 struct TanWaData {
   uint8_t fillValveState : 2;
   uint8_t deprValveState : 2;
-  uint8_t pullValveState : 2;
+  uint8_t pullState : 2;
   uint8_t tanWaState : 4;
   bool igniterContinouity : 1;
   float rocketWeight;
@@ -74,24 +74,24 @@ struct DataFrame {
   Errors          errors;
   Timer missionTimer;
   //float imuData[12]; //TODO
-  float pressure;
-  uint8_t temp;
-  float altitude;
-  float velocity;
   float batteryVoltage;
   float GPSlal;
   float GPSlong;
   float GPSalt;
-  uint8_t GPSSat;
+  uint8_t GPSsat;
   uint8_t GPSsec;
-  //uint16_t errors;
+  uint8_t temp;
+  float pressure;
+  float altitude;
+  float velocity;
   bool ignition;
 
   DataFrame() = default;
   bool allDevicesWokeUp();
-  String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
-  String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
-  String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data);
+  void createLoRaFrame(StateMachine state, uint32_t disconnectTime, char* data);
+  void createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data);
+//String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
+//String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
 };
 
 

@@ -1,8 +1,9 @@
 #ifndef CONFIG_HH
 #define CONFIG_HH
 
-#define FRAME_ARRAY_SIZE 256
-
+#define SD_FRAME_ARRAY_SIZE 512
+#define LORA_FRAME_ARRAY_SIZE 256
+#define LORA_TX_PREFIX "R4D;"
 //VALVE
 #define VALVE_OPEN 0x00
 #define VALVE_CLOSE 0x01

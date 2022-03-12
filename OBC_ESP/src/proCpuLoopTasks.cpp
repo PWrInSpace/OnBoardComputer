@@ -5,11 +5,12 @@ extern WatchdogTimer wt;
 extern DataFrame dataFrame;
 
 void loraTask(void *arg){
-  String loraRx;
-  String loraTx;
+  char loraRx[LORA_FRAME_ARRAY_SIZE] = {};
+  char loraTx[LORA_FRAME_ARRAY_SIZE] = {};
 
   while(1){
     //DEBUG GIGA
+    
     if(Serial.available()){
       int x = Serial.readStringUntil('\n').toInt();
       if(x == 0){
@@ -20,42 +21,40 @@ void loraTask(void *arg){
     }
     //DEBUG GIGA
     
-    if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
-      //if lora.available()
+    xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
 
-      xSemaphoreGive(rc.spiMutex);
-    }else{
-      dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
-      Serial.println("MUTEX ERROR");//DEBUG
-    }
+      //if lora.available()
+      //  xQueueSend(rc.loraRxQueue, (void*)&loraRx, 0);
+      
+
+    xSemaphoreGive(rc.spiMutex);
 
     if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
-      //Serial.println(loraTx); //DEBUG
-      if(xSemaphoreTake(rc.spiMutex, 10) == pdTRUE){
+      Serial.print(loraTx); //DEBUG
+      xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
         //LORA SEND
-        xSemaphoreGive(rc.spiMutex);
-      }else{
-        dataFrame.errors.setRTOSError(RTOS_SPI_MUTEX_ERROR);
-        Serial.println("MUTEX ERROR"); //DEBUG
-      }
+      xSemaphoreGive(rc.spiMutex);
     }
 
     wt.loraTaskFlag = true;
-    vTaskDelay(10 / portTICK_PERIOD_MS);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
 
 /**********************************************************************************************/
 
 void rxHandlingTask(void *arg){
-  String loraData;
+  char loraData[LORA_FRAME_ARRAY_SIZE] = {};
+  char log[SD_FRAME_ARRAY_SIZE] = {};
   uint8_t rxEspNumber = 0;
 
   while(1){
     //Serial.println("RX handling tasks"); //DEBUG
     
     if(xQueueReceive(rc.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
-      if(loraData.startsWith("1234")){
+      if(strncmp(loraData, "R4A", 3) == 0){
+
+      }else if(strncmp(loraData, "R4O", 3) == 0){
 
       }
     }
@@ -122,7 +121,8 @@ void rxHandlingTask(void *arg){
           break;
 
         default:
-          //rc.sendLog("Unknown esp now device: " + String(rxEspNumber));
+          strcpy(log, "Unknown esp now device:");
+          rc.sendLog(log);
           break;
       }
     }

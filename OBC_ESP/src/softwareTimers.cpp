@@ -8,6 +8,7 @@ extern DataFrame dataFrame;
 
 void watchdogTimerCallback(TimerHandle_t xTimer){
  //Serial.println("WATCHDOG TIMER"); //DEBUG
+  char log[SD_FRAME_ARRAY_SIZE] = {};
   
   if(wt.loraTaskFlag == false){
     if(rc.state < COUNTDOWN || rc.state > FIRST_STAGE_RECOVERY){
@@ -15,7 +16,8 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
     }else{
       //error handling
       dataFrame.errors.setWatchDogError(WATCHDOG_LORA_ERROR);
-      //rc.sendLog("Watchdog timer LoRa in state: " + String(rc.state));
+      strcpy(log, "Watchdog timer LORA");
+      rc.sendLog(log);
     }
   }
 
@@ -26,11 +28,14 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
       //error handling
       rc.changeState(StateMachine::ABORT);
       dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
-      //rc.sendLog("Watchdog timer rxHandling in ABORT state");
+      
+      strcpy(log, "Watchdog timer rxHandling");
+      rc.sendLog(log);
     }else{
-      //error handling
       dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
-      //rc.sendLog("Watchdog timer rxHandling in state: " + String(rc.state));
+      
+      strcpy(log, "Watchdog timer rxHandling");
+      rc.sendLog(log);
     }
   }
 
@@ -45,13 +50,15 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
   if(wt.sdTaskFlag == false && wt.flashTaskFlag == false){
     wt.reset(rc.state);
   }else if(wt.sdTaskFlag == false){
-    //error handling
     dataFrame.errors.setWatchDogError(WATCHDOG_SD_ERROR);
-    //rc.sendLog("Watchdog timer SD in state: " + String(rc.state));
+    
+    strcpy(log, "Watchdog timer SD");
+    rc.sendLog(log);
   }else if(wt.flashTaskFlag == false){
-    //error handling
     dataFrame.errors.setWatchDogError(WATCHDOG_FLASH_ERROR);
-    //rc.sendLog("Watchdog timer flash in state: " + String(rc.state));
+    
+    strcpy(log, "Watchdog timer flash");
+    rc.sendLog(log);
   }
 
   wt.setFlags(false);

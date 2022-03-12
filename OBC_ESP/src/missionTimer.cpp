@@ -21,7 +21,7 @@ void Timer::startTimer(uint32_t _timer){
  * 
  * @return int32_t return time that has elapsed since startTimer, if timer is enable return NAN
  */
-int32_t Timer::getTime() const{
+int Timer::getTime() const{
   if(enable) return (millis() - timer);
   else return -999;
 }

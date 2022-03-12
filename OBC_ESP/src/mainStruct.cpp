@@ -6,15 +6,15 @@ Options::Options():
   countdownTime(COUNTDOWN_TIME),
   ignitionTime(IGNITION_TIME),
   tankMinPressure(TANK_MIN_PRESSURE),
-  espnowSleepTime(ESP_NOW_SLEEP_TIME),
-  espnowFastPeriod(ESP_NOW_FAST_PERIOD),
-  espnowSlowPeriod(ESP_NOW_SLOW_PERIOD),
   flashWrite(FLASH_WRITE),
   forceLaunch(FORCE_LAUNCH),
   mainValveRequestState(MAIN_VALVE_REQUEST_STATE),
   upustValveRequestState(UPUST_VALVE_REQUEST_STATE),
   mainValveCommandTime(MAIN_VALVE_COMMAND_TIME),
   upustValveCommandTime(UPUST_VALVE_COMMAND_TIME),
+  espnowSleepTime(ESP_NOW_SLEEP_TIME),
+  espnowFastPeriod(ESP_NOW_FAST_PERIOD),
+  espnowSlowPeriod(ESP_NOW_SLOW_PERIOD),
   loraFastPeriod(LORA_FAST_PERIOD),
   loraSlowPeriod(LORA_SLOW_PERIOD),
   dataFastPeriod(DATA_FAST_PERIOD),
@@ -85,10 +85,10 @@ void RocketControl::unsuccessfulEvent(){
 }
 
 void RocketControl::sendLog(char * message){
-  static char log[256] = {};
+  static char log[SD_FRAME_ARRAY_SIZE] = {};
   char temp[40] = {};
   strcpy(log, "LOG ");
-  snprintf(temp, 40, "[ %d , %lu ]\n", state, millis());
+  snprintf(temp, 40, " [ %d , %lu ]\n", state, millis());
   strcat(log, message);
   strcat(log, temp);
 

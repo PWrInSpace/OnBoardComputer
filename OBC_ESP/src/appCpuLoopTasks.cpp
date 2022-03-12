@@ -8,7 +8,7 @@ extern SPIClass mySPI;
 
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
-
+  char log[LORA_FRAME_ARRAY_SIZE] = {};
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
       //portENTER_CRITICAL(&rc.stateLock);
@@ -54,7 +54,8 @@ void stateTask(void *arg){
 
             if(dataFrame.missionTimer.isEnable()){
               if(xTimerDelete(rc.disconnectTimer, 25) == pdFALSE){
-                //rc.sendLog("Timer delete error");
+                strcpy(log, "Timer delete error");
+                rc.sendLog(log);
               } //turn off disconnectTimer
               rc.disconnectTimer = NULL;
               
@@ -132,7 +133,8 @@ void stateTask(void *arg){
           break;
 
         default:
-          //rc.sendLog("Unknown state event, State_event: " +  String(rc.stateEvent));
+          strcpy(log, "Unknown state event");
+          rc.sendLog(log);
           ESP.restart();
           break;
       }
@@ -171,8 +173,9 @@ void dataTask(void *arg){
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
   TickType_t sdTimer = 0;
-  char test[FRAME_ARRAY_SIZE] = {};
-  static String lora;
+  char sd[SD_FRAME_ARRAY_SIZE] = {};
+  char lora[LORA_FRAME_ARRAY_SIZE] = {};
+  char log[SD_FRAME_ARRAY_SIZE] = {};
 
   while(1){
 
@@ -205,12 +208,12 @@ void dataTask(void *arg){
     //LoRa
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraDataPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
-      //Serial.print("LoRa data "); Serial.println(xTaskGetTickCount());//DEBUG
-      lora = dataFrame.createLoRaFrame(rc.state, rc.getDisconnectRemainingTime());
+      dataFrame.createLoRaFrame(rc.state, rc.getDisconnectRemainingTime(), lora);
 
       if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
         dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
-        //rc.sendLog("LoRa queue full");
+        strcpy(log, "LoRa queue full"); // log
+        rc.sendLog(log);
       }
       dataFrame.errors.reset(ERROR_RESET_LORA);
     }
@@ -219,10 +222,11 @@ void dataTask(void *arg){
     if((rc.state > COUNTDOWN && rc.state < ON_GROUND) && rc.options.flashWrite){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-       // Serial.print("Flash save ");  Serial.println(xTaskGetTickCount()); //DEBUG
+       
         if(xQueueSend(rc.flashQueue, (void*)&dataFrame, 0) != pdTRUE){
           dataFrame.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
-          //rc.sendLog("Flash queue full");
+          strcpy(log, "Flash queue full");
+          rc.sendLog(log);
         }
       }
         
@@ -231,33 +235,31 @@ void dataTask(void *arg){
 
     //SD
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataPeriod){
-      //Serial.println(xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) ;
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      //Serial.print("SD save "); Serial.println(xTaskGetTickCount()); //DEBUG
-      //sd = dataFrame.createSDFrame(rc.state, rc.getDisconnectRemainingTime(), rc.options);
-      
-      dataFrame.createSDFrame(rc.state, rc.getDisconnectRemainingTime(), rc.options, test);
-      if(xQueueSend(rc.sdQueue, (void*)&test, 0) != pdTRUE){ //data to SD
-        //Serial.println("Log"); //DEBUG
+      dataFrame.createSDFrame(rc.state, rc.getDisconnectRemainingTime(), rc.options, sd);
+    
+      if(xQueueSend(rc.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         dataFrame.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
       }  
 
-      dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save   //IDK
+      dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save  
     }
-  
+
     wt.dataTaskFlag = true;
-    vTaskDelay(10/ portTICK_PERIOD_MS);  //OPTIMIZE IDK WHY time is a multiple of four
+    vTaskDelay(10/ portTICK_PERIOD_MS);  
   }
 }
 
 void sdTask(void *arg){
   SDCard mySD(mySPI, SD_CS);
-  char data[256] = {};
+  char data[SD_FRAME_ARRAY_SIZE] = {};
   String dataPath = dataFileName;
   String logPath = logFileName;
   uint8_t sd_i = 0;
 
-  vTaskDelay(100 / portTICK_RATE_MS);
+  vTaskDelay(50 / portTICK_RATE_MS);
+
+  xSemaphoreTake(rc.spiMutex, pdTRUE);
 
   while(!mySD.init()){
     dataFrame.errors.setSDError(SD_INIT_ERROR);
@@ -271,23 +273,29 @@ void sdTask(void *arg){
   dataPath = dataPath + String(sd_i) + ".txt";
   logPath = logPath + String(sd_i) + ".txt";
 
+  xSemaphoreGive(rc.spiMutex);
+
   while(1){
-    //jezeli kiedykolwiek sie wykrzaczy wrzucam spinlocka
+    
     if(xQueueReceive(rc.sdQueue, (void*)&data, 0) == pdTRUE){
-      Serial.println(data);
-      if(strncmp(data, "LOG", 3) == 0){
-        if(!mySD.write(logPath, data)){
-          dataFrame.errors.setSDError(SD_WRITE_ERROR);
-        }
-      }else{
-        if(!mySD.write(dataPath, data)){
-          dataFrame.errors.setSDError(SD_WRITE_ERROR);
-        }
-      }
+      
+      xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
+      
+        if(strncmp(data, "LOG", 3) == 0){
+          if(!mySD.write(logPath, data)){
+            dataFrame.errors.setSDError(SD_WRITE_ERROR);
+          }
+        }else{
+          if(!mySD.write(dataPath, data)){
+            dataFrame.errors.setSDError(SD_WRITE_ERROR);
+          }
+        }  
+
+      xSemaphoreGive(rc.spiMutex);
     } 
 
     wt.sdTaskFlag = true;
-    vTaskDelay(50 / portTICK_PERIOD_MS);
+    vTaskDelay(25 / portTICK_PERIOD_MS);
   }
 }
 
@@ -297,7 +305,7 @@ void flashTask(void *arg){
   while(1){
     //Serial.println("flash TASK"); //DEBUG
     if(xQueueReceive(rc.flashQueue, (void*)&frame, 10) == pdTRUE){
-        //sdwrite
+        //flashwrite
     }
 
     wt.flashTaskFlag = true;

@@ -47,10 +47,6 @@ struct Options{
   uint32_t countdownTime;
 	int16_t ignitionTime; //ignition time
   uint8_t tankMinPressure; //bar
-  uint16_t espnowSleepTime;
-  uint16_t espnowFastPeriod;
-  uint16_t espnowSlowPeriod;
-
 	bool flashWrite : 1;
 	bool forceLaunch : 1; 
   //change in statTask
@@ -59,7 +55,9 @@ struct Options{
   uint16_t mainValveCommandTime;
   uint16_t upustValveCommandTime;
 
-
+  uint16_t espnowSleepTime;
+  uint16_t espnowFastPeriod;
+  uint16_t espnowSlowPeriod;
   TickType_t loraFastPeriod;
   TickType_t loraSlowPeriod;
   TickType_t dataFastPeriod;

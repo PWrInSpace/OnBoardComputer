@@ -11,7 +11,7 @@ class Timer{
   public:
   Timer();
   void startTimer(uint32_t _timer);
-  int32_t getTime() const;
+  int getTime() const;
   bool isEnable() const;
   void turnOffTimer();
 };
