@@ -91,6 +91,7 @@ struct DataFrame {
   bool allDevicesWokeUp();
   String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
   String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
+  String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data);
 };
 
 

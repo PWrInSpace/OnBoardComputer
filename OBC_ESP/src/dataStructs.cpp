@@ -219,6 +219,11 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   return frame;
 }
 
+void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data){
+  snprintf(data, FRAME_ARRAY_SIZE, "%d; %lu; %d; %d\n",
+     state, millis(), missionTimer.getTime(), disconnectTime);
+}
+
 
 /****** TXDATAESPNOW *******/
 TxDataEspNow::TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime):

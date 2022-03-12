@@ -15,7 +15,7 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
     }else{
       //error handling
       dataFrame.errors.setWatchDogError(WATCHDOG_LORA_ERROR);
-      rc.sendLog("Watchdog timer LoRa in state: " + String(rc.state));
+      //rc.sendLog("Watchdog timer LoRa in state: " + String(rc.state));
     }
   }
 
@@ -26,11 +26,11 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
       //error handling
       rc.changeState(StateMachine::ABORT);
       dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
-      rc.sendLog("Watchdog timer rxHandling in ABORT state");
+      //rc.sendLog("Watchdog timer rxHandling in ABORT state");
     }else{
       //error handling
       dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
-      rc.sendLog("Watchdog timer rxHandling in state: " + String(rc.state));
+      //rc.sendLog("Watchdog timer rxHandling in state: " + String(rc.state));
     }
   }
 
@@ -47,11 +47,11 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
   }else if(wt.sdTaskFlag == false){
     //error handling
     dataFrame.errors.setWatchDogError(WATCHDOG_SD_ERROR);
-    rc.sendLog("Watchdog timer SD in state: " + String(rc.state));
+    //rc.sendLog("Watchdog timer SD in state: " + String(rc.state));
   }else if(wt.flashTaskFlag == false){
     //error handling
     dataFrame.errors.setWatchDogError(WATCHDOG_FLASH_ERROR);
-    rc.sendLog("Watchdog timer flash in state: " + String(rc.state));
+    //rc.sendLog("Watchdog timer flash in state: " + String(rc.state));
   }
 
   wt.setFlags(false);
@@ -62,5 +62,7 @@ void disconnectTimerCallback(TimerHandle_t xTimer){
   if(rc.state <= COUNTDOWN){
     rc.changeState(ABORT);
   }
-  //rc.sendLog("Disconnect Timer");
+  
+  char log[] = "Disconnect Timer";
+  rc.sendLog(log);
 }

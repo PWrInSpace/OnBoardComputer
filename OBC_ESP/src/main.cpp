@@ -38,7 +38,7 @@ void setup() {
   //create Queues and Mutex //TODO
   rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(String));
   rc.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(String));
-  rc.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(String));
+  rc.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(char[FRAME_ARRAY_SIZE]));
   rc.flashQueue = xQueueCreate(FLASH_QUEUE_LENGTH, sizeof(DataFrame));
   rc.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
 

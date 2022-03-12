@@ -111,7 +111,7 @@ struct RocketControl{
   //Use only in stateTask
   void changeState(StateMachine newState);
   void unsuccessfulEvent();
-  void sendLog(const String & message);
+  void sendLog(char *message);
   uint32_t getDisconnectRemainingTime();
 };
 

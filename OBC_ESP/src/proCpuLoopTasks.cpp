@@ -122,7 +122,7 @@ void rxHandlingTask(void *arg){
           break;
 
         default:
-          rc.sendLog("Unknown esp now device: " + String(rxEspNumber));
+          //rc.sendLog("Unknown esp now device: " + String(rxEspNumber));
           break;
       }
     }

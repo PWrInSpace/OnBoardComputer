@@ -84,10 +84,15 @@ void RocketControl::unsuccessfulEvent(){
   this->stateEvent = (StateMachineEvent)((uint8_t)stateEvent - 1);
 }
 
-void RocketControl::sendLog(const String & message){
-  static String log;
-  log = "LOG: " + message + "[ " + String(state) + " , " + String(millis()) + " ]\n";
-  Serial.println(log); //DEBUG
+void RocketControl::sendLog(char * message){
+  static char log[256] = {};
+  char temp[40] = {};
+  strcpy(log, "LOG ");
+  snprintf(temp, 40, "[ %d , %lu ]\n", state, millis());
+  strcat(log, message);
+  strcat(log, temp);
+
+  //Serial.println(log); //DEBUG
   xQueueSend(sdQueue, (void*)&log, 0);
 }
 

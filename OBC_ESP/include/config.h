@@ -1,6 +1,8 @@
 #ifndef CONFIG_HH
 #define CONFIG_HH
 
+#define FRAME_ARRAY_SIZE 256
+
 //VALVE
 #define VALVE_OPEN 0x00
 #define VALVE_CLOSE 0x01
