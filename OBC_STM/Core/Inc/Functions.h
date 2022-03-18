@@ -1,6 +1,10 @@
 #ifndef INC_FUNCTIONS_H_
 #define INC_FUNCTIONS_H_
 
+#include <string.h>
+#include "gpio.h"
+#include "i2c.h"
+
 typedef struct {
 
 	_Bool isArmed :1;
@@ -24,6 +28,8 @@ RecoveryData recData;
 void initAll(void);
 
 void checkComputers(void);
+
+void armDisarm(_Bool arm);
 
 void doFirstSeparation(void);
 
