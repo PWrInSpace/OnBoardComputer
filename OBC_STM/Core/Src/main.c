@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "Functions.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
