@@ -88,7 +88,7 @@ void adcMeasure() {
     EspBinData measureData;
 
     // Ciśnienie butli:
-    measureData.tankPressure = analogRead(GPIO_NUM_34) * 0.0201465 * 1.11; // * 82.5 / 4095
+    measureData.tankPressure = analogRead(GPIO_NUM_34) * 0.0201465 * 1,18; // * 82.5 / 4095
     /* 
         * Mnożymy przez 82.5, bo przy takim ciśnieniu będzie maksymalne napięcie na adc - 3.3v
         * (Czujnik daje 10v przy 250 barach).
