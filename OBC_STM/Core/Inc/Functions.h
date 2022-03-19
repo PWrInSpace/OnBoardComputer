@@ -43,6 +43,6 @@ void doFirstSeparation(void);
 
 void doSecondSeparation(void);
 
-void executeCommand(uint8_t commandNumber);
+void executeCommand(DataFromComm dataFromComm);
 
 #endif /* INC_FUNCTIONS_H_ */

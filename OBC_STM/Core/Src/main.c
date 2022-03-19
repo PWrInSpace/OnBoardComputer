@@ -165,7 +165,7 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 	else {
 		DataFromComm dataFromComm;
 		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
-		executeCommand(dataFromComm.command);
+		executeCommand(dataFromComm);
 	}
 	HAL_I2C_EnableListen_IT(hi2c);
 }

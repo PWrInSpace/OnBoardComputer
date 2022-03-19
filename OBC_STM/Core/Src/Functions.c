@@ -80,7 +80,17 @@ void doSecondSeparation(void) {
 
 /*****************************************************************/
 
-void executeCommand(uint8_t commandNumber) {
+void executeCommand(DataFromComm dataFromComm) {
 
-	// TODO!!!
+	switch (dataFromComm.command) {
+
+	case 1: 	armDisarm(1); 							break;
+	case 2: 	armDisarm(0); 							break;
+	case 3: 	TelArm_GPIO_Port->ODR |= TelArm_Pin; 	break;
+	case 4: 	TelArm_GPIO_Port->ODR &= ~TelArm_Pin; 	break;
+	case 165: 	doFirstSeparation(); 					break;
+	case 90: 	doSecondSeparation(); 					break;
+	}
+
+	// TODO Silniki na Portugalię :)
 }
