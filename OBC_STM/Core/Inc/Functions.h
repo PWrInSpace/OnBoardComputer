@@ -7,6 +7,14 @@
 
 typedef struct {
 
+	uint16_t nextSendTime;
+	uint8_t command;
+	uint16_t commandArg;
+
+} DataFromComm;
+
+typedef struct {
+
 	_Bool isArmed :1;
 	_Bool firstStageContinouity :1;
 	_Bool secondStageContinouity :1;
@@ -34,5 +42,7 @@ void armDisarm(_Bool arm);
 void doFirstSeparation(void);
 
 void doSecondSeparation(void);
+
+void executeCommand(uint8_t commandNumber);
 
 #endif /* INC_FUNCTIONS_H_ */

@@ -98,6 +98,20 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  checkComputers();
+
+	  if (recData.isArmed) {
+
+		  // Warunki separacji 1 stopnia:
+		  if (!recData.firstStageDone && (recData.altimaxFirstStage || recData.telemetrumFirstStage))
+			  doFirstSeparation();
+
+		  // Warunki separacji 2 stopnia:
+		  if (!recData.secondStageDone && recData.firstStageDone &&
+				  (recData.altimaxSecondStage || recData.telemetrumSecondStage))
+			  doSecondSeparation();
+	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -141,6 +155,20 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode) {
+
+	HAL_I2C_DisableListen_IT(hi2c);
+	if (!TransferDirection) {
+		HAL_I2C_Slave_Transmit(hi2c, (uint8_t*) &recData, sizeof(recData), 5);
+	}
+	else {
+		DataFromComm dataFromComm;
+		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
+		executeCommand(dataFromComm.command);
+	}
+	HAL_I2C_EnableListen_IT(hi2c);
+}
 
 /* USER CODE END 4 */
 
