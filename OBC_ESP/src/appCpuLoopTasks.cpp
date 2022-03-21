@@ -300,12 +300,24 @@ void sdTask(void *arg){
 }
 
 void flashTask(void *arg){
+
+  File file;
   DataFrame frame;
+  LITTLEFS.begin(true);
 
   while(1){
-    //Serial.println("flash TASK"); //DEBUG
-    if(xQueueReceive(rc.flashQueue, (void*)&frame, 10) == pdTRUE){
-        //flashwrite
+
+    if (uxQueueMessagesWaiting(rc.flashQueue) > FLASH_QUEUE_LENGTH / 2) {
+
+      file = LITTLEFS.open("/file.txt", "a");
+
+      while (uxQueueMessagesWaiting(rc.flashQueue) > 0) {
+
+        xQueueReceive(rc.flashQueue, &frame, portMAX_DELAY);
+        file.write((uint8_t*) &frame, sizeof(frame));
+      }
+
+      file.close();
     }
 
     wt.flashTaskFlag = true;

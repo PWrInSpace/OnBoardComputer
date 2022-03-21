@@ -1,6 +1,8 @@
 #ifndef TASKS_AND_TIMERS
 #define TASKS_AND_TIMERS
 
+#include <LITTLEFS.h>
+
 #include "mainStructs.h"
 #include "dataStructs.h"
 #include "timers.h"

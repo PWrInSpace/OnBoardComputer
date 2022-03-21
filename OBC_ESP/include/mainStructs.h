@@ -9,7 +9,7 @@
 #define LORA_RX_QUEUE_LENGTH 5
 #define LORA_TX_QUEUE_LENGTH 5
 #define SD_QUEUE_LENGTH 10
-#define FLASH_QUEUE_LENGTH 5
+#define FLASH_QUEUE_LENGTH 20
 #define ESP_NOW_QUEUE_LENGTH 5
 
 enum StateMachine{
