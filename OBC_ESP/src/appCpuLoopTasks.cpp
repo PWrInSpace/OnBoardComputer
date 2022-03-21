@@ -204,8 +204,10 @@ void dataTask(void *arg){
       // TODO!!!
 
       // Recovery:
-
-      // TODO!!!
+      Wire.requestFrom(3, sizeof(RecoveryData));
+      if (!Wire.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
+        // ERROR I2C
+      }
 
       //read i2c comm data
       //rc.sendLog("Hello space!");
