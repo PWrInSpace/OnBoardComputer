@@ -5,6 +5,8 @@ extern RocketControl rc;
 extern WatchdogTimer wt;
 extern DataFrame dataFrame;
 extern SPIClass mySPI;
+extern TwoWire i2c1;
+extern TwoWire i2c2;
 
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
@@ -177,6 +179,9 @@ void dataTask(void *arg){
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
+  SFE_UBLOX_GPS gps;
+  gps.begin(i2c1, 0x42);
+
   while(1){
 
     //data
@@ -186,7 +191,22 @@ void dataTask(void *arg){
 
       //read data from sensors and gps
       //i2c spi ect...
-      
+
+      // GPS:
+      dataFrame.GPSalt  = gps.getAltitudeMSL();
+      dataFrame.GPSlal  = gps.getLatitude();
+      dataFrame.GPSlong = gps.getLongitude();
+      dataFrame.GPSsat  = gps.getFixType();
+      dataFrame.GPSsec  = gps.getSecond();
+
+      // IMU:
+
+      // TODO!!!
+
+      // Recovery:
+
+      // TODO!!!
+
       //read i2c comm data
       //rc.sendLog("Hello space!");
       //filters
