@@ -3,10 +3,20 @@
 extern RocketControl rc;
 extern WatchdogTimer wt;
 extern DataFrame dataFrame;
+extern SPIClass mySPI;
 
 void loraTask(void *arg){
-  char loraRx[LORA_FRAME_ARRAY_SIZE] = {};
+  char loraRx[LORA_FRAME_ARRAY_SIZE / 2] = {};
   char loraTx[LORA_FRAME_ARRAY_SIZE] = {};
+
+  LoRa.setSPI(mySPI);
+  LoRa.setPins(4, 2, 17);
+  LoRa.setSignalBandwidth(250E3);
+  LoRa.noCrc();
+  LoRa.setSpreadingFactor(7);
+  LoRa.setTxPower(14);
+  LoRa.setTimeout(10);
+  LoRa.begin(rc.options.LoRaFrequencyMHz * 1E6);
 
   while(1){
     //DEBUG GIGA
@@ -20,19 +30,29 @@ void loraTask(void *arg){
       }
     }
     //DEBUG GIGA
-    
+
     xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
 
-      //if lora.available()
-      //  xQueueSend(rc.loraRxQueue, (void*)&loraRx, 0);
-      
+      LoRa.parsePacket();
+      if (LoRa.available()) {
+
+        String rxStr = LoRa.readString();
+        Serial.print(rxStr); // DEBUG
+
+        strcpy(loraRx, rxStr.c_str());
+        xQueueSend(rc.loraRxQueue, (void*)&loraRx, 0);
+      }
 
     xSemaphoreGive(rc.spiMutex);
 
     if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
       Serial.print(loraTx); //DEBUG
       xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
-        //LORA SEND
+        
+        LoRa.beginPacket();
+        LoRa.print((char*) loraTx);
+        LoRa.endPacket();
+
       xSemaphoreGive(rc.spiMutex);
     }
 

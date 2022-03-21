@@ -2,6 +2,9 @@
 #define TASKS_AND_TIMERS
 
 #include <LITTLEFS.h>
+#include <LoRa.h>
+#include <SPI.h>
+#include <Wire.h>
 
 #include "mainStructs.h"
 #include "dataStructs.h"

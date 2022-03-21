@@ -5,6 +5,7 @@
 bool DataFrame::allDevicesWokeUp(){
     return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
 }
+
 void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, char* data){
   uint8_t byteData[4] = {};
   char mcbFrame[100] = {};

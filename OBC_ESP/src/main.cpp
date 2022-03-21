@@ -1,6 +1,3 @@
-#include <Arduino.h>
-#include <SPI.h>
-#include "FreeRTOS.h"
 #include "timers.h"
 #include "mainStructs.h"
 #include "dataStructs.h"
@@ -17,6 +14,9 @@
 WatchdogTimer wt;
 RocketControl rc;
 SPIClass mySPI(VSPI);
+TwoWire i2c1 = TwoWire(0);
+TwoWire i2c2 = TwoWire(1);
+
 volatile DataFrame dataFrame;
 
 void setup() {
@@ -33,7 +33,6 @@ void setup() {
   nowAddPeer(adressTanWa, 0);
 
   //init all components
-
 
   //create Queues and Mutex //TODO
   rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
