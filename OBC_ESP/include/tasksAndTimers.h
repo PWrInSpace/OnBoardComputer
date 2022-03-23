@@ -1,6 +1,12 @@
 #ifndef TASKS_AND_TIMERS
 #define TASKS_AND_TIMERS
 
+#include <LITTLEFS.h>
+#include <LoRa.h>
+#include <SPI.h>
+#include <Wire.h>
+#include "SparkFun_Ublox_Arduino_Library.h"
+
 #include "mainStructs.h"
 #include "dataStructs.h"
 #include "timers.h"

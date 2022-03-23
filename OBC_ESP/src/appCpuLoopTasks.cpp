@@ -5,6 +5,8 @@ extern RocketControl rc;
 extern WatchdogTimer wt;
 extern DataFrame dataFrame;
 extern SPIClass mySPI;
+extern TwoWire i2c1;
+extern TwoWire i2c2;
 
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
@@ -177,6 +179,9 @@ void dataTask(void *arg){
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
+  SFE_UBLOX_GPS gps;
+  gps.begin(i2c1, 0x42);
+
   while(1){
 
     //data
@@ -186,7 +191,24 @@ void dataTask(void *arg){
 
       //read data from sensors and gps
       //i2c spi ect...
-      
+
+      // GPS:
+      dataFrame.GPSalt  = gps.getAltitudeMSL();
+      dataFrame.GPSlal  = gps.getLatitude();
+      dataFrame.GPSlong = gps.getLongitude();
+      dataFrame.GPSsat  = gps.getFixType();
+      dataFrame.GPSsec  = gps.getSecond();
+
+      // IMU:
+
+      // TODO!!!
+
+      // Recovery:
+      Wire.requestFrom(3, sizeof(RecoveryData));
+      if (!Wire.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
+        // ERROR I2C
+      }
+
       //read i2c comm data
       //rc.sendLog("Hello space!");
       //filters
@@ -300,12 +322,24 @@ void sdTask(void *arg){
 }
 
 void flashTask(void *arg){
+
+  File file;
   DataFrame frame;
+  LITTLEFS.begin(true);
 
   while(1){
-    //Serial.println("flash TASK"); //DEBUG
-    if(xQueueReceive(rc.flashQueue, (void*)&frame, 10) == pdTRUE){
-        //flashwrite
+
+    if (uxQueueMessagesWaiting(rc.flashQueue) > FLASH_QUEUE_LENGTH / 2) {
+
+      file = LITTLEFS.open("/file.txt", "a");
+
+      while (uxQueueMessagesWaiting(rc.flashQueue) > 0) {
+
+        xQueueReceive(rc.flashQueue, &frame, portMAX_DELAY);
+        file.write((uint8_t*) &frame, sizeof(frame));
+      }
+
+      file.close();
     }
 
     wt.flashTaskFlag = true;
