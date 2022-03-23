@@ -19,13 +19,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 			if (strstr(xbee_rx.data_array, "R4TN") != NULL) {
 
 				int tanWaState, tanWaIgniter, tanWaFill, tanWaDepr, tanWaUpust;
-
-				sscanf(xbee_rx.data_array, "R4TN;%f;%d;%d;%d;%d;%d;%f;%f;%d;%d",
+				int test;
+				sscanf(xbee_rx.data_array, "R4TN;%f;%d;%d;%d;%d;%d;%d;%f;%f",
 						&dataFrame.tanWaVoltage, 	&tanWaState,
 						&tanWaIgniter, 				&tanWaFill,
-						&tanWaDepr, 				&tanWaUpust,
-						&dataFrame.rocketWeightKg, 	&dataFrame.tankWeightKg,
-						(int*)&dataFrame.rocketWRaw, (int*)&dataFrame.tankWRaw);
+						&tanWaDepr, 				&tanWaUpust, &test,
+						&dataFrame.rocketWeightKg, 	&dataFrame.tankWeightKg);
 
 				dataFrame.tanWaState 	= tanWaState;
 				dataFrame.tanWaIgniter 	= tanWaIgniter;
@@ -103,7 +102,7 @@ void generateAndSendFrame(void) { // TODO
 			dataFrame.hallSensors[1], 	dataFrame.hallSensors[2],	dataFrame.hallSensors[3],
 			dataFrame.hallSensors[4], 	dataFrame.tanWaVoltage,		dataFrame.tanWaState,
 			dataFrame.tanWaIgniter,		dataFrame.tanWaFill,		dataFrame.tanWaDepr,
-			dataFrame.tanWaUpust, 		dataFrame.rocketWeightKg, 	dataFrame.tankWeightKg,
+			dataFrame.tanWaUpust, 		dataFrame.tankWeightKg, 	dataFrame.rocketWeightKg,
 			(int)dataFrame.rocketWRaw, 	(int)dataFrame.tankWRaw);
 
 	loraSendData((uint8_t*) txString, strlen(txString));
