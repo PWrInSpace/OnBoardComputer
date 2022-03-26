@@ -97,14 +97,14 @@ struct DataFrame {
 
 /**   TX    **/
 
-struct TxDataEspNow{
-  uint16_t sleepTime;
+struct TxDataEspNow {
+
   uint8_t command;
   uint16_t commandTime;
 
   TxDataEspNow() = default;
-  TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime);
-  void setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime);
+  TxDataEspNow(uint8_t _command, uint16_t _commandTime);
+  void setVal(uint8_t _command, uint16_t _commandTime);
 };
 
 #endif

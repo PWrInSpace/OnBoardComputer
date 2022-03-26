@@ -216,13 +216,13 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
 
 
 /****** TXDATAESPNOW *******/
-TxDataEspNow::TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime):
-  sleepTime(_sleepTime),
+TxDataEspNow::TxDataEspNow(uint8_t _command, uint16_t _commandTime):
+
   command(_command),
   commandTime(_commandTime) {}
 
-void TxDataEspNow::setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime){
-  sleepTime = _sleepTime;
+void TxDataEspNow::setVal(uint8_t _command, uint16_t _commandTime){
+
   command = _command;
   commandTime = _commandTime;
 }

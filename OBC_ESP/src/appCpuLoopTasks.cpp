@@ -31,8 +31,8 @@ void stateTask(void *arg){
         case FUELING_EVENT:
           //TODO in future, check valves state
 
-          rc.options.upustValveRequestState = VALVE_CLOSE;
-          rc.options.mainValveRequestState = VALVE_CLOSE;
+          TxDataEspNow txDataEspNow(VALVE_CLOSE, 0);
+          esp_now_send(adressOBC, (uint8_t*) "a my checemy")
             
           rc.changeState(FUELING);
           break;
@@ -75,7 +75,7 @@ void stateTask(void *arg){
 
         case FLIGHT_EVENT:
           //open main valve request //TODO main valve send data time 100 ms
-          txDataEspNow.setVal(100, VALVE_OPEN, 0); //IDK
+          txDataEspNow.setVal(VALVE_OPEN, 0); //IDK
 
           rc.options.mainValveRequestState = VALVE_OPEN;
 
@@ -89,7 +89,7 @@ void stateTask(void *arg){
 
         case FIRST_STAGE_RECOVERY_EVENT:
           //i2c force 1 stage recovery
-          txDataEspNow.setVal(500, VALVE_CLOSE, 0);
+          txDataEspNow.setVal(VALVE_CLOSE, 0);
           rc.options.mainValveRequestState = VALVE_CLOSE;
           
           rc.options.flashDataPeriod = rc.options.flashSlowPeriod * portTICK_PERIOD_MS;
@@ -101,7 +101,7 @@ void stateTask(void *arg){
 
         case SECOND_STAGE_RECOVERY_EVENT:
           //i2c force 2 stage recovery
-          txDataEspNow.setVal(500, VALVE_OPEN, 0);
+          txDataEspNow.setVal(VALVE_OPEN, 0);
           rc.options.upustValveRequestState = VALVE_OPEN;
 
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
@@ -122,7 +122,7 @@ void stateTask(void *arg){
         case ABORT_EVENT:
           xTimerDelete(rc.disconnectTimer, 25); //turn off disconnectTimer
       
-          txDataEspNow.setVal(500, VALVE_OPEN, 0);
+          txDataEspNow.setVal(VALVE_OPEN, 0);
           rc.options.mainValveRequestState = VALVE_OPEN;
 
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
@@ -146,7 +146,7 @@ void stateTask(void *arg){
     switch(rc.state){
       case COUNTDOWN:
         if(dataFrame.missionTimer.getTime() >= rc.options.ignitionTime && dataFrame.ignition == false){
-          txDataEspNow.setVal(420, IGNITION_COMMAND, 0);  //IDK
+          txDataEspNow.setVal(IGNITION_COMMAND, 0);  //IDK
           //send ignition request
           esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           dataFrame.ignition = true;

@@ -50,10 +50,6 @@ struct Options{
 	bool flashWrite : 1;
 	bool forceLaunch : 1; 
   //change in statTask
-	uint8_t mainValveRequestState : 2;
-  uint8_t upustValveRequestState : 2;
-  uint16_t mainValveCommandTime;
-  uint16_t upustValveCommandTime;
 
   uint16_t espnowSleepTime;
   uint16_t espnowFastPeriod;
