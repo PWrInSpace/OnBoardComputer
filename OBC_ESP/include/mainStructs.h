@@ -74,7 +74,7 @@ struct Options{
 
 struct RocketControl{
   StateMachineEvent stateEvent;
-  StateMachine state; // Maybe move to dataFrame to save it in flash too?
+  StateMachine state;
 	Options options;  
  
 	//tasks

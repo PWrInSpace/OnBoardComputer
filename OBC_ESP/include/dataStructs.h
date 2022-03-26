@@ -92,7 +92,7 @@ struct DataFrame {
   float altitude;
   float velocity;
   bool ignition : 1;
-  uint8_t state : 4; // Maybe here instead of RocketControl???
+  uint8_t state : 4;
 
   DataFrame() = default;
   bool allDevicesWokeUp();

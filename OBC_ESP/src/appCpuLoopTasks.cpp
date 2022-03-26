@@ -181,6 +181,7 @@ void dataTask(void *arg){
       //read data from sensors and gps
       //i2c spi ect...
 
+      dataFrame.state = rc.state;
       // GPS:
       dataFrame.GPSalt  = gps.getAltitudeMSL();
       dataFrame.GPSlal  = gps.getLatitude();
