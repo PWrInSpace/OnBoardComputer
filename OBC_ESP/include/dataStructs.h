@@ -65,12 +65,19 @@ struct RecoveryData {
   bool secondStageDone : 1;
 };
 
+struct SlaveData {
+  bool wakeUp : 1;
+  float batteryVoltage;
+};
+
 struct DataFrame {
   PitotData       pitot;
   MainValveData   mainValve;
   TanWaData       tanWa;
   UpustValveData  upustValve;
   RecoveryData    recovery;
+  SlaveData       blackBox;
+  SlaveData       payLoad;
   Errors          errors;
   Timer missionTimer;
   //float imuData[12]; //TODO
@@ -84,7 +91,8 @@ struct DataFrame {
   float pressure;
   float altitude;
   float velocity;
-  bool ignition;
+  bool ignition : 1;
+  uint8_t state : 4; // Maybe here instead of RocketControl???
 
   DataFrame() = default;
   bool allDevicesWokeUp();

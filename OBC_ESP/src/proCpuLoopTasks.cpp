@@ -133,9 +133,23 @@ void rxHandlingTask(void *arg){
           break;
 
         case BLACK_BOX:
-          //blackBox TODO wymyśleć co i jak.
           Serial.println("Black Box notify"); //DEBUG
-          
+          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
+          else sleepTime = rc.options.espnowSlowPeriod;
+
+          esp_now_send(adressBlackBox, (uint8_t*) &sleepTime, sizeof(sleepTime));
+
+          break;
+
+        case PAYLOAD:
+          Serial.println("Payload notify"); //DEBUG
+          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
+          else sleepTime = rc.options.espnowSlowPeriod;
+
+          esp_now_send(adressPayLoad, (uint8_t*) &sleepTime, sizeof(sleepTime));
+
           break;
 
         default:

@@ -39,6 +39,7 @@
 #define MAIN_VALVE 3
 #define UPUST_VALVE 4
 #define BLACK_BOX 5
+#define PAYLOAD 6
 
 static String dataFileName= "/data_";
 static String logFileName = "/log_";
