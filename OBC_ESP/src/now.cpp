@@ -70,13 +70,13 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   else if(adressCompare(mac, adressBlackBox)) {
 
-    memcpy(&dataFrame.blackBox, (UpustValveData*) incomingData, sizeof(dataFrame.blackBox));
+    memcpy(&dataFrame.blackBox, (SlaveData*) incomingData, sizeof(dataFrame.blackBox));
     adressToQueue = BLACK_BOX;
   }
 
   else if(adressCompare(mac, adressPayLoad)) {
 
-    memcpy(&dataFrame.payLoad, (UpustValveData*) incomingData, sizeof(dataFrame.payLoad));
+    memcpy(&dataFrame.payLoad, (SlaveData*) incomingData, sizeof(dataFrame.payLoad));
     adressToQueue = PAYLOAD;
   }
 
