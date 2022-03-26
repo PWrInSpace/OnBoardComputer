@@ -4,9 +4,6 @@
 extern RocketControl rc;
 extern WatchdogTimer wt;
 extern DataFrame dataFrame;
-extern SPIClass mySPI;
-extern TwoWire i2c1;
-extern TwoWire i2c2;
 
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
@@ -31,23 +28,23 @@ void stateTask(void *arg){
         case FUELING_EVENT:
           //TODO in future, check valves state
 
-          rc.options.upustValveRequestState = VALVE_CLOSE;
-          rc.options.mainValveRequestState = VALVE_CLOSE;
+          txDataEspNow.setVal(VALVE_CLOSE, 0);
+          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
             
           rc.changeState(FUELING);
           break;
 
         case RDY_TO_LAUNCH_EVENT:
+          digitalWrite(CAMERA, HIGH); //turn on camera
           rc.changeState(RDY_TO_LAUNCH);
           break;
 
         case COUNTDOWN_EVENT:
           //dataframe 
           if(dataFrame.allDevicesWokeUp() || rc.options.forceLaunch == true){
-            digitalWrite(CAMERA, HIGH); //turn on camera
             
             //set options
-            rc.options.upustValveRequestState = VALVE_CLOSE; //mayby good idea //IDK at the moment is usless, becaus slaves has while loop block 
             rc.options.sdDataPeriod = rc.options.sdFastPeriod * portTICK_PERIOD_MS;
             rc.options.loraDataPeriod = rc.options.loraFastPeriod * portTICK_PERIOD_MS;
 
@@ -75,10 +72,7 @@ void stateTask(void *arg){
 
         case FLIGHT_EVENT:
           //open main valve request //TODO main valve send data time 100 ms
-          txDataEspNow.setVal(100, VALVE_OPEN, 0); //IDK
-
-          rc.options.mainValveRequestState = VALVE_OPEN;
-
+          txDataEspNow.setVal(VALVE_OPEN, 0); //IDK
           esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
           
           //set options
@@ -89,22 +83,18 @@ void stateTask(void *arg){
 
         case FIRST_STAGE_RECOVERY_EVENT:
           //i2c force 1 stage recovery
-          txDataEspNow.setVal(500, VALVE_CLOSE, 0);
-          rc.options.mainValveRequestState = VALVE_CLOSE;
-          
-          rc.options.flashDataPeriod = rc.options.flashSlowPeriod * portTICK_PERIOD_MS;
+          txDataEspNow.setVal(VALVE_CLOSE, 0);
+          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
 
-          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+          rc.options.flashDataPeriod = rc.options.flashSlowPeriod * portTICK_PERIOD_MS;
           
           rc.changeState(FIRST_STAGE_RECOVERY);
           break;
 
         case SECOND_STAGE_RECOVERY_EVENT:
           //i2c force 2 stage recovery
-          txDataEspNow.setVal(500, VALVE_OPEN, 0);
-          rc.options.upustValveRequestState = VALVE_OPEN;
-
-          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+          txDataEspNow.setVal(VALVE_OPEN, 0);
+          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           
           rc.changeState(SECOND_STAGE_RECOVERY);
           break;
@@ -122,9 +112,7 @@ void stateTask(void *arg){
         case ABORT_EVENT:
           xTimerDelete(rc.disconnectTimer, 25); //turn off disconnectTimer
       
-          txDataEspNow.setVal(500, VALVE_OPEN, 0);
-          rc.options.mainValveRequestState = VALVE_OPEN;
-
+          txDataEspNow.setVal(VALVE_OPEN, 0);
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
 
           rc.options.sdDataPeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
@@ -146,7 +134,7 @@ void stateTask(void *arg){
     switch(rc.state){
       case COUNTDOWN:
         if(dataFrame.missionTimer.getTime() >= rc.options.ignitionTime && dataFrame.ignition == false){
-          txDataEspNow.setVal(420, IGNITION_COMMAND, 0);  //IDK
+          txDataEspNow.setVal(IGNITION_COMMAND, 0);  //IDK
           //send ignition request
           esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           dataFrame.ignition = true;
@@ -169,6 +157,7 @@ void stateTask(void *arg){
   }
 }
 
+/**********************************************************************************************/
 
 void dataTask(void *arg){
   TickType_t dataUpdateTimer = 0;
@@ -180,7 +169,7 @@ void dataTask(void *arg){
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
   SFE_UBLOX_GPS gps;
-  gps.begin(i2c1, 0x42);
+  gps.begin(rc.i2c1, 0x42);
 
   while(1){
 
@@ -192,6 +181,7 @@ void dataTask(void *arg){
       //read data from sensors and gps
       //i2c spi ect...
 
+      dataFrame.state = rc.state;
       // GPS:
       dataFrame.GPSalt  = gps.getAltitudeMSL();
       dataFrame.GPSlal  = gps.getLatitude();
@@ -272,8 +262,10 @@ void dataTask(void *arg){
   }
 }
 
+/**********************************************************************************************/
+
 void sdTask(void *arg){
-  SDCard mySD(mySPI, SD_CS);
+  SDCard mySD(rc.mySPI, SD_CS);
   char data[SD_FRAME_ARRAY_SIZE] = {};
   String dataPath = dataFileName;
   String logPath = logFileName;
@@ -321,17 +313,25 @@ void sdTask(void *arg){
   }
 }
 
+/**********************************************************************************************/
+
 void flashTask(void *arg){
 
   File file;
   DataFrame frame;
   LITTLEFS.begin(true);
+  bool wipeFile = true;
 
   while(1){
 
     if (uxQueueMessagesWaiting(rc.flashQueue) > FLASH_QUEUE_LENGTH / 2) {
 
-      file = LITTLEFS.open("/file.txt", "a");
+      // Wiping file for the first time to remove data from previous flights:
+      if (wipeFile) {
+        wipeFile = false;
+        file = LITTLEFS.open("/file.txt", "w");
+      }
+      else file = LITTLEFS.open("/file.txt", "a");
 
       while (uxQueueMessagesWaiting(rc.flashQueue) > 0) {
 

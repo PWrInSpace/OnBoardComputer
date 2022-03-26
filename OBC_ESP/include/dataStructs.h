@@ -65,12 +65,19 @@ struct RecoveryData {
   bool secondStageDone : 1;
 };
 
+struct SlaveData {
+  bool wakeUp : 1;
+  float batteryVoltage;
+};
+
 struct DataFrame {
   PitotData       pitot;
   MainValveData   mainValve;
   TanWaData       tanWa;
   UpustValveData  upustValve;
   RecoveryData    recovery;
+  SlaveData       blackBox;
+  SlaveData       payLoad;
   Errors          errors;
   Timer missionTimer;
   //float imuData[12]; //TODO
@@ -84,7 +91,8 @@ struct DataFrame {
   float pressure;
   float altitude;
   float velocity;
-  bool ignition;
+  bool ignition : 1;
+  uint8_t state : 4;
 
   DataFrame() = default;
   bool allDevicesWokeUp();
@@ -97,14 +105,14 @@ struct DataFrame {
 
 /**   TX    **/
 
-struct TxDataEspNow{
-  uint16_t sleepTime;
+struct TxDataEspNow {
+
   uint8_t command;
   uint16_t commandTime;
 
   TxDataEspNow() = default;
-  TxDataEspNow(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime);
-  void setVal(uint16_t _sleepTime, uint8_t _command, uint16_t _commandTime);
+  TxDataEspNow(uint8_t _command, uint16_t _commandTime);
+  void setVal(uint8_t _command, uint16_t _commandTime);
 };
 
 #endif

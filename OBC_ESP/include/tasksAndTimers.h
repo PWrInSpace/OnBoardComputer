@@ -3,8 +3,6 @@
 
 #include <LITTLEFS.h>
 #include <LoRa.h>
-#include <SPI.h>
-#include <Wire.h>
 #include "SparkFun_Ublox_Arduino_Library.h"
 
 #include "mainStructs.h"

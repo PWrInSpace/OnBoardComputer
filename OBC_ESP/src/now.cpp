@@ -69,10 +69,15 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   }
 
   else if(adressCompare(mac, adressBlackBox)) {
-    //TODO
-    // Wymyśleć co z tym:
-    //memcpy(&dataFrame.upustValveData, (UpustValveData*) incomingData, sizeof(dataFrame.upustValveData));
+
+    memcpy(&dataFrame.blackBox, (SlaveData*) incomingData, sizeof(dataFrame.blackBox));
     adressToQueue = BLACK_BOX;
+  }
+
+  else if(adressCompare(mac, adressPayLoad)) {
+
+    memcpy(&dataFrame.payLoad, (SlaveData*) incomingData, sizeof(dataFrame.payLoad));
+    adressToQueue = PAYLOAD;
   }
 
   xQueueSend(rc.espNowQueue, &adressToQueue, portMAX_DELAY);
