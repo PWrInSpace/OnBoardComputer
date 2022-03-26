@@ -4,9 +4,6 @@
 extern RocketControl rc;
 extern WatchdogTimer wt;
 extern DataFrame dataFrame;
-extern SPIClass mySPI;
-extern TwoWire i2c1;
-extern TwoWire i2c2;
 
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
@@ -172,7 +169,7 @@ void dataTask(void *arg){
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
   SFE_UBLOX_GPS gps;
-  gps.begin(i2c1, 0x42);
+  gps.begin(rc.i2c1, 0x42);
 
   while(1){
 
@@ -267,7 +264,7 @@ void dataTask(void *arg){
 /**********************************************************************************************/
 
 void sdTask(void *arg){
-  SDCard mySD(mySPI, SD_CS);
+  SDCard mySD(rc.mySPI, SD_CS);
   char data[SD_FRAME_ARRAY_SIZE] = {};
   String dataPath = dataFileName;
   String logPath = logFileName;

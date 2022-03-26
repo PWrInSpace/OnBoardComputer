@@ -8,14 +8,11 @@
 // w lora rx nie dać możliwości przejścia ze stanu 5 na 6
 // przemyśleć w jaki sposób zerować errory, prawdopodbnie mieszanka tych dwóch pomysłów
 // -> po zapisie na sd wszystkie - moze nadal być ale nie zdąży wskoczyć przez jakieś opóźnienie
-// -> ustawaić brak errora gdy jest gt
+// -> ustawaić brak errora gdy jest gt -> Moim zdaniem to lepiej
 // przy testach sprawdzać działanie spi mutex
 
 WatchdogTimer wt;
 RocketControl rc;
-SPIClass mySPI(VSPI);
-TwoWire i2c1 = TwoWire(0);
-TwoWire i2c2 = TwoWire(1);
 
 volatile DataFrame dataFrame;
 
@@ -33,10 +30,10 @@ void setup() {
   nowAddPeer(adressTanWa, 0);
 
   //init all components
-  i2c1.begin(21, 22, 400E3);
-  i2c2.begin(27, 26, 100E3);
-  i2c1.setTimeOut(20);
-  i2c2.setTimeOut(20);
+  rc.i2c1.begin(21, 22, 400E3);
+  rc.i2c2.begin(27, 26, 100E3);
+  rc.i2c1.setTimeOut(20);
+  rc.i2c2.setTimeOut(20);
 
   //create Queues and Mutex //TODO
   rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));

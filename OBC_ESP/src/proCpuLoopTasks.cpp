@@ -3,7 +3,6 @@
 extern RocketControl rc;
 extern WatchdogTimer wt;
 extern DataFrame dataFrame;
-extern SPIClass mySPI;
 
 void loraTask(void *arg){
   char loraRx[LORA_FRAME_ARRAY_SIZE / 2] = {};
@@ -11,7 +10,7 @@ void loraTask(void *arg){
 
   xSemaphoreTake(rc.spiMutex, pdTRUE);
 
-  LoRa.setSPI(mySPI);
+  LoRa.setSPI(rc.mySPI);
   LoRa.setPins(4, 2, 17);
   LoRa.setSignalBandwidth(250E3);
   LoRa.noCrc();

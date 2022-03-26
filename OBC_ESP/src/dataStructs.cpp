@@ -3,7 +3,7 @@
 
 /****** DATAFRAME ******/
 bool DataFrame::allDevicesWokeUp(){
-    return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
+  return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
 }
 
 void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, char* data){
@@ -113,6 +113,7 @@ void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, cha
   Serial.println(strlen(data));
 }
 
+/**********************************************************************************************/
 
 void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data){
   char mcbFrame[100] = {};
@@ -213,6 +214,7 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
   */
 }
 
+/**********************************************************************************************/
 
 /****** TXDATAESPNOW *******/
 TxDataEspNow::TxDataEspNow(uint8_t _command, uint16_t _commandTime):
@@ -225,6 +227,8 @@ void TxDataEspNow::setVal(uint8_t _command, uint16_t _commandTime){
   command = _command;
   commandTime = _commandTime;
 }
+
+/**********************************************************************************************/
 
 /*
 String DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime){

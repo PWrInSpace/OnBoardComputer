@@ -2,6 +2,8 @@
 #define ROCKET_MAIN_STRUCTS
 
 #include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
 #include "FreeRTOS.h"
 #include "config.h"
 #include "pinout.h"
@@ -43,7 +45,7 @@ enum StateMachineEvent{
 
 //options are change only in stateTasks, and in handlingTask obviously
 struct Options{
-	uint16_t LoRaFrequencyMHz; //IDK uint32_t
+	uint16_t LoRaFrequencyMHz;
   uint32_t countdownTime;
 	int16_t ignitionTime; //ignition time
   uint8_t tankMinPressure; //bar
@@ -72,7 +74,7 @@ struct Options{
 
 struct RocketControl{
   StateMachineEvent stateEvent;
-  StateMachine state;
+  StateMachine state; // Maybe move to dataFrame to save it in flash too?
 	Options options;  
  
 	//tasks
@@ -88,7 +90,7 @@ struct RocketControl{
 	QueueHandle_t sdQueue;
 	QueueHandle_t flashQueue;
   QueueHandle_t espNowQueue; //best solution XD
-	//mutex
+	//mutexes
 	SemaphoreHandle_t spiMutex;
 	//SemaphoreHandle_t i2cMutex_1 = NULL;
 	//SemaphoreHandle_t i2cMutex_2 = NULL;
@@ -99,6 +101,11 @@ struct RocketControl{
 	//software timers
 	TimerHandle_t watchdogTimer;
 	TimerHandle_t disconnectTimer;
+
+  // Hardware handlers
+  SPIClass mySPI = SPIClass(VSPI);
+  TwoWire i2c1 = TwoWire(0);
+  TwoWire i2c2 = TwoWire(1);
 
 	RocketControl();
   bool changeStateEvent(StateMachineEvent newEvent);
