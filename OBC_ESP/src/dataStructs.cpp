@@ -175,10 +175,9 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
   strcat(data, recoveryFrame);
   
   //OPTIONS
-  snprintf(optionsFrame, 120, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d:%d;%d;%d;%d;%d;%d;",
+  snprintf(optionsFrame, 120, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d:%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime, options.tankMinPressure,
-    options.flashWrite, options.forceLaunch, options.mainValveRequestState, options.upustValveRequestState,
-    options.mainValveCommandTime, options.upustValveCommandTime, options.espnowSleepTime, options.espnowSlowPeriod,
+    options.flashWrite, options.forceLaunch, options.espnowSleepTime, options.espnowSlowPeriod,
     options.espnowFastPeriod, options.loraFastPeriod, options.loraSlowPeriod, options.dataFastPeriod, 
     options.flashFastPeriod, options.flashSlowPeriod, options.sdFastPeriod, options.sdSlowPeriod,
     options.sharedPeriod, options.dataFramePeriod, options.loraDataPeriod, options.flashDataPeriod,

@@ -31,23 +31,23 @@ void stateTask(void *arg){
         case FUELING_EVENT:
           //TODO in future, check valves state
 
-          TxDataEspNow txDataEspNow(VALVE_CLOSE, 0);
-          esp_now_send(adressOBC, (uint8_t*) "a my checemy")
+          txDataEspNow.setVal(VALVE_CLOSE, 0);
+          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
             
           rc.changeState(FUELING);
           break;
 
         case RDY_TO_LAUNCH_EVENT:
+          digitalWrite(CAMERA, HIGH); //turn on camera
           rc.changeState(RDY_TO_LAUNCH);
           break;
 
         case COUNTDOWN_EVENT:
           //dataframe 
           if(dataFrame.allDevicesWokeUp() || rc.options.forceLaunch == true){
-            digitalWrite(CAMERA, HIGH); //turn on camera
             
             //set options
-            rc.options.upustValveRequestState = VALVE_CLOSE; //mayby good idea //IDK at the moment is usless, becaus slaves has while loop block 
             rc.options.sdDataPeriod = rc.options.sdFastPeriod * portTICK_PERIOD_MS;
             rc.options.loraDataPeriod = rc.options.loraFastPeriod * portTICK_PERIOD_MS;
 
@@ -76,9 +76,6 @@ void stateTask(void *arg){
         case FLIGHT_EVENT:
           //open main valve request //TODO main valve send data time 100 ms
           txDataEspNow.setVal(VALVE_OPEN, 0); //IDK
-
-          rc.options.mainValveRequestState = VALVE_OPEN;
-
           esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
           
           //set options
@@ -90,11 +87,9 @@ void stateTask(void *arg){
         case FIRST_STAGE_RECOVERY_EVENT:
           //i2c force 1 stage recovery
           txDataEspNow.setVal(VALVE_CLOSE, 0);
-          rc.options.mainValveRequestState = VALVE_CLOSE;
-          
-          rc.options.flashDataPeriod = rc.options.flashSlowPeriod * portTICK_PERIOD_MS;
+          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
 
-          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+          rc.options.flashDataPeriod = rc.options.flashSlowPeriod * portTICK_PERIOD_MS;
           
           rc.changeState(FIRST_STAGE_RECOVERY);
           break;
@@ -102,9 +97,7 @@ void stateTask(void *arg){
         case SECOND_STAGE_RECOVERY_EVENT:
           //i2c force 2 stage recovery
           txDataEspNow.setVal(VALVE_OPEN, 0);
-          rc.options.upustValveRequestState = VALVE_OPEN;
-
-          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           
           rc.changeState(SECOND_STAGE_RECOVERY);
           break;
@@ -123,8 +116,6 @@ void stateTask(void *arg){
           xTimerDelete(rc.disconnectTimer, 25); //turn off disconnectTimer
       
           txDataEspNow.setVal(VALVE_OPEN, 0);
-          rc.options.mainValveRequestState = VALVE_OPEN;
-
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
 
           rc.options.sdDataPeriod = rc.options.sharedPeriod * portTICK_PERIOD_MS;
@@ -169,6 +160,7 @@ void stateTask(void *arg){
   }
 }
 
+/**********************************************************************************************/
 
 void dataTask(void *arg){
   TickType_t dataUpdateTimer = 0;
@@ -272,6 +264,8 @@ void dataTask(void *arg){
   }
 }
 
+/**********************************************************************************************/
+
 void sdTask(void *arg){
   SDCard mySD(mySPI, SD_CS);
   char data[SD_FRAME_ARRAY_SIZE] = {};
@@ -320,6 +314,8 @@ void sdTask(void *arg){
     vTaskDelay(25 / portTICK_PERIOD_MS);
   }
 }
+
+/**********************************************************************************************/
 
 void flashTask(void *arg){
 
