@@ -22,6 +22,7 @@ void setup() {
   Serial.println(rc.state); //DEBUG
 
   //set esp now
+  
   nowInit();
   nowAddPeer(adressPitot, 0);
   nowAddPeer(adressMValve, 0);
@@ -34,6 +35,7 @@ void setup() {
   rc.i2c2.begin(27, 26, 100E3);
   rc.i2c1.setTimeOut(20);
   rc.i2c2.setTimeOut(20);
+  
 
   //create Queues and Mutex //TODO
   rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
@@ -54,12 +56,13 @@ void setup() {
   xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.stateTask, APP_CPU_NUM);
   xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.dataTask,  APP_CPU_NUM);
   xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &rc.sdTask,    APP_CPU_NUM);
-  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
+  //xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
 
   //create Timers
-  rc.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   rc.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
-
+/*
+  rc.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
+  
   //check created elements
   if(rc.loraRxQueue == NULL || rc.loraTxQueue == NULL || rc.sdQueue == NULL || rc.flashQueue == NULL || rc.espNowQueue == NULL){
     //error handling
@@ -108,10 +111,9 @@ void setup() {
   //start timers
   xTimerStart(rc.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.disconnectTimer, portMAX_DELAY);
-    
+  */
   vTaskDelete(NULL); //delete main task (loop())
 }
 
 void loop() {
-
 }

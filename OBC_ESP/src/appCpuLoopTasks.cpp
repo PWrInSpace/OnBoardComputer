@@ -131,6 +131,7 @@ void stateTask(void *arg){
       //portEXIT_CRITICAL(&rc.stateLock);
     }
 
+    //Serial.println("Test");
     switch(rc.state){
       case COUNTDOWN:
         if(dataFrame.missionTimer.getTime() >= rc.options.ignitionTime && dataFrame.ignition == false){
@@ -180,7 +181,7 @@ void dataTask(void *arg){
 
       //read data from sensors and gps
       //i2c spi ect...
-
+    
       dataFrame.state = rc.state;
       // GPS:
       dataFrame.GPSalt  = gps.getAltitudeMSL();
@@ -188,7 +189,8 @@ void dataTask(void *arg){
       dataFrame.GPSlong = gps.getLongitude();
       dataFrame.GPSsat  = gps.getFixType();
       dataFrame.GPSsec  = gps.getSecond();
-
+      //Serial.print("GPS: ");
+      //Serial.println(gps.SIV);
       // IMU:
 
       // TODO!!!
@@ -221,7 +223,8 @@ void dataTask(void *arg){
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraDataPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       dataFrame.createLoRaFrame(rc.state, rc.getDisconnectRemainingTime(), lora);
-
+      
+      
       if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
         dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
         strcpy(log, "LoRa queue full"); // log
@@ -249,11 +252,11 @@ void dataTask(void *arg){
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataPeriod){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       dataFrame.createSDFrame(rc.state, rc.getDisconnectRemainingTime(), rc.options, sd);
-    
+      //Serial.println(sd);
       if(xQueueSend(rc.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         dataFrame.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
       }  
-
+      
       dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save  
     }
 

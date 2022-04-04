@@ -94,7 +94,7 @@ void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, cha
   //int cast for //DEBUG
   snprintf(errorsFrame, 20, "%d;%d\n", byteData[0], byteData[1]);
   strcat(data, errorsFrame);
-
+  /*
   Serial.print("MCB SIZE: "); //DEBUG
   Serial.print(strlen(mcbFrame));
   Serial.print("\tPITOT SIZE: "); //DEBUG
@@ -111,6 +111,7 @@ void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, cha
   Serial.print(strlen(errorsFrame));
   Serial.print("\tTOTAL SIZE: "); //DEBUG
   Serial.println(strlen(data));
+  */
 }
 
 /**********************************************************************************************/

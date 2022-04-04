@@ -11,13 +11,18 @@ void loraTask(void *arg){
   xSemaphoreTake(rc.spiMutex, pdTRUE);
 
   LoRa.setSPI(rc.mySPI);
-  LoRa.setPins(4, 2, 17);
+  LoRa.setPins(LORA_CS, LORA_RS, LORA_D0);
+  
+  while(LoRa.begin(868E6) == 0){
+    Serial.println("LORA begin error!");
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+  }
+
   LoRa.setSignalBandwidth(250E3);
-  LoRa.noCrc();
+  LoRa.disableCrc();
   LoRa.setSpreadingFactor(7);
   LoRa.setTxPower(14);
   LoRa.setTimeout(10);
-  LoRa.begin(rc.options.LoRaFrequencyMHz * 1E6);
 
   xSemaphoreGive(rc.spiMutex);
 
@@ -36,7 +41,15 @@ void loraTask(void *arg){
 
     xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
 
-      LoRa.parsePacket();
+      if(LoRa.parsePacket() != 0){
+        Serial.println("Super parse 152");
+      }
+      //Serial.print("RSSI: ");
+      //Serial.println(LoRa.rssi());
+      //Serial.print("DO: ");
+      //Serial.println(digitalRead(LORA_D0));
+      //Serial.print("FREQ_ERROR: ");
+      //Serial.println(LoRa.packetFrequencyError());
       if (LoRa.available()) {
 
         String rxStr = LoRa.readString();
@@ -49,12 +62,20 @@ void loraTask(void *arg){
     xSemaphoreGive(rc.spiMutex);
 
     if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
-      Serial.print(loraTx); //DEBUG
+      //Serial.print("LORA: ");
+      //Serial.print(loraTx); //DEBUG
       xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
         
-        LoRa.beginPacket();
-        LoRa.print((char*) loraTx);
-        LoRa.endPacket();
+        if(LoRa.beginPacket() == 0){
+          Serial.println("LORA is transmitnig");
+        }
+        char test[] = "Hello space!";
+        LoRa.write((uint8_t*) loraTx, strlen(loraTx));
+        //Serial.print("LORA SEND: ");
+        //Serial.println(digitalRead(LORA_D0));
+        if(LoRa.endPacket() != 1){
+          Serial.println("End packet error!");
+        }
 
       xSemaphoreGive(rc.spiMutex);
     }
