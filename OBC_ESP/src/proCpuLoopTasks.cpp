@@ -96,16 +96,10 @@ void rxHandlingTask(void *arg){
     
     if(xQueueReceive(rc.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
       if(strncmp(loraData, "R4A", 3) == 0){
+        parseR4A(&loraData[4]);
 
       }else if(strncmp(loraData, "R4O", 3) == 0){
-        
-        if(strstr(loraData, "R4O;OPTS;2")) {
-          sscanf(loraData, "R4O;OPTS;2;%d", (int*) &rc.options.LoRaFrequencyMHz);
-          
-          xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
-          LoRa.setFrequency((int)rc.options.LoRaFrequencyMHz * 1E6);
-          xSemaphoreGive(rc.spiMutex);
-        }
+        parseR4O(&loraData[4]);
       }
     }
 
@@ -178,5 +172,46 @@ void rxHandlingTask(void *arg){
 
     wt.rxHandlingTaskFlag = true;
     vTaskDelay(50 / portTICK_PERIOD_MS);
+  }
+}
+
+/**********************************************************************************************/
+
+void parseR4A(char* data) {
+
+}
+
+/**********************************************************************************************/
+
+void parseR4O(char* data) {
+
+  // Options:
+  if (strstr(data, "OPTS;")) {
+    int optionNumber;
+    int optionValue;
+
+    sscanf(data, "OPTS;%d;%d", &optionNumber, &optionValue);
+
+    switch (optionNumber) {
+
+    case 1: rc.options.forceLaunch      = optionValue; break;
+    case 2: rc.options.countdownTime    = optionValue; break;
+    case 3: rc.options.ignitionTime     = optionValue; break;    
+
+    case 4:
+
+      rc.options.LoRaFrequencyMHz = optionValue;
+      xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
+      LoRa.setFrequency((int)rc.options.LoRaFrequencyMHz * 1E6);
+      xSemaphoreGive(rc.spiMutex);
+      break;
+
+    case 5: rc.options.tankMinPressure  = optionValue; break;
+    case 14: rc.options.flashWrite      = optionValue; break;
+
+    default:
+      Serial.printf("Wrong LoRa command!!!"); // DEBUG
+      break;
+    }
   }
 }
