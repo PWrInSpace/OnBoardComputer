@@ -45,7 +45,7 @@ enum StateMachineEvent{
 
 //options are change only in stateTasks, and in handlingTask obviously
 struct Options{
-	uint16_t LoRaFrequencyMHz;
+	uint16_t LoRaFrequencyMHz = 868;
   uint32_t countdownTime;
 	int16_t ignitionTime; //ignition time
   uint8_t tankMinPressure; //bar

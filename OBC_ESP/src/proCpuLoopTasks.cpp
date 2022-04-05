@@ -13,7 +13,7 @@ void loraTask(void *arg){
   LoRa.setSPI(rc.mySPI);
   LoRa.setPins(LORA_CS, LORA_RS, LORA_D0);
   
-  while(LoRa.begin(868E6) == 0){
+  while(LoRa.begin((int)rc.options.LoRaFrequencyMHz * 1E6) == 0){
     Serial.println("LORA begin error!");
     vTaskDelay(500 / portTICK_PERIOD_MS);
   }
@@ -99,7 +99,14 @@ void rxHandlingTask(void *arg){
       if(strncmp(loraData, "R4A", 3) == 0){
 
       }else if(strncmp(loraData, "R4O", 3) == 0){
-
+        
+        if(strstr(loraData, "R4O;OPTS;2")) {
+          sscanf(loraData, "R4O;OPTS;2;%d", (int*) &rc.options.LoRaFrequencyMHz);
+          
+          xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
+          LoRa.setFrequency((int)rc.options.LoRaFrequencyMHz * 1E6);
+          xSemaphoreGive(rc.spiMutex);
+        }
       }
     }
 
