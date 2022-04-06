@@ -94,13 +94,13 @@ void setup() {
     ESP.restart();
   }
 
-
+  
   //watchdogtimer
   wt.begin();
   wt.EEPROMread();
   Serial.println(wt.previousState); //DEBUG
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
-    
+  dataFrame.watchdogResets = wt.resetCounter;
     //check wachdog timer previous state
   if(wt.previousState != INIT_EVENT && wt.previousState != COUNTDOWN_EVENT){
     rc.changeStateEvent((StateMachineEvent) wt.previousState);

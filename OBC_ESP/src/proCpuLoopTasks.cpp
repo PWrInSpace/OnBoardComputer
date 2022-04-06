@@ -69,7 +69,6 @@ void loraTask(void *arg){
         if(LoRa.beginPacket() == 0){
           Serial.println("LORA is transmitnig");
         }
-        char test[] = "Hello space!";
         LoRa.write((uint8_t*) loraTx, strlen(loraTx));
         //Serial.print("LORA SEND: ");
         //Serial.println(digitalRead(LORA_D0));
@@ -123,8 +122,8 @@ void rxHandlingTask(void *arg){
         case PITOT:
           Serial.println("Pitot notify"); //DEBUG
           if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
-          else sleepTime = rc.options.espnowSlowPeriod;
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          else sleepTime = rc.options.espnowLongPeriod;
 
           esp_now_send(adressPitot, (uint8_t*) &sleepTime, sizeof(sleepTime));
           
@@ -133,17 +132,8 @@ void rxHandlingTask(void *arg){
         case MAIN_VALVE:
           Serial.println("MainValve notify"); //DEBUG
           if (rc.state < FUELING || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
-          else sleepTime = rc.options.espnowSlowPeriod;
-
-          //DEBUG GIGA
-          Serial.println("Main valve data");
-          Serial.print("wake up: "); Serial.println(dataFrame.mainValve.wakeUp);
-          Serial.print("valve state: "); Serial.println(dataFrame.mainValve.valveState);
-          Serial.print("thermocuple 0: "); Serial.println(dataFrame.mainValve.thermocouple[0]);
-          Serial.print("thermocuple 1: "); Serial.println(dataFrame.mainValve.thermocouple[1]);
-          Serial.print("batt : "); Serial.println(dataFrame.mainValve.batteryVoltage);
-          //DEBUG GIGA
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          else sleepTime = rc.options.espnowLongPeriod;
           
           esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime));
           
@@ -152,8 +142,8 @@ void rxHandlingTask(void *arg){
         case UPUST_VALVE:
           Serial.println("UpustValve notify"); //DEBUG
           if (rc.state < FUELING || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
-          else sleepTime = rc.options.espnowSlowPeriod;
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          else sleepTime = rc.options.espnowLongPeriod;
           
           esp_now_send(adressUpust, (uint8_t*) &sleepTime, sizeof(sleepTime));
           
@@ -162,8 +152,8 @@ void rxHandlingTask(void *arg){
         case BLACK_BOX:
           Serial.println("Black Box notify"); //DEBUG
           if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
-          else sleepTime = rc.options.espnowSlowPeriod;
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          else sleepTime = rc.options.espnowLongPeriod;
 
           esp_now_send(adressBlackBox, (uint8_t*) &sleepTime, sizeof(sleepTime));
 
@@ -172,8 +162,8 @@ void rxHandlingTask(void *arg){
         case PAYLOAD:
           Serial.println("Payload notify"); //DEBUG
           if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowFastPeriod;
-          else sleepTime = rc.options.espnowSlowPeriod;
+          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          else sleepTime = rc.options.espnowLongPeriod;
 
           esp_now_send(adressPayLoad, (uint8_t*) &sleepTime, sizeof(sleepTime));
 

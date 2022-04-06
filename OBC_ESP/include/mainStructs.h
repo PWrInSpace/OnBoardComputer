@@ -54,20 +54,17 @@ struct Options{
   //change in statTask
 
   uint16_t espnowSleepTime;
-  uint16_t espnowFastPeriod;
-  uint16_t espnowSlowPeriod;
-  TickType_t loraFastPeriod;
-  TickType_t loraSlowPeriod;
-  TickType_t dataFastPeriod;
-  TickType_t flashFastPeriod;
-  TickType_t flashSlowPeriod;
-  TickType_t sdFastPeriod;
-  TickType_t sdSlowPeriod;
-  TickType_t sharedPeriod;
+  uint16_t espnowShortPeriod;
+  uint16_t espnowLongPeriod;
+  TickType_t flashShortPeriod;
+  TickType_t flashLongPeriod;
+  TickType_t sdShortPeriod;
+  TickType_t sdLongPeriod;
+  TickType_t idlePeriod;
 	TickType_t dataFramePeriod;
-  TickType_t loraDataPeriod;
-  TickType_t flashDataPeriod;
-  TickType_t sdDataPeriod;
+  TickType_t loraPeriod;
+  TickType_t flashDataCurrentPeriod;
+  TickType_t sdDataCurrentPeriod;
   
   Options();
 };

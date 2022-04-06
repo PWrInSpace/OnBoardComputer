@@ -91,13 +91,16 @@ struct DataFrame {
   float pressure;
   float altitude;
   float velocity;
+  uint8_t watchdogResets;
   bool ignition : 1;
   uint8_t state : 4;
 
   DataFrame() = default;
   bool allDevicesWokeUp();
-  void createLoRaFrame(StateMachine state, uint32_t disconnectTime, char* data);
+  void createLoRaDataFrame(StateMachine state, uint32_t disconnectTime, char* data);
+  void createLoRaOptionsFrame(Options options, char *data);
   void createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data);
+  
 //String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
 //String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
 };

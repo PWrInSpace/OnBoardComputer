@@ -9,20 +9,17 @@ Options::Options():
   flashWrite(FLASH_WRITE),
   forceLaunch(FORCE_LAUNCH),
   espnowSleepTime(ESP_NOW_SLEEP_TIME),
-  espnowFastPeriod(ESP_NOW_FAST_PERIOD),
-  espnowSlowPeriod(ESP_NOW_SLOW_PERIOD),
-  loraFastPeriod(LORA_FAST_PERIOD),
-  loraSlowPeriod(LORA_SLOW_PERIOD),
-  dataFastPeriod(DATA_FAST_PERIOD),
-  flashFastPeriod(FLASH_FAST_PERIOD),
-  flashSlowPeriod(FLASH_SLOW_PERIOD),
-  sdFastPeriod(SD_FAST_PERIOD),
-  sdSlowPeriod(SD_SLOW_PERIOD),
-  sharedPeriod(SHARED_PERIOD),
-  dataFramePeriod(DATA_FAST_PERIOD),
-  loraDataPeriod(LORA_SLOW_PERIOD),
-  flashDataPeriod(FLASH_SLOW_PERIOD),
-  sdDataPeriod(SD_SLOW_PERIOD)
+  espnowShortPeriod(ESP_NOW_SHORT_PERIOD),
+  espnowLongPeriod(ESP_NOW_LONG_PERIOD),
+  flashShortPeriod(flashShortPeriod),
+  flashLongPeriod(flashLongPeriod),
+  sdShortPeriod(SD_SHORT_PERIOD),
+  sdLongPeriod(SD_LONG_PERIOD),
+  idlePeriod(IDLE_PERIOD),
+  dataFramePeriod(DATA_PERIOD),
+  loraPeriod(LORA_PERIOD),
+  flashDataCurrentPeriod(FLASH_LONG_PERIOD),
+  sdDataCurrentPeriod(SD_LONG_PERIOD)
 {}
 
 /****** MAINSTRUCT *******/
