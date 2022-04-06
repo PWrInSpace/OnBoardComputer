@@ -28,15 +28,15 @@ void loraTask(void *arg){
 
   while(1){
     //DEBUG GIGA
-    
-    if(Serial.available()){
+    // To mi wywalało ESP, podczas odłączania seriala :D
+    /*if(Serial.available()){
       int x = Serial.readStringUntil('\n').toInt();
       if(x == 0){
         ESP.restart();
       }else if(!rc.changeStateEvent((StateMachineEvent)x)){
         dataFrame.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
       }
-    }
+    }*/
     //DEBUG GIGA
 
     xSemaphoreTake(rc.spiMutex, portMAX_DELAY);

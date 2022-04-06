@@ -169,7 +169,16 @@ void dataTask(void *arg){
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
+  SoftwareSerial ss(13, 12);
+  ss.begin(9600);
+  ss.setTimeout(100);
+  TinyGPSPlus gps;
+
   while(1){
+
+    if (ss.available()) {
+      gps.encode(ss.read());
+    }
 
     //data
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataFramePeriod){
@@ -181,6 +190,13 @@ void dataTask(void *arg){
     
       dataFrame.state = rc.state;
       // GPS:
+      if (gps.location.isUpdated()) {
+        dataFrame.GPSlal = gps.location.lat();
+        dataFrame.GPSlong = gps.location.lng();
+        dataFrame.GPSalt = gps.altitude.meters();
+      }
+      dataFrame.GPSsat = gps.satellites.value();
+      dataFrame.GPSsec = gps.time.second();
 
       //Serial.print("GPS: ");
       //Serial.println(gps.SIV);
@@ -190,8 +206,10 @@ void dataTask(void *arg){
 
       // Recovery:
       Wire.requestFrom(3, sizeof(RecoveryData));
-      if (!Wire.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
+      if (Wire.available()) {
+        if (!Wire.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
         // ERROR I2C
+        }
       }
 
       //read i2c comm data

@@ -17,6 +17,7 @@ RocketControl rc;
 volatile DataFrame dataFrame;
 
 void setup() {
+  delay(300);
   Serial.begin(115200); //DEBUG
   Serial.print("Setup state: "); //DEBUG
   Serial.println(rc.state); //DEBUG

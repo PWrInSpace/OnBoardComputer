@@ -3,7 +3,8 @@
 
 #include <LITTLEFS.h>
 #include <LoRa.h>
-#include "SparkFun_Ublox_Arduino_Library.h"
+#include "SoftwareSerial.h"
+#include "TinyGPS++.h"
 
 #include "mainStructs.h"
 #include "dataStructs.h"

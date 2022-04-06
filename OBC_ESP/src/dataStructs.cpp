@@ -117,6 +117,8 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   //int cast for //DEBUG
   snprintf(errorsFrame, 10, "%d;%d", byteData[0], byteData[1]);
   strcat(data, errorsFrame);
+
+  strcat(data, "\n");
   /*
   Serial.print("MCB SIZE: "); //DEBUG
   Serial.print(strlen(mcbFrame));
