@@ -169,9 +169,6 @@ void dataTask(void *arg){
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
-  SFE_UBLOX_GPS gps;
-  gps.begin(rc.i2c1, 0x42);
-
   while(1){
 
     //data
@@ -184,11 +181,7 @@ void dataTask(void *arg){
     
       dataFrame.state = rc.state;
       // GPS:
-      dataFrame.GPSalt  = gps.getAltitudeMSL();
-      dataFrame.GPSlal  = gps.getLatitude();
-      dataFrame.GPSlong = gps.getLongitude();
-      dataFrame.GPSsat  = gps.getFixType();
-      dataFrame.GPSsec  = gps.getSecond();
+
       //Serial.print("GPS: ");
       //Serial.println(gps.SIV);
       // IMU:

@@ -56,11 +56,11 @@ void setup() {
   xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.stateTask, APP_CPU_NUM);
   xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.dataTask,  APP_CPU_NUM);
   xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &rc.sdTask,    APP_CPU_NUM);
-  //xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
 
   //create Timers
   rc.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
-/*
+
   rc.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   
   //check created elements
@@ -107,11 +107,11 @@ void setup() {
   }else{
     rc.changeStateEvent(StateMachineEvent::IDLE_EVENT);
   }
-
+/*
   //start timers
   xTimerStart(rc.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.disconnectTimer, portMAX_DELAY);
-  */
+*/
   vTaskDelete(NULL); //delete main task (loop())
 }
 
