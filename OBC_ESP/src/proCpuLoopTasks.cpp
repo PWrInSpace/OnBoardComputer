@@ -135,7 +135,7 @@ void rxHandlingTask(void *arg){
 
         case UPUST_VALVE:
           Serial.println("UpustValve notify"); //DEBUG
-          if (rc.state < FUELING || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          if (rc.state < FUELING || rc.state == ON_GROUND) sleepTime = rc.options.espnowSleepTime;
           else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
           else sleepTime = rc.options.espnowLongPeriod;
           
@@ -179,6 +179,17 @@ void rxHandlingTask(void *arg){
 
 void parseR4A(char* data) {
 
+  if (strstr(data, "STAT;")) {
+    int oldState;
+    int newState;
+
+    sscanf(data, "STAT;%d;%d", &oldState, &newState);
+    if (oldState == dataFrame.state) rc.changeState((StateMachine) newState);
+  }
+
+  else if (strstr(data, "ABRT;")) {
+    rc.changeState(ABORT);
+  }
 }
 
 /**********************************************************************************************/
@@ -213,5 +224,24 @@ void parseR4O(char* data) {
       Serial.printf("Wrong LoRa command!!!"); // DEBUG
       break;
     }
+  }
+
+  // Valves:
+  else if (strstr(data, "MAIN;")) {
+    
+    TxDataEspNow txDataEspNow;
+    sscanf(data, "MAIN;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
+    esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+  }
+
+  else if (strstr(data, "UPST;")) {
+    
+    TxDataEspNow txDataEspNow;
+    sscanf(data, "UPST;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
+    esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+  }
+
+  else if (strstr(data, "WKUP")) {
+    // TODO budzonko
   }
 }
