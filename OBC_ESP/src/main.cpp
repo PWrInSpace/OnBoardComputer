@@ -17,6 +17,7 @@ RocketControl rc;
 volatile DataFrame dataFrame;
 
 void setup() {
+  delay(300);
   Serial.begin(115200); //DEBUG
   Serial.print("Setup state: "); //DEBUG
   Serial.println(rc.state); //DEBUG
@@ -56,11 +57,11 @@ void setup() {
   xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.stateTask, APP_CPU_NUM);
   xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.dataTask,  APP_CPU_NUM);
   xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &rc.sdTask,    APP_CPU_NUM);
-  //xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
 
   //create Timers
   rc.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
-/*
+
   rc.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   
   //check created elements
@@ -94,24 +95,24 @@ void setup() {
     ESP.restart();
   }
 
-
+  
   //watchdogtimer
   wt.begin();
   wt.EEPROMread();
   Serial.println(wt.previousState); //DEBUG
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
-    
+  dataFrame.watchdogResets = wt.resetCounter;
     //check wachdog timer previous state
   if(wt.previousState != INIT_EVENT && wt.previousState != COUNTDOWN_EVENT){
     rc.changeStateEvent((StateMachineEvent) wt.previousState);
   }else{
     rc.changeStateEvent(StateMachineEvent::IDLE_EVENT);
   }
-
+/*
   //start timers
   xTimerStart(rc.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.disconnectTimer, portMAX_DELAY);
-  */
+*/
   vTaskDelete(NULL); //delete main task (loop())
 }
 

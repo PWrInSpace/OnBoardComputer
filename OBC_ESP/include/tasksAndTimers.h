@@ -3,7 +3,8 @@
 
 #include <LITTLEFS.h>
 #include <LoRa.h>
-#include "SparkFun_Ublox_Arduino_Library.h"
+#include "SoftwareSerial.h"
+#include "TinyGPS++.h"
 
 #include "mainStructs.h"
 #include "dataStructs.h"
@@ -22,8 +23,10 @@ void flashTask(void *arg);
 
 //Timers
 void watchdogTimerCallback(TimerHandle_t xTimer);
-
 void disconnectTimerCallback(TimerHandle_t xTimer);
 
+// Functions
+void parseR4A(char* data);
+void parseR4O(char* data);
 
 #endif

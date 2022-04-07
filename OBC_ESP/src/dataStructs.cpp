@@ -3,20 +3,37 @@
 
 /****** DATAFRAME ******/
 bool DataFrame::allDevicesWokeUp(){
-  return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp);
+  return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp && payLoad.wakeUp && blackBox.wakeUp);
 }
 
-void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, char* data){
+void DataFrame::createLoRaOptionsFrame(Options options, char* data){
+  char opt[100];
+
+  strcpy(data, LORA_TX_OPTIONS_PREFIX);
+
+  snprintf(opt, 100, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
+    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
+    options.tankMinPressure, options.flashWrite, options.forceLaunch,
+    options.espnowSleepTime, options.espnowShortPeriod, options.espnowLongPeriod,
+    options.flashShortPeriod, options.flashLongPeriod, 
+    options.sdShortPeriod, options.sdLongPeriod, options.idlePeriod, options.dataFramePeriod, 
+    options.loraPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
+
+  strcat(data, opt);
+}
+
+void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime, char* data){
   uint8_t byteData[4] = {};
   char mcbFrame[100] = {};
   char pitotFrame[60] = {};
   char mvFrame[40] = {};
   char uvFrame[40] = {};
   char tanwaFrame[60] = {};
-  char recoveryFrame[20] = {};
-  char errorsFrame[20] = {};
+  char otherSlaves[20] = {};
+  char recoveryFrame[10] = {};
+  char errorsFrame[10] = {};
 
-  strcpy(data, LORA_TX_PREFIX);
+  strcpy(data, LORA_TX_DATA_PREFIX);
 
   //MCB
   snprintf(mcbFrame, 100, "%d;%lu;%d;%d;%0.2f;%0.4f;%0.4f;%0.4f;%d;%d;",
@@ -57,6 +74,12 @@ void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, cha
   
   strcat(data, tanwaFrame);
 
+  snprintf(otherSlaves, 20 , "%d;%0.2f;%d;%0.2f;",
+    blackBox.wakeUp, blackBox.batteryVoltage, 
+    payLoad.wakeUp, payLoad.batteryVoltage);
+
+  strcat(data, otherSlaves);
+
   //recovery first byte
   memset(byteData, 0, 4);
   byteData[0] |= (recovery.isArmed << 6);
@@ -76,7 +99,7 @@ void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, cha
   byteData[1] |= (recovery.secondStageDone << 0);
   
   //int cast for //DEBUG
-  snprintf(recoveryFrame, 20, "%d;%d;", byteData[0], byteData[1]);
+  snprintf(recoveryFrame, 10, "%d;%d;", byteData[0], byteData[1]);
   strcat(data, recoveryFrame);
 
   
@@ -92,8 +115,10 @@ void DataFrame::createLoRaFrame(StateMachine state, uint32_t disconnectTime, cha
   byteData[1] |= (errors.espnow << 0);
   
   //int cast for //DEBUG
-  snprintf(errorsFrame, 20, "%d;%d\n", byteData[0], byteData[1]);
+  snprintf(errorsFrame, 10, "%d;%d", byteData[0], byteData[1]);
   strcat(data, errorsFrame);
+
+  strcat(data, "\n");
   /*
   Serial.print("MCB SIZE: "); //DEBUG
   Serial.print(strlen(mcbFrame));
@@ -177,13 +202,13 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
   strcat(data, recoveryFrame);
   
   //OPTIONS
-  snprintf(optionsFrame, 120, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d:%d;%d;",
+  snprintf(optionsFrame, 120, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d:%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime, options.tankMinPressure,
-    options.flashWrite, options.forceLaunch, options.espnowSleepTime, options.espnowSlowPeriod,
-    options.espnowFastPeriod, options.loraFastPeriod, options.loraSlowPeriod, options.dataFastPeriod, 
-    options.flashFastPeriod, options.flashSlowPeriod, options.sdFastPeriod, options.sdSlowPeriod,
-    options.sharedPeriod, options.dataFramePeriod, options.loraDataPeriod, options.flashDataPeriod,
-    options.sdDataPeriod);
+    options.flashWrite, options.forceLaunch, options.espnowSleepTime, options.espnowLongPeriod,
+    options.espnowShortPeriod, options.flashShortPeriod, 
+    options.flashLongPeriod, options.sdShortPeriod, options.sdLongPeriod, options.idlePeriod, 
+    options.dataFramePeriod, options.loraPeriod, options.flashDataCurrentPeriod, 
+    options.sdDataCurrentPeriod);
   
   strcat(data, optionsFrame);
 
@@ -408,27 +433,27 @@ String DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Opt
   frame += String(options.ignitionTime) + ';';
   frame += String(options.tankMinPressure) + ';';
   frame += String(options.espnowSleepTime) + ';';
-  frame += String(options.espnowSlowPeriod) + ';';
-  frame += String(options.espnowFastPeriod) + ';';
+  frame += String(options.espnowLongPeriod) + ';';
+  frame += String(options.espnowShortPeriod) + ';';
   frame += String(options.flashWrite) + ';';
   frame += String(options.forceLaunch) + ';';
   frame += String(options.mainValveRequestState) + ';';
   frame += String(options.upustValveRequestState) + ';';
   frame += String(options.mainValveCommandTime) + ';';
   frame += String(options.upustValveCommandTime) + ';';
-  frame += String((uint16_t)options.loraFastPeriod) + ';';
-  frame += String((uint16_t)options.loraSlowPeriod) + ';';
-  frame += String((uint16_t)options.dataFastPeriod) + ';';
-  frame += String((uint16_t)options.flashFastPeriod) + ';';
-  frame += String((uint16_t)options.flashSlowPeriod) + ';';
-  frame += String((uint16_t)options.sdFastPeriod) + ';';
-  frame += String((uint16_t)options.sdSlowPeriod) + ';';
-  frame += String((uint16_t)options.sharedPeriod) + ';';
-  frame += String((uint16_t)options.dataFramePeriod) + ';';
-  frame += String((uint16_t)options.loraDataPeriod) + ';';
-  frame += String((uint16_t)options.flashDataPeriod) + ';';
+  frame += String((uint16_t)options.loraShortPeriod) + ';';
+  frame += String((uint16_t)options.loraLongPeriod) + ';';
+  frame += String((uint16_t)options.dataShortPeriod) + ';';
+  frame += String((uint16_t)options.flashShortPeriod) + ';';
+  frame += String((uint16_t)options.flashLongPeriod) + ';';
+  frame += String((uint16_t)options.sdShortPeriod) + ';';
+  frame += String((uint16_t)options.sdLongPeriod) + ';';
+  frame += String((uint16_t)options.idlePeriod) + ';';
+  frame += String((uint16_t)options.dataFrameCurrentPeriod) + ';';
+  frame += String((uint16_t)options.loraPeriod) + ';';
+  frame += String((uint16_t)options.flashDataCurrentPeriod) + ';';
 
-  frame += String((uint16_t)options.sdDataPeriod) + ';';
+  frame += String((uint16_t)options.sdDataCurrentPeriod) + ';';
 
 
 
