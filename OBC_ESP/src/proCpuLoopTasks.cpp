@@ -184,7 +184,7 @@ void parseR4A(char* data) {
     int newState;
 
     sscanf(data, "STAT;%d;%d", &oldState, &newState);
-    if (oldState == dataFrame.state) rc.changeState((StateMachine) newState);
+    if (oldState == dataFrame.state && newState != StateMachine::FLIGHT) rc.changeStateEvent((StateMachineEvent) newState);
   }
 
   else if (strstr(data, "ABRT;")) {
@@ -195,7 +195,7 @@ void parseR4A(char* data) {
 /**********************************************************************************************/
 
 void parseR4O(char* data) {
-
+  char callback[LORA_FRAME_ARRAY_SIZE];
   // Options:
   if (strstr(data, "OPTS;")) {
     int optionNumber;
@@ -204,26 +204,29 @@ void parseR4O(char* data) {
     sscanf(data, "OPTS;%d;%d", &optionNumber, &optionValue);
 
     switch (optionNumber) {
-
-    case 1: rc.options.forceLaunch      = optionValue; break;
-    case 2: rc.options.countdownTime    = optionValue; break;
-    case 3: rc.options.ignitionTime     = optionValue; break;    
-
-    case 4:
+    case 1:
 
       rc.options.LoRaFrequencyMHz = optionValue;
       xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
       LoRa.setFrequency((int)rc.options.LoRaFrequencyMHz * 1E6);
       xSemaphoreGive(rc.spiMutex);
       break;
-
-    case 5: rc.options.tankMinPressure  = optionValue; break;
-    case 14: rc.options.flashWrite      = optionValue; break;
-
+    
+    case 2: rc.options.countdownTime    = optionValue; break;
+    case 3: rc.options.ignitionTime     = optionValue; break;    
+    case 4: rc.options.tankMinPressure  = optionValue; break;
+    case 5: rc.options.flashWrite       = optionValue; break;
+    case 6: rc.options.forceLaunch      = optionValue; break;
+    case 15: rc.options.dataFramePeriod = optionValue; break;
+    case 16: rc.options.loraPeriod      = optionValue; break;
+    
     default:
       Serial.printf("Wrong LoRa command!!!"); // DEBUG
       break;
     }
+
+    dataFrame.createLoRaOptionsFrame(rc.options, callback);
+    xQueueSend(rc.loraTxQueue, (void*)callback, 0);
   }
 
   // Valves:

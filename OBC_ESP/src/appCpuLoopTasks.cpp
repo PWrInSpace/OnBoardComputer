@@ -20,6 +20,9 @@ void stateTask(void *arg){
 
         case ARMED_EVENT:
           //recovery arm request
+          rc.i2c1.beginTransmission(RECOVERY_ADDRES);
+          rc.i2c1.write(RECOVERY_ARM);
+          rc.i2c1.endTransmission();
           //check recovery arm answer
           
           rc.changeState(ARMED);
@@ -169,48 +172,45 @@ void dataTask(void *arg){
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
   char log[SD_FRAME_ARRAY_SIZE] = {};
 
-  SoftwareSerial ss(13, 12);
-  ss.begin(9600);
-  ss.setTimeout(100);
-  TinyGPSPlus gps;
+  SFE_UBLOX_GNSS gps;
+
+  if(gps.begin(rc.i2c2, 0x42, 10, false) == false){
+    //TODO error handling
+    Serial.println("GPS INIT ERROR!"); //DEBUG
+  }
 
   while(1){
-
-    if (ss.available()) {
-      gps.encode(ss.read());
-    }
 
     //data
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataFramePeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      //Serial.print("DATA: "); Serial.println(xTaskGetTickCount()); //DEBUG
-
+      Serial.print("DATA Start: "); Serial.println(xTaskGetTickCount()); //DEBUG
+      
       //read data from sensors and gps
       //i2c spi ect...
     
       dataFrame.state = rc.state;
       // GPS:
-      if (gps.location.isUpdated()) {
-        dataFrame.GPSlal = gps.location.lat();
-        dataFrame.GPSlong = gps.location.lng();
-        dataFrame.GPSalt = gps.altitude.meters();
-      }
-      dataFrame.GPSsat = gps.satellites.value();
-      dataFrame.GPSsec = gps.time.second();
+      
+      dataFrame.GPSlal = gps.getLatitude(10) / 10.0E6;
+      dataFrame.GPSlong = gps.getLongitude(10) / 10.0E6;
+      dataFrame.GPSalt = gps.getAltitude(10) / 10.0E2;
+      
+      dataFrame.GPSsat = gps.getSIV(10);
+      dataFrame.GPSsec = gps.getTimeValid(10);
 
-      //Serial.print("GPS: ");
-      //Serial.println(gps.SIV);
       // IMU:
 
       // TODO!!!
 
       // Recovery:
-      Wire.requestFrom(3, sizeof(RecoveryData));
-      if (Wire.available()) {
-        if (!Wire.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
+      /*
+      rc.i2c1.requestFrom(RECOVERY_ADDRES, sizeof(RecoveryData));
+      if (rc.i2c1.available()) {
+        if (!rc.i2c1.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
         // ERROR I2C
         }
-      }
+      }*/
 
       //read i2c comm data
       //rc.sendLog("Hello space!");
@@ -228,13 +228,14 @@ void dataTask(void *arg){
       }else if(rc.state == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
         rc.changeState(SECOND_STAGE_RECOVERY);
       }
+      Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
     }
 
     //LoRa
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       dataFrame.createLoRaDataFrame(rc.state, rc.getDisconnectRemainingTime(), lora);
-      
+      Serial.print("LORA: "); Serial.println(xTaskGetTickCount());
       
       if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
         dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);

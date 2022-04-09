@@ -11,7 +11,7 @@ void DataFrame::createLoRaOptionsFrame(Options options, char* data){
 
   strcpy(data, LORA_TX_OPTIONS_PREFIX);
 
-  snprintf(opt, 100, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
+  snprintf(opt, 100, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
     options.tankMinPressure, options.flashWrite, options.forceLaunch,
     options.espnowSleepTime, options.espnowShortPeriod, options.espnowLongPeriod,
@@ -36,12 +36,12 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   strcpy(data, LORA_TX_DATA_PREFIX);
 
   //MCB
-  snprintf(mcbFrame, 100, "%d;%lu;%d;%d;%0.2f;%0.4f;%0.4f;%0.4f;%d;%d;",
+  snprintf(mcbFrame, 100, "%d;%lu;%d;%d;%0.2f;%0.4f;%0.4f;%0.2f;%d;%d;",
     state, millis(), missionTimer.getTime(), disconnectTime,
     batteryVoltage, GPSlal, GPSlong, GPSalt, GPSsat, GPSsec);
 
   strcat(data, mcbFrame);
-
+  /*
   //PITOT
   snprintf(pitotFrame, 60, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     pitot.wakeUp, pitot.batteryVoltage, pitot.staticPressure, pitot.dynamicPressure,
@@ -79,7 +79,7 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
     payLoad.wakeUp, payLoad.batteryVoltage);
 
   strcat(data, otherSlaves);
-
+  */
   //recovery first byte
   memset(byteData, 0, 4);
   byteData[0] |= (recovery.isArmed << 6);
@@ -102,7 +102,7 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   snprintf(recoveryFrame, 10, "%d;%d;", byteData[0], byteData[1]);
   strcat(data, recoveryFrame);
 
-  
+  /*
   //error first byte  
   memset(byteData, 0, 4);
   byteData[0] |= (errors.sd << 6);
@@ -115,8 +115,9 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   byteData[1] |= (errors.espnow << 0);
   
   //int cast for //DEBUG
-  snprintf(errorsFrame, 10, "%d;%d", byteData[0], byteData[1]);
+  snprintf(errorsFrame, 10, "%d;%d\n", byteData[0], byteData[1]);
   strcat(data, errorsFrame);
+  */
 
   strcat(data, "\n");
   /*

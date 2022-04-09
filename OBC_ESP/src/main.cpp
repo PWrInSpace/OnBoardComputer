@@ -36,7 +36,6 @@ void setup() {
   rc.i2c2.begin(27, 26, 100E3);
   rc.i2c1.setTimeOut(20);
   rc.i2c2.setTimeOut(20);
-  
 
   //create Queues and Mutex //TODO
   rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
