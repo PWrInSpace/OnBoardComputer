@@ -3,7 +3,7 @@
 void initAll(void) {
 
 	memset(&recData, 0, sizeof(RecoveryData));
-	HAL_I2C_EnableListen_IT(&hi2c2);
+	HAL_I2C_EnableListen_IT(&hi2c1);
 }
 
 /*****************************************************************/

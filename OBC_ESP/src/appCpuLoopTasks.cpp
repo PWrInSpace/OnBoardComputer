@@ -204,14 +204,12 @@ void dataTask(void *arg){
       // TODO!!!
 
       // Recovery:
-      vTaskDelay(1/ portTICK_PERIOD_MS);  
-      rc.i2c2.requestFrom(RECOVERY_ADDRES, sizeof(RecoveryData));
-      if (rc.i2c2.available()) {
-        if (!rc.i2c2.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
+      rc.i2c1.requestFrom(RECOVERY_ADDRES, sizeof(RecoveryData));
+      if (rc.i2c1.available()) {
+        if (!rc.i2c1.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
         // ERROR I2C
         }
       }
-      vTaskDelay(1/ portTICK_PERIOD_MS);  
 
       //read i2c comm data
       //rc.sendLog("Hello space!");
