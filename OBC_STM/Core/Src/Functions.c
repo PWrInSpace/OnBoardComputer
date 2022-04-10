@@ -23,6 +23,9 @@ void checkComputers(void) {
 	recData.separationSwitch2 		= !(SepaSw2_GPIO_Port->IDR & SepaSw2_Pin);
 	recData.firstStageContinouity 	= !(Igniter1Cont_GPIO_Port->IDR & Igniter1Cont_Pin);
 	recData.secondStageContinouity 	= !(Igniter2Cont_GPIO_Port->IDR & Igniter2Cont_Pin);
+
+	// Arming Check:
+	recData.isArmed = SoftArm_GPIO_Port->IDR & SoftArm_Pin;
 }
 
 /*****************************************************************/
@@ -30,10 +33,8 @@ void checkComputers(void) {
 void armDisarm(_Bool arm) {
 
 	if (arm) {
-		TelArm_GPIO_Port->ODR |= TelArm_Pin;
 		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;
 	} else {
-		TelArm_GPIO_Port->ODR &= ~TelArm_Pin;
 		SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin;
 	}
 }
