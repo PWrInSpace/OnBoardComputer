@@ -2,6 +2,7 @@
 #define RECOVERY_STM
 
 #include <Wire.h>
+#include "config.h"
 
 class RecoverySTM {
 
@@ -12,13 +13,13 @@ public:
 
   RecoverySTM(TwoWire &wirePort, uint8_t i2cAddress);
 
-  void arm(bool on) { sendCommand(on ? 1 : 2, 0); }
+  void arm(bool on) { sendCommand(on ? RECOVERY_ARM : RECOVERY_DISARM, 0); }
 
-  void setTelemetrum(bool on) { sendCommand(on ? 3 : 4, 0); }
+  void setTelemetrum(bool on) { sendCommand(on ? RECOVERY_TELEMETRUM_ON : RECOVERY_TELEMETRUM_OFF, 0); }
 
-  void forceFirstStageSeparation() { sendCommand(165, 0); }
+  void forceFirstStageSeparation() { sendCommand(RECOVERY_FORCE_1, 0); }
 
-  void forceSecondStageSeparation() { sendCommand(90, 0); }
+  void forceSecondStageSeparation() { sendCommand(RECOVERY_FORCE_2, 0); }
 
   bool getRecoveryData(uint8_t* buffer);
 
