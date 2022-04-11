@@ -5,6 +5,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include "FreeRTOS.h"
+#include "RecoverySTM.h"
 #include "config.h"
 #include "pinout.h"
 
@@ -89,8 +90,7 @@ struct RocketControl{
   QueueHandle_t espNowQueue; //best solution XD
 	//mutexes
 	SemaphoreHandle_t spiMutex;
-	//SemaphoreHandle_t i2cMutex_1 = NULL;
-	//SemaphoreHandle_t i2cMutex_2 = NULL;
+	SemaphoreHandle_t i2c1Mutex;
 
 	//spinlock
 	portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
@@ -103,6 +103,8 @@ struct RocketControl{
   SPIClass mySPI = SPIClass(VSPI);
   TwoWire i2c1 = TwoWire(0);
   TwoWire i2c2 = TwoWire(1);
+
+  RecoverySTM recoveryStm = RecoverySTM(i2c1, RECOVERY_ADDRES);
 
 	RocketControl();
   bool changeStateEvent(StateMachineEvent newEvent);

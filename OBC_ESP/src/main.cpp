@@ -45,7 +45,7 @@ void setup() {
   rc.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
 
   rc.spiMutex = xSemaphoreCreateMutex();
-
+  rc.i2c1Mutex = xSemaphoreCreateMutex();
 
   //create Tasks
   //pro cpu
