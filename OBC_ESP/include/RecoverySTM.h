@@ -8,8 +8,6 @@ class RecoverySTM {
   TwoWire *stmWire;
   uint8_t address;
 
-  void sendCommand(uint8_t command, uint16_t arg);
-
 public:
 
   RecoverySTM(TwoWire &wirePort, uint8_t i2cAddress);
@@ -23,6 +21,8 @@ public:
   void forceSecondStageSeparation() { sendCommand(90, 0); }
 
   bool getRecoveryData(uint8_t* buffer);
+
+  void sendCommand(uint8_t command, uint16_t arg);
 };
 
 #endif
