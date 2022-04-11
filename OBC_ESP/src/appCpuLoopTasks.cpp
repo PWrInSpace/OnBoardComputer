@@ -20,9 +20,10 @@ void stateTask(void *arg){
 
         case ARMED_EVENT:
           //recovery arm request
-          rc.i2c1.beginTransmission(RECOVERY_ADDRES);
-          rc.i2c1.write(RECOVERY_ARM);
-          rc.i2c1.endTransmission();
+          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.arm(true);
+          rc.recoveryStm.setTelemetrum(true);
+          xSemaphoreGive(rc.i2c1Mutex);
           //check recovery arm answer
           
           rc.changeState(ARMED);
@@ -86,6 +87,10 @@ void stateTask(void *arg){
 
         case FIRST_STAGE_RECOVERY_EVENT:
           //i2c force 1 stage recovery
+          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.forceFirstStageSeparation();
+          xSemaphoreGive(rc.i2c1Mutex);
+
           txDataEspNow.setVal(VALVE_CLOSE, 0);
           esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
 
@@ -96,6 +101,10 @@ void stateTask(void *arg){
 
         case SECOND_STAGE_RECOVERY_EVENT:
           //i2c force 2 stage recovery
+          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.forceSecondStageSeparation();
+          xSemaphoreGive(rc.i2c1Mutex);
+
           txDataEspNow.setVal(VALVE_OPEN, 0);
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
           
@@ -107,6 +116,11 @@ void stateTask(void *arg){
           rc.options.dataFramePeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
           rc.options.loraPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
 
+          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.arm(false);
+          rc.recoveryStm.setTelemetrum(false);
+          xSemaphoreGive(rc.i2c1Mutex);
+
           //dataFrame.missionTimer.turnOffTimer();
           
           rc.changeState(ON_GROUND);
@@ -117,6 +131,11 @@ void stateTask(void *arg){
       
           txDataEspNow.setVal(VALVE_OPEN, 0);
           esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+
+          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.arm(false);
+          rc.recoveryStm.setTelemetrum(false);
+          xSemaphoreGive(rc.i2c1Mutex);
 
           rc.options.sdDataCurrentPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
           rc.options.dataFramePeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
@@ -204,12 +223,9 @@ void dataTask(void *arg){
       // TODO!!!
 
       // Recovery:
-      rc.i2c1.requestFrom(RECOVERY_ADDRES, sizeof(RecoveryData));
-      if (rc.i2c1.available()) {
-        if (!rc.i2c1.readBytes((uint8_t*) &dataFrame.recovery, sizeof(RecoveryData))) {
-        // ERROR I2C
-        }
-      }
+      xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+      rc.recoveryStm.getRecoveryData((uint8_t*) &dataFrame.recovery);
+      xSemaphoreGive(rc.i2c1Mutex);
 
       //read i2c comm data
       //rc.sendLog("Hello space!");
