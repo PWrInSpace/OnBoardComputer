@@ -187,8 +187,8 @@ void parseR4A(char* data) {
     if (oldState == dataFrame.state && newState != StateMachine::FLIGHT) rc.changeStateEvent((StateMachineEvent) newState);
   }
 
-  else if (strstr(data, "ABRT;")) {
-    rc.changeState(ABORT);
+  else if (strstr(data, "ABRT")) {
+    rc.changeStateEvent(ABORT_EVENT);
   }
 }
 
@@ -246,5 +246,15 @@ void parseR4O(char* data) {
 
   else if (strstr(data, "WKUP")) {
     // TODO budzonko
+  }
+
+  else if (strstr(data, "RECOV")) {
+
+    TxDataEspNow txDataEspNow;
+    sscanf(data, "RECOV;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
+
+    xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+    rc.recoveryStm.sendCommand(txDataEspNow.command, txDataEspNow.commandTime);
+    xSemaphoreGive(rc.i2c1Mutex);
   }
 }

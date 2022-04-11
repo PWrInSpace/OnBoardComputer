@@ -32,8 +32,8 @@ void setup() {
   nowAddPeer(adressTanWa, 0);
 
   //init all components
-  rc.i2c1.begin(21, 22, 400E3);
-  rc.i2c2.begin(27, 26, 100E3);
+  rc.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
+  rc.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
   rc.i2c1.setTimeOut(20);
   rc.i2c2.setTimeOut(20);
 
@@ -45,7 +45,7 @@ void setup() {
   rc.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
 
   rc.spiMutex = xSemaphoreCreateMutex();
-
+  rc.i2c1Mutex = xSemaphoreCreateMutex();
 
   //create Tasks
   //pro cpu

@@ -7,7 +7,6 @@
 
 typedef struct {
 
-	uint16_t nextSendTime;
 	uint8_t command;
 	uint16_t commandArg;
 
