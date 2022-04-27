@@ -3,9 +3,9 @@
 
 #include <cstdint>
 #include <Arduino.h>
-#include "mainStructs.h"
-#include "errors.h"
-#include "missionTimer.h"
+#include "../include/structs/mainStructs.h"
+#include "../include/structs/errors.h"
+#include "../include/timers/missionTimer.h"
 
 /**   RX    **/
 

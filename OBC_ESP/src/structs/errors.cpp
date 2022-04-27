@@ -1,4 +1,4 @@
-#include "errors.h"
+#include "../include/structs/errors.h"
 
 void Errors::setSDError(SDError error){
   if(sd != error){

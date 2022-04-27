@@ -1,4 +1,4 @@
-#include "mainStructs.h"
+#include "../include/structs/mainStructs.h"
 
 /******   OPTIONS   *******/
 Options::Options():

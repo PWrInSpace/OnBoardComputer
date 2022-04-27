@@ -3,13 +3,13 @@
 
 #include "esp_now.h"
 #include "WiFi.h"
-#include "dataStructs.h"
-#include "mainStructs.h"
+#include "../include/structs/dataStructs.h"
+#include "../include/structs/mainStructs.h"
 
 // Adresy:
 const uint8_t adressOBC[]       = {0xB4, 0xE6, 0x2D, 0x85, 0x49, 0x4D}; // TODO poprawny adres!!!
 const uint8_t adressPitot[]     = {0x94, 0xB9, 0x7E, 0xC2, 0xE6, 0x28}; // TODO poprawny adres!!!
-const uint8_t adressMValve[]    = {0x58, 0xBF, 0x25, 0x17, 0x14, 0x70}; // TODO poprawny adres!!!
+const uint8_t adressMValve[]    = {0x34, 0x94, 0x54, 0xD9, 0x2D, 0x20};
 const uint8_t adressUpust[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 const uint8_t adressBlackBox[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 const uint8_t adressTanWa[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!

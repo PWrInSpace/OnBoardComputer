@@ -5,7 +5,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include "FreeRTOS.h"
-#include "RecoverySTM.h"
+#include "../include/com/RecoverySTM.h"
 #include "config.h"
 #include "pinout.h"
 

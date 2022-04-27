@@ -1,6 +1,7 @@
-#include "dataStructs.h"
+#include "../include/structs/dataStructs.h"
 
-
+//#include "timers.h"
+//extern WatchdogTimer wt;
 /****** DATAFRAME ******/
 bool DataFrame::allDevicesWokeUp(){
   return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp && payLoad.wakeUp && blackBox.wakeUp);
@@ -24,44 +25,44 @@ void DataFrame::createLoRaOptionsFrame(Options options, char* data){
 
 void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime, char* data){
   uint8_t byteData[4] = {};
-  char mcbFrame[100] = {};
-  char pitotFrame[60] = {};
-  char mvFrame[40] = {};
-  char uvFrame[40] = {};
+  char mcbFrame[120] = {};
+  char pitotFrame[80] = {};
+  char mvFrame[60] = {};
+  char uvFrame[60] = {};
   char tanwaFrame[60] = {};
-  char otherSlaves[20] = {};
+  char otherSlaves[30] = {};
   char recoveryFrame[10] = {};
   char errorsFrame[10] = {};
 
   strcpy(data, LORA_TX_DATA_PREFIX);
 
   //MCB
-  snprintf(mcbFrame, 100, "%d;%lu;%d;%d;%0.2f;%0.4f;%0.4f;%0.2f;%d;%d;",
+  snprintf(mcbFrame, 120, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;",
     state, millis(), missionTimer.getTime(), disconnectTime,
-    batteryVoltage, GPSlal, GPSlong, GPSalt, GPSsat, GPSsec);
+    batteryVoltage, 0, GPSlal, GPSlong, GPSalt, GPSsat, GPSsec); //11
 
   strcat(data, mcbFrame);
-  /*
+  
   //PITOT
-  snprintf(pitotFrame, 60, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+  snprintf(pitotFrame, 80, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     pitot.wakeUp, pitot.batteryVoltage, pitot.staticPressure, pitot.dynamicPressure,
-    pitot.temperature, pitot.altitude, pitot.velocity, pitot.predictedApogee);
+    pitot.temperature, pitot.altitude, pitot.velocity, pitot.predictedApogee); //8
   
   strcat(data, pitotFrame);
 
   //MAIN VALVE
-  snprintf(mvFrame, 40, "%d;%0.2f;%d;%0.2f;%0.2f;",
+  snprintf(mvFrame, 60, "%d;%0.2f;%d;%0.2f;%0.2f;",
     mainValve.wakeUp, mainValve.batteryVoltage, mainValve.valveState,
-    mainValve.thermocouple[0], mainValve.thermocouple[1]);
+    mainValve.thermocouple[0], mainValve.thermocouple[1]); //5
   
   strcat(data, mvFrame);
 
 
   //UPUST VALVE
-  snprintf(uvFrame, 40, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+  snprintf(uvFrame, 60, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
     upustValve.wakeUp, upustValve.batteryVoltage, upustValve.valveState,
     upustValve.tankPressure, upustValve.hall[0], upustValve.hall[1],
-    upustValve.hall[2], upustValve.hall[3], upustValve.hall[4]);
+    upustValve.hall[2], upustValve.hall[3], upustValve.hall[4]); //9
   
   strcat(data, uvFrame);   
 
@@ -70,16 +71,16 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
     tanWa.tanWaState, tanWa.batteryVoltage, tanWa.igniterContinouity,
     tanWa.fillValveState, tanWa.deprValveState, tanWa.pullState,
     tanWa.rocketWeightRaw, tanWa.butlaWeightRaw, tanWa.rocketWeight,
-    tanWa.butlaWeight);
+    tanWa.butlaWeight);//10
   
   strcat(data, tanwaFrame);
 
-  snprintf(otherSlaves, 20 , "%d;%0.2f;%d;%0.2f;",
+  snprintf(otherSlaves, 30 , "%d;%0.2f;%d;%0.2f;",
     blackBox.wakeUp, blackBox.batteryVoltage, 
-    payLoad.wakeUp, payLoad.batteryVoltage);
+    payLoad.wakeUp, payLoad.batteryVoltage); //4
 
   strcat(data, otherSlaves);
-  */
+  
   //recovery first byte
   memset(byteData, 0, 4);
   byteData[0] |= (recovery.isArmed << 6);
@@ -100,9 +101,9 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   
   //int cast for //DEBUG
   snprintf(recoveryFrame, 10, "%d;%d;", byteData[0], byteData[1]);
-  strcat(data, recoveryFrame);
+  strcat(data, recoveryFrame); //2
 
-  /*
+  
   //error first byte  
   memset(byteData, 0, 4);
   byteData[0] |= (errors.sd << 6);
@@ -115,9 +116,9 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   byteData[1] |= (errors.espnow << 0);
   
   //int cast for //DEBUG
-  snprintf(errorsFrame, 10, "%d;%d\n", byteData[0], byteData[1]);
-  strcat(data, errorsFrame);
-  */
+  snprintf(errorsFrame, 10, "%d;%d;0", byteData[0], byteData[1]);
+  strcat(data, errorsFrame); //2
+  
 
   strcat(data, "\n");
   /*
@@ -159,21 +160,21 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
     pressure, altitude, velocity, ignition);
 
   strcpy(data, mcbFrame);
-  
+  /*
   //PITOT
   snprintf(pitotFrame, 60, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     pitot.wakeUp, pitot.batteryVoltage, pitot.staticPressure, pitot.dynamicPressure,
     pitot.temperature, pitot.altitude, pitot.velocity, pitot.predictedApogee);
   
   strcat(data, pitotFrame);
-
+  */
   //MAIN VALV
   snprintf(mvFrame, 40, "%d;%0.2f;%d;%0.2f;%0.2f;",
     mainValve.wakeUp, mainValve.batteryVoltage, mainValve.valveState,
     mainValve.thermocouple[0], mainValve.thermocouple[1]);
   strcat(data, mvFrame);
 
-
+/*
   //UPUST VALVE
   snprintf(uvFrame, 40, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
     upustValve.wakeUp, upustValve.batteryVoltage, upustValve.valveState,
@@ -214,11 +215,13 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
   strcat(data, optionsFrame);
 
   //ERRORS
-  snprintf(errorsFrame, 20, "%d;%d;%d;%d;%d;%d;%d\n",
+  snprintf(errorsFrame, 20, "%d;%d;%d;%d;%d;%d;%d",
     errors.sd, errors.flash, errors.rtos, errors.espnow,
     errors.watchdog, errors.sensors, errors.exceptions);
   
   strcat(data, errorsFrame);
+  */
+  strcat(data, "\n");
   /*
   Serial.print("MCB SIZE: "); //DEBUG
   Serial.print(strlen(mcbFrame));

@@ -1,15 +1,20 @@
-#ifndef TASKS_AND_TIMERS
-#define TASKS_AND_TIMERS
+#ifndef TASKS_HH
+#define TASKS_HH
 
 #include <LITTLEFS.h>
 #include <LoRa.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
-#include "mainStructs.h"
-#include "dataStructs.h"
-#include "timers.h"
-#include "now.h"
+#include "../include/structs/mainStructs.h"
+#include "../include/structs/dataStructs.h"
+#include "../include/timers/watchdog.h"
+#include "../include/com/now.h"
 #include "pinout.h"
+#include "../include/components/SDCard.h"
+
+extern RocketControl rc;
+extern WatchdogTimer wt;
+extern DataFrame dataFrame;
 
 //Tasks
 void loraTask(void *arg);

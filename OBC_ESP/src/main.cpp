@@ -1,20 +1,13 @@
-#include "timers.h"
-#include "mainStructs.h"
-#include "dataStructs.h"
-#include "tasksAndTimers.h"
-#include "now.h"
-
-//TO DO LIST
-// w lora rx nie dać możliwości przejścia ze stanu 5 na 6
-// przemyśleć w jaki sposób zerować errory, prawdopodbnie mieszanka tych dwóch pomysłów
-// -> po zapisie na sd wszystkie - moze nadal być ale nie zdąży wskoczyć przez jakieś opóźnienie
-// -> ustawaić brak errora gdy jest gt -> Moim zdaniem to lepiej
-// przy testach sprawdzać działanie spi mutex
+#include "../include/timers/watchdog.h"
+#include "../include/structs/mainStructs.h"
+#include "../include/structs/dataStructs.h"
+#include "../include/tasks/tasks.h"
+#include "../include/com/now.h"
 
 WatchdogTimer wt;
 RocketControl rc;
 
-volatile DataFrame dataFrame;
+DataFrame dataFrame;
 
 void setup() {
   delay(300);
@@ -64,6 +57,7 @@ void setup() {
   rc.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   
   //check created elements
+  /*
   if(rc.loraRxQueue == NULL || rc.loraTxQueue == NULL || rc.sdQueue == NULL || rc.flashQueue == NULL || rc.espNowQueue == NULL){
     //error handling
     Serial.println("Queue create error!"); //DEBUG
@@ -93,7 +87,7 @@ void setup() {
     Serial.println("timer create error!"); //DEBUG
     ESP.restart();
   }
-
+  */
   
   //watchdogtimer
   wt.begin();
@@ -107,11 +101,11 @@ void setup() {
   }else{
     rc.changeStateEvent(StateMachineEvent::IDLE_EVENT);
   }
-/*
+
   //start timers
   xTimerStart(rc.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.disconnectTimer, portMAX_DELAY);
-*/
+
   vTaskDelete(NULL); //delete main task (loop())
 }
 

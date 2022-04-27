@@ -6,8 +6,6 @@
 
 #define WATCHDOG_EEPROM_SIZE 2
 
-
-
 struct WatchdogTimer{
   bool loraTaskFlag : 1;
   bool rxHandlingTaskFlag : 1;

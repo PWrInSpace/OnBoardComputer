@@ -1,4 +1,4 @@
-#include "timers.h"
+#include "../include/timers/watchdog.h"
 
 //watchdog timer struct
 /*
