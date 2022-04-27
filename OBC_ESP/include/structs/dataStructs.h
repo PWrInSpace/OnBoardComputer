@@ -97,14 +97,11 @@ struct DataFrame {
 
   DataFrame() = default;
   bool allDevicesWokeUp();
-  void createLoRaDataFrame(StateMachine state, uint32_t disconnectTime, char* data);
-  void createLoRaOptionsFrame(Options options, char *data);
-  void createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data);
-  
+  void createLoRaDataFrame(States state, uint32_t disconnectTime, char* data);
+  void createSDFrame(States state, uint32_t disconnectTime, Options options, char* data);
 //String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
 //String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
 };
-
 
 /**   TX    **/
 

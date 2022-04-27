@@ -1,29 +1,11 @@
 #include "../include/structs/dataStructs.h"
 
-//#include "timers.h"
-//extern WatchdogTimer wt;
 /****** DATAFRAME ******/
 bool DataFrame::allDevicesWokeUp(){
   return (pitot.wakeUp && mainValve.wakeUp && upustValve.wakeUp && payLoad.wakeUp && blackBox.wakeUp);
 }
 
-void DataFrame::createLoRaOptionsFrame(Options options, char* data){
-  char opt[100];
-
-  strcpy(data, LORA_TX_OPTIONS_PREFIX);
-
-  snprintf(opt, 100, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d\n",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch,
-    options.espnowSleepTime, options.espnowShortPeriod, options.espnowLongPeriod,
-    options.flashShortPeriod, options.flashLongPeriod, 
-    options.sdShortPeriod, options.sdLongPeriod, options.idlePeriod, options.dataFramePeriod, 
-    options.loraPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
-
-  strcat(data, opt);
-}
-
-void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime, char* data){
+void DataFrame::createLoRaDataFrame(States state, uint32_t disconnectTime, char* data){
   uint8_t byteData[4] = {};
   char mcbFrame[120] = {};
   char pitotFrame[80] = {};
@@ -39,7 +21,7 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   //MCB
   snprintf(mcbFrame, 120, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;",
     state, millis(), missionTimer.getTime(), disconnectTime,
-    batteryVoltage, 0, GPSlal, GPSlong, GPSalt, GPSsat, GPSsec); //11
+    batteryVoltage, watchdogResets, GPSlal, GPSlong, GPSalt, GPSsat, GPSsec); //11
 
   strcat(data, mcbFrame);
   
@@ -102,7 +84,7 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   //int cast for //DEBUG
   snprintf(recoveryFrame, 10, "%d;%d;", byteData[0], byteData[1]);
   strcat(data, recoveryFrame); //2
-
+  /*
   
   //error first byte  
   memset(byteData, 0, 4);
@@ -118,7 +100,7 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
   //int cast for //DEBUG
   snprintf(errorsFrame, 10, "%d;%d;0", byteData[0], byteData[1]);
   strcat(data, errorsFrame); //2
-  
+  */
 
   strcat(data, "\n");
   /*
@@ -143,7 +125,7 @@ void DataFrame::createLoRaDataFrame(StateMachine state, uint32_t disconnectTime,
 
 /**********************************************************************************************/
 
-void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data){
+void DataFrame::createSDFrame(States state, uint32_t disconnectTime, Options options, char* data){
   char mcbFrame[100] = {};
   char pitotFrame[60] = {};
   char mvFrame[40] = {};
@@ -243,6 +225,11 @@ void DataFrame::createSDFrame(StateMachine state, uint32_t disconnectTime, Optio
   Serial.println(strlen(data));
   */
 }
+
+/*****************************************************************************************************/
+
+
+
 
 /**********************************************************************************************/
 

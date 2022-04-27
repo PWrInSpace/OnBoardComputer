@@ -29,8 +29,8 @@ void rxHandlingTask(void *arg){
 
         case PITOT:
           Serial.println("Pitot notify"); //DEBUG
-          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          if (StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
           else sleepTime = rc.options.espnowLongPeriod;
 
           esp_now_send(adressPitot, (uint8_t*) &sleepTime, sizeof(sleepTime));
@@ -39,8 +39,8 @@ void rxHandlingTask(void *arg){
 
         case MAIN_VALVE:
           Serial.println("MainValve notify"); //DEBUG
-          if (rc.state < FUELING || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          if (StateMachine::getCurrentState() < FUELING || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
           else sleepTime = rc.options.espnowLongPeriod;
           
           esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime));
@@ -49,8 +49,8 @@ void rxHandlingTask(void *arg){
 
         case UPUST_VALVE:
           Serial.println("UpustValve notify"); //DEBUG
-          if (rc.state < FUELING || rc.state == ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          if (StateMachine::getCurrentState() < FUELING || StateMachine::getCurrentState() == ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
           else sleepTime = rc.options.espnowLongPeriod;
           
           esp_now_send(adressUpust, (uint8_t*) &sleepTime, sizeof(sleepTime));
@@ -59,8 +59,8 @@ void rxHandlingTask(void *arg){
 
         case BLACK_BOX:
           Serial.println("Black Box notify"); //DEBUG
-          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          if (StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
           else sleepTime = rc.options.espnowLongPeriod;
 
           esp_now_send(adressBlackBox, (uint8_t*) &sleepTime, sizeof(sleepTime));
@@ -69,8 +69,8 @@ void rxHandlingTask(void *arg){
 
         case PAYLOAD:
           Serial.println("Payload notify"); //DEBUG
-          if (rc.state < COUNTDOWN || rc.state >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (rc.state == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
+          if (StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
+          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
           else sleepTime = rc.options.espnowLongPeriod;
 
           esp_now_send(adressPayLoad, (uint8_t*) &sleepTime, sizeof(sleepTime));
@@ -98,12 +98,18 @@ void parseR4A(char* data) {
     int newState;
 
     sscanf(data, "STAT;%d;%d", &oldState, &newState);
-    if (oldState == dataFrame.state && newState != StateMachine::FLIGHT){
-      rc.changeStateEvent((StateMachineEvent) newState);
+    if (oldState == StateMachine::getCurrentState() && newState != States::FLIGHT){
+      if(!StateMachine::changeStateRequest((States) newState)){
+        //TODO
+        //log and error
+      }
     }
 
   }else if (strstr(data, "ABRT")) {
-    rc.changeStateEvent(ABORT_EVENT);
+    if(!StateMachine::changeStateRequest(States::ABORT)){
+        //TODO
+        //log and error
+    }
   }
 }
 
@@ -139,8 +145,8 @@ void parseR4O(char* data) {
       Serial.printf("Wrong LoRa command!!!"); // DEBUG
       break;
     }
-
-    dataFrame.createLoRaOptionsFrame(rc.options, callback);
+      
+    //createLoRaOptionsFrame(rc.options, callback);
     xQueueSend(rc.loraTxQueue, (void*)callback, 0);
   }
 

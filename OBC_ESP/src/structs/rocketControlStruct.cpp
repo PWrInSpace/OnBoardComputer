@@ -1,6 +1,6 @@
 #include "../include/structs/mainStructs.h"
 
-/******   OPTIONS   *******/
+/*
 Options::Options():
   LoRaFrequencyMHz(LoRa_FREQUENCY_MHZ),
   countdownTime(COUNTDOWN_TIME),
@@ -22,11 +22,8 @@ Options::Options():
   sdDataCurrentPeriod(SD_LONG_PERIOD)
 {}
 
-/****** MAINSTRUCT *******/
 
 RocketControl::RocketControl():
-  stateEvent(StateMachineEvent::INIT_EVENT),
-  state(StateMachine::INIT),
   options(Options()), //default options
   loraTask(NULL),
   rxHandlingTask(NULL),
@@ -44,49 +41,16 @@ RocketControl::RocketControl():
   disconnectTimer(NULL)
   {}
 
-//notify that changing state event occure
-bool RocketControl::changeStateEvent(StateMachineEvent newEvent){
-	//portENTER_CRITICAL(&stateLock);
-  //out of range
-  if(newEvent < IDLE_EVENT || newEvent > ABORT_EVENT){
-    return false;
-  }
-
-  if((newEvent - 1) != stateEvent && newEvent != ABORT_EVENT){
-    return false;
-  }
-    
-  this->stateEvent = newEvent;
-  //portEXIT_CRITICAL(&stateLock);
-  xTaskNotifyGive(this->stateTask);
-  return true;
-}
-
-//Use only in stateTask
-void RocketControl::changeState(StateMachine newState){
-  if((newState - 1) != state && newState != ABORT){
-    return;
-  }
-    
-  //portENTER_CRITICAL(&stateLock);
-  this->state = newState;
-  //portEXIT_CRITICAL(&stateLock);
-}
-
-void RocketControl::unsuccessfulEvent(){
-  this->stateEvent = (StateMachineEvent)((uint8_t)stateEvent - 1);
-}
-
 void RocketControl::sendLog(char * message){
   static char log[SD_FRAME_ARRAY_SIZE] = {};
   char temp[40] = {};
-  strcpy(log, "LOG ");
-  snprintf(temp, 40, " [ %d , %lu ]\n", state, millis());
+  strcpy(log, "LOG ");  
+  snprintf(temp, 40, " [ %d , %lu ]\n", /*state1, millis());
   strcat(log, message);
   strcat(log, temp);
 
   //Serial.println(log); //DEBUG
-  xQueueSend(sdQueue, (void*)&log, 0);
+  //xQueueSend(sdQueue, (void*)&log, 0);
 }
 
 uint32_t RocketControl::getDisconnectRemainingTime(){
@@ -98,3 +62,5 @@ uint32_t RocketControl::getDisconnectRemainingTime(){
   
   return (xTimerGetExpiryTime(disconnectTimer) - xTaskGetTickCount()) * portTICK_PERIOD_MS;
 }
+
+*/

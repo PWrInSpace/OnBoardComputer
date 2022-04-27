@@ -1,3 +1,4 @@
+/*
 #ifndef ROCKET_MAIN_STRUCTS
 #define ROCKET_MAIN_STRUCTS
 
@@ -14,34 +15,6 @@
 #define SD_QUEUE_LENGTH 10
 #define FLASH_QUEUE_LENGTH 20
 #define ESP_NOW_QUEUE_LENGTH 5
-
-enum StateMachine{
-  INIT = 0,
-  IDLE,
-  ARMED,
-  FUELING,
-  RDY_TO_LAUNCH,
-  COUNTDOWN,
-  FLIGHT,
-  FIRST_STAGE_RECOVERY,
-  SECOND_STAGE_RECOVERY,
-  ON_GROUND,
-  ABORT
-};
-
-enum StateMachineEvent{
-  INIT_EVENT = 0,
-  IDLE_EVENT,
-  ARMED_EVENT,
-  FUELING_EVENT,
-  RDY_TO_LAUNCH_EVENT,
-  COUNTDOWN_EVENT,
-  FLIGHT_EVENT,
-  FIRST_STAGE_RECOVERY_EVENT,
-  SECOND_STAGE_RECOVERY_EVENT,
-  ON_GROUND_EVENT,
-  ABORT_EVENT
-};
 
 
 //options are change only in stateTasks, and in handlingTask obviously
@@ -71,8 +44,6 @@ struct Options{
 };
 
 struct RocketControl{
-  StateMachineEvent stateEvent;
-  StateMachine state;
 	Options options;  
  
 	//tasks
@@ -107,12 +78,8 @@ struct RocketControl{
   RecoverySTM recoveryStm = RecoverySTM(i2c1, RECOVERY_ADDRES);
 
 	RocketControl();
-  bool changeStateEvent(StateMachineEvent newEvent);
-  //Use only in stateTask
-  void changeState(StateMachine newState);
-  void unsuccessfulEvent();
   void sendLog(char *message);
   uint32_t getDisconnectRemainingTime();
 };
-
 #endif
+*/

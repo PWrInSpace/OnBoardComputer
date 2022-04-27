@@ -5,15 +5,14 @@
 #include "../include/com/now.h"
 
 WatchdogTimer wt;
-RocketControl rc;
-
-DataFrame dataFrame;
+//RocketControl rc;
+HardwareManagment hm;
 
 void setup() {
   delay(300);
   Serial.begin(115200); //DEBUG
   Serial.print("Setup state: "); //DEBUG
-  Serial.println(rc.state); //DEBUG
+  Serial.println(StateMachine::getCurrentState()); //DEBUG
 
   //set esp now
   
@@ -25,64 +24,64 @@ void setup() {
   nowAddPeer(adressTanWa, 0);
 
   //init all components
-  rc.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
-  rc.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
-  rc.i2c1.setTimeOut(20);
-  rc.i2c2.setTimeOut(20);
+  hm.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
+  hm.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
+  hm.i2c1.setTimeOut(20);
+  hm.i2c2.setTimeOut(20);
 
   //create Queues and Mutex //TODO
-  rc.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
-  rc.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
-  rc.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(char[SD_FRAME_ARRAY_SIZE]));
-  rc.flashQueue = xQueueCreate(FLASH_QUEUE_LENGTH, sizeof(DataFrame));
-  rc.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
+  hm.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
+  hm.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
+  hm.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(char[SD_FRAME_ARRAY_SIZE]));
+  hm.flashQueue = xQueueCreate(FLASH_QUEUE_LENGTH, sizeof(DataFrame));
+  hm.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
 
-  rc.spiMutex = xSemaphoreCreateMutex();
-  rc.i2c1Mutex = xSemaphoreCreateMutex();
+  hm.spiMutex = xSemaphoreCreateMutex();
+  hm.i2c1Mutex = xSemaphoreCreateMutex();
 
   //create Tasks
   //pro cpu
-  xTaskCreatePinnedToCore(loraTask,       "LoRa task",        8192, NULL, 2, &rc.loraTask,       PRO_CPU_NUM);
-  xTaskCreatePinnedToCore(rxHandlingTask, "RX handling task", 8192, NULL, 2, &rc.rxHandlingTask, PRO_CPU_NUM);
+  xTaskCreatePinnedToCore(loraTask,       "LoRa task",        8192, NULL, 2, &hm.loraTask,       PRO_CPU_NUM);
+  xTaskCreatePinnedToCore(rxHandlingTask, "RX handling task", 8192, NULL, 2, &hm.rxHandlingTask, PRO_CPU_NUM);
 
   //app cpu
-  xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.stateTask, APP_CPU_NUM);
-  xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.dataTask,  APP_CPU_NUM);
-  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &rc.sdTask,    APP_CPU_NUM);
-  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.flashTask, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &hm.stateTask, APP_CPU_NUM);
+  xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &hm.dataTask,  APP_CPU_NUM);
+  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &hm.sdTask,    APP_CPU_NUM);
+  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &hm.flashTask, APP_CPU_NUM);
 
   //create Timers
-  rc.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
+  hm.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
 
-  rc.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
+  hm.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   
   //check created elements
   /*
-  if(rc.loraRxQueue == NULL || rc.loraTxQueue == NULL || rc.sdQueue == NULL || rc.flashQueue == NULL || rc.espNowQueue == NULL){
+  if(hm.loraRxQueue == NULL || hm.loraTxQueue == NULL || hm.sdQueue == NULL || hm.flashQueue == NULL || hm.espNowQueue == NULL){
     //error handling
     Serial.println("Queue create error!"); //DEBUG
     ESP.restart();
   }
 
-  if(rc.spiMutex == NULL){
+  if(hm.spiMutex == NULL){
     //error handling
     Serial.println("Mutex create error!"); //DEBUG
     ESP.restart();
   }
 
-  if(rc.loraTask == NULL || rc.rxHandlingTask == NULL){
+  if(hm.loraTask == NULL || hm.rxHandlingTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
     ESP.restart();  
   }
 
-  if(rc.stateTask == NULL || rc.dataTask == NULL || rc.sdTask == NULL || rc.flashTask == NULL){
+  if(hm.stateTask == NULL || hm.dataTask == NULL || hm.sdTask == NULL || hm.flashTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
     ESP.restart();  
   }
 
-  if(rc.watchdogTimer == NULL || rc.disconnectTimer == NULL){
+  if(hm.watchdogTimer == NULL || hm.disconnectTimer == NULL){
     //error handling
     Serial.println("timer create error!"); //DEBUG
     ESP.restart();
@@ -94,17 +93,17 @@ void setup() {
   wt.EEPROMread();
   Serial.println(wt.previousState); //DEBUG
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
-  dataFrame.watchdogResets = wt.resetCounter;
-    //check wachdog timer previous state
-  if(wt.previousState != INIT_EVENT && wt.previousState != COUNTDOWN_EVENT){
-    rc.changeStateEvent((StateMachineEvent) wt.previousState);
+  
+  //check wachdog timer previous state
+  if(wt.previousState != INIT && wt.previousState != COUNTDOWN){
+    StateMachine::changeStateRequest((States) wt.previousState);
   }else{
-    rc.changeStateEvent(StateMachineEvent::IDLE_EVENT);
+    StateMachine::changeStateRequest(States::IDLE);
   }
 
   //start timers
-  xTimerStart(rc.watchdogTimer, portMAX_DELAY);
-  xTimerStart(rc.disconnectTimer, portMAX_DELAY);
+  xTimerStart(hm.watchdogTimer, portMAX_DELAY);
+  xTimerStart(hm.disconnectTimer, portMAX_DELAY);
 
   vTaskDelete(NULL); //delete main task (loop())
 }

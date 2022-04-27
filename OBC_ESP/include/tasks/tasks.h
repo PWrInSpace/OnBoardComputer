@@ -11,10 +11,13 @@
 #include "../include/com/now.h"
 #include "pinout.h"
 #include "../include/components/SDCard.h"
+#include "config.h"
+#include "../include/structs/dataStructs.h"
+
 
 extern RocketControl rc;
 extern WatchdogTimer wt;
-extern DataFrame dataFrame;
+//extern DataFrame dataFrame;
 
 //Tasks
 void loraTask(void *arg);

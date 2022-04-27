@@ -1,6 +1,7 @@
 #include "../include/tasks/tasks.h"
 
 void dataTask(void *arg){
+  DataFrame dataFrame;
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
@@ -16,6 +17,8 @@ void dataTask(void *arg){
     Serial.println("GPS INIT ERROR!"); //DEBUG
   }
 
+  dataFrame.watchdogResets = wt.resetCounter;
+
   while(1){
 
     //data
@@ -26,7 +29,7 @@ void dataTask(void *arg){
       //read data from sensors and gps
       //i2c spi ect...
     
-      dataFrame.state = rc.state;
+      dataFrame.state = StateMachine::getCurrentState();
       // GPS:
       
       dataFrame.GPSlal = gps.getLatitude(10) / 10.0E6;
@@ -51,15 +54,21 @@ void dataTask(void *arg){
 
       //compute data
       /* //DEBUG disable
-      if((dataFrame.upustValve.tankPressure < rc.options.tankMinPressure && dataFrame.mainValve.valveState == VALVE_OPEN) && rc.state > COUNTDOWN){
+      if((dataFrame.upustValve.tankPressure < rc.options.tankMinPressure && dataFrame.mainValve.valveState == VALVE_OPEN) && StateMachine::getCurrentState() > COUNTDOWN){
         //close valve
         rc.options.mainValveRequestState = VALVE_CLOSE;
       }*/
 
-      if(rc.state == FLIGHT && dataFrame.recovery.firstStageDone == true){
-        rc.changeStateEvent(FIRST_STAGE_RECOVERY_EVENT);
-      }else if(rc.state == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
-        rc.changeState(SECOND_STAGE_RECOVERY);
+      if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
+        if(!StateMachine::changeStateRequest(States::FIRST_STAGE_RECOVERY)){
+        //TODO
+        //log and error
+        }
+      }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
+        if(!StateMachine::changeStateRequest(States::SECOND_STAGE_RECOVERY)){
+        //TODO
+        //log and error
+        }
       }
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
     }
@@ -67,25 +76,25 @@ void dataTask(void *arg){
     //LoRa
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
-      dataFrame.createLoRaDataFrame(rc.state, rc.getDisconnectRemainingTime(), lora);
+      dataFrame.createLoRaDataFrame(StateMachine::getCurrentState(), rc.getDisconnectRemainingTime(), lora);
       //Serial.print("LORA: "); Serial.println(xTaskGetTickCount());
       Serial.print(lora);
 
       if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
-        dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
+        //dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
         strcpy(log, "LoRa queue full"); // log
         rc.sendLog(log);
       }
-      dataFrame.errors.reset(ERROR_RESET_LORA);
+      //dataFrame.errors.reset(ERROR_RESET_LORA);
     }
 
     //FLASH
-    if((rc.state > COUNTDOWN && rc.state < ON_GROUND) && rc.options.flashWrite){
+    if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND) && rc.options.flashWrite){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
        
         if(xQueueSend(rc.flashQueue, (void*)&dataFrame, 0) != pdTRUE){
-          dataFrame.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
+          //dataFrame.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
           strcpy(log, "Flash queue full");
           rc.sendLog(log);
         }
@@ -97,13 +106,13 @@ void dataTask(void *arg){
     //SD
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      dataFrame.createSDFrame(rc.state, rc.getDisconnectRemainingTime(), rc.options, sd);
+      dataFrame.createSDFrame(StateMachine::getCurrentState(), rc.getDisconnectRemainingTime(), rc.options, sd);
       //Serial.print(sd);
       if(xQueueSend(rc.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
-        dataFrame.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
+        //dataFrame.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
       }  
       
-      dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save  
+      //dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save  
     }
 
     wt.dataTaskFlag = true;

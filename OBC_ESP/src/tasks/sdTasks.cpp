@@ -12,7 +12,7 @@ void sdTask(void *arg){
   xSemaphoreTake(rc.spiMutex, pdTRUE);
 
   while(!mySD.init()){
-    dataFrame.errors.setSDError(SD_INIT_ERROR);
+    //dataFrame.errors.setSDError(SD_INIT_ERROR);
     Serial.println("SD INIT ERROR!");
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }
@@ -33,11 +33,11 @@ void sdTask(void *arg){
       
         if(strncmp(data, "LOG", 3) == 0){
           if(!mySD.write(logPath, data)){
-            dataFrame.errors.setSDError(SD_WRITE_ERROR);
+            //dataFrame.errors.setSDError(SD_WRITE_ERROR);
           }
         }else{
           if(!mySD.write(dataPath, data)){
-            dataFrame.errors.setSDError(SD_WRITE_ERROR);
+            //dataFrame.errors.setSDError(SD_WRITE_ERROR);
           }
         }  
 
