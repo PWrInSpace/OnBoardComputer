@@ -5,20 +5,16 @@
 #include <LoRa.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
-#include "../include/structs/mainStructs.h"
+#include "../include/structs/rocketControl.h"
 #include "../include/structs/dataStructs.h"
 #include "../include/timers/watchdog.h"
 #include "../include/com/now.h"
 #include "pinout.h"
 #include "../include/components/SDCard.h"
-#include "config.h"
-#include "../include/structs/dataStructs.h"
-
+#include "../include/structs/stateMachine.h"
 
 extern RocketControl rc;
 extern WatchdogTimer wt;
-//extern DataFrame dataFrame;
-
 //Tasks
 void loraTask(void *arg);
 void rxHandlingTask(void *arg);

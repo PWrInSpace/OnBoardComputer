@@ -1,16 +1,15 @@
 #include "../include/timers/watchdog.h"
-#include "../include/structs/mainStructs.h"
+#include "../include/structs/rocketControl.h"
 #include "../include/structs/dataStructs.h"
-#include "config.h"
+#include "../include/structs/stateMachine.h"
 
 extern WatchdogTimer wt;
 extern RocketControl rc;
-extern DataFrame dataFrame;
 
 void watchdogTimerCallback(TimerHandle_t xTimer){
  //Serial.println("WATCHDOG TIMER"); //DEBUG
   char log[SD_FRAME_ARRAY_SIZE] = {};
-  
+  /*
   if(wt.loraTaskFlag == false){
     if(StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() > FIRST_STAGE_RECOVERY){
       wt.reset(StateMachine::getCurrentState());
@@ -61,14 +60,14 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
     strcpy(log, "Watchdog timer flash");
     rc.sendLog(log);
   }
-
+  */
   wt.setFlags(false);
 }
 
 
 void disconnectTimerCallback(TimerHandle_t xTimer){
   if(StateMachine::getCurrentState() <= COUNTDOWN){
-    StateMachine::changeStateRequest(ABORT);
+    StateMachine::changeStateRequest(States::ABORT);
   }
   
   char log[] = "Disconnect Timer";

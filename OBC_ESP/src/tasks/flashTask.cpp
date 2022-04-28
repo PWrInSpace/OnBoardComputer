@@ -9,7 +9,7 @@ void flashTask(void *arg){
 
   while(1){
 
-    if (uxQueueMessagesWaiting(rc.flashQueue) > FLASH_QUEUE_LENGTH / 2) {
+    if (uxQueueMessagesWaiting(rc.hardware.flashQueue) > FLASH_QUEUE_LENGTH / 2) {
 
       // Wiping file for the first time to remove data from previous flights:
       if (wipeFile) {
@@ -18,9 +18,9 @@ void flashTask(void *arg){
       }
       else file = LITTLEFS.open("/file.txt", "a");
 
-      while (uxQueueMessagesWaiting(rc.flashQueue) > 0) {
+      while (uxQueueMessagesWaiting(rc.hardware.flashQueue) > 0) {
 
-        xQueueReceive(rc.flashQueue, &frame, portMAX_DELAY);
+        xQueueReceive(rc.hardware.flashQueue, &frame, portMAX_DELAY);
         file.write((uint8_t*) &frame, sizeof(frame));
       }
 

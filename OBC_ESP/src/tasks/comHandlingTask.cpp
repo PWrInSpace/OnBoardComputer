@@ -8,7 +8,7 @@ void rxHandlingTask(void *arg){
   while(1){
     //Serial.println("RX handling tasks"); //DEBUG
     
-    if(xQueueReceive(rc.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
+    if(xQueueReceive(rc.hardware.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
       if(strncmp(loraData, "R4A", 3) == 0){
         parseR4A(&loraData[4]);
 
@@ -17,7 +17,7 @@ void rxHandlingTask(void *arg){
       }
     }
 
-    if(xQueueReceive(rc.espNowQueue, (void*) &rxEspNumber, 25)){
+    if(xQueueReceive(rc.hardware.espNowQueue, (void*) &rxEspNumber, 25)){
 
       uint16_t sleepTime;
 
@@ -99,17 +99,12 @@ void parseR4A(char* data) {
 
     sscanf(data, "STAT;%d;%d", &oldState, &newState);
     if (oldState == StateMachine::getCurrentState() && newState != States::FLIGHT){
-      if(!StateMachine::changeStateRequest((States) newState)){
-        //TODO
-        //log and error
-      }
+      //rc.changeStateEvent((StateMachineEvent) newState);
+      StateMachine::changeStateRequest((States) newState);
     }
 
   }else if (strstr(data, "ABRT")) {
-    if(!StateMachine::changeStateRequest(States::ABORT)){
-        //TODO
-        //log and error
-    }
+    StateMachine::changeStateRequest(States::ABORT);
   }
 }
 
@@ -128,9 +123,9 @@ void parseR4O(char* data) {
     case 1:
 
       rc.options.LoRaFrequencyMHz = optionValue;
-      xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
+      xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
       LoRa.setFrequency((int)rc.options.LoRaFrequencyMHz * 1E6);
-      xSemaphoreGive(rc.spiMutex);
+      xSemaphoreGive(rc.hardware.spiMutex);
       break;
     
     case 2: rc.options.countdownTime    = optionValue; break;
@@ -145,9 +140,9 @@ void parseR4O(char* data) {
       Serial.printf("Wrong LoRa command!!!"); // DEBUG
       break;
     }
-      
-    //createLoRaOptionsFrame(rc.options, callback);
-    xQueueSend(rc.loraTxQueue, (void*)callback, 0);
+
+    rc.createOptionsFrame(callback);
+    xQueueSend(rc.hardware.loraTxQueue, (void*)callback, 0);
   }
 
   // Valves:
@@ -174,8 +169,8 @@ void parseR4O(char* data) {
     TxDataEspNow txDataEspNow;
     sscanf(data, "RECOV;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
 
-    xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+    xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
     rc.recoveryStm.sendCommand(txDataEspNow.command, txDataEspNow.commandTime);
-    xSemaphoreGive(rc.i2c1Mutex);
+    xSemaphoreGive(rc.hardware.i2c1Mutex);
   }
 }

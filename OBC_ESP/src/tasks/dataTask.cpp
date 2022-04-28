@@ -12,12 +12,12 @@ void dataTask(void *arg){
 
   SFE_UBLOX_GNSS gps;
 
-  if(gps.begin(rc.i2c2, 0x42, 10, false) == false){
+  if(gps.begin(rc.hardware.i2c2, 0x42, 10, false) == false){
     //TODO error handling
     Serial.println("GPS INIT ERROR!"); //DEBUG
   }
 
-  dataFrame.watchdogResets = wt.resetCounter;
+  rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
 
   while(1){
 
@@ -29,24 +29,24 @@ void dataTask(void *arg){
       //read data from sensors and gps
       //i2c spi ect...
     
-      dataFrame.state = StateMachine::getCurrentState();
+      rc.dataFrame.mcb.state = StateMachine::getCurrentState();
       // GPS:
       
-      dataFrame.GPSlal = gps.getLatitude(10) / 10.0E6;
-      dataFrame.GPSlong = gps.getLongitude(10) / 10.0E6;
-      dataFrame.GPSalt = gps.getAltitude(10) / 10.0E2;
+      rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
+      rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
+      rc.dataFrame.mcb.GPSalt = gps.getAltitude(10) / 10.0E2;
       
-      dataFrame.GPSsat = gps.getSIV(10);
-      dataFrame.GPSsec = gps.getTimeValid(10);
+      rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
+      rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
 
       // IMU:
 
       // TODO!!!
 
       // Recovery:
-      xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
-      rc.recoveryStm.getRecoveryData((uint8_t*) &dataFrame.recovery);
-      xSemaphoreGive(rc.i2c1Mutex);
+      xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
+      rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
+      xSemaphoreGive(rc.hardware.i2c1Mutex);
 
       //read i2c comm data
       //rc.sendLog("Hello space!");
@@ -58,34 +58,28 @@ void dataTask(void *arg){
         //close valve
         rc.options.mainValveRequestState = VALVE_CLOSE;
       }*/
-
+      /*
       if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
-        if(!StateMachine::changeStateRequest(States::FIRST_STAGE_RECOVERY)){
-        //TODO
-        //log and error
-        }
+        rc.changeStateEvent(FIRST_STAGE_RECOVERY_EVENT);
       }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
-        if(!StateMachine::changeStateRequest(States::SECOND_STAGE_RECOVERY)){
-        //TODO
-        //log and error
-        }
-      }
+        rc.changeState(SECOND_STAGE_RECOVERY);
+      }*/
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
     }
 
     //LoRa
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
-      dataFrame.createLoRaDataFrame(StateMachine::getCurrentState(), rc.getDisconnectRemainingTime(), lora);
+      rc.createLoRaFrame(lora);
       //Serial.print("LORA: "); Serial.println(xTaskGetTickCount());
       Serial.print(lora);
 
-      if(xQueueSend(rc.loraTxQueue, (void*)&lora, 0) != pdTRUE){
-        //dataFrame.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
+      if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){
+        rc.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
         strcpy(log, "LoRa queue full"); // log
         rc.sendLog(log);
       }
-      //dataFrame.errors.reset(ERROR_RESET_LORA);
+      rc.errors.reset(ERROR_RESET_LORA);
     }
 
     //FLASH
@@ -93,8 +87,8 @@ void dataTask(void *arg){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
        
-        if(xQueueSend(rc.flashQueue, (void*)&dataFrame, 0) != pdTRUE){
-          //dataFrame.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
+        if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
+          rc.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
           strcpy(log, "Flash queue full");
           rc.sendLog(log);
         }
@@ -106,13 +100,13 @@ void dataTask(void *arg){
     //SD
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      dataFrame.createSDFrame(StateMachine::getCurrentState(), rc.getDisconnectRemainingTime(), rc.options, sd);
+      rc.createSDFrame(sd);
       //Serial.print(sd);
-      if(xQueueSend(rc.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
-        //dataFrame.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
+      if(xQueueSend(rc.hardware.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
+        rc.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
       }  
       
-      //dataFrame.errors.reset(ERROR_RESET_SD); //reset errors after save  
+      rc.errors.reset(ERROR_RESET_SD); //reset errors after save  
     }
 
     wt.dataTaskFlag = true;

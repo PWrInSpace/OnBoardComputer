@@ -4,7 +4,7 @@
 #include "esp_now.h"
 #include "WiFi.h"
 #include "../include/structs/dataStructs.h"
-#include "../include/structs/mainStructs.h"
+#include "../include/structs/rocketControl.h"
 
 // Adresy:
 const uint8_t adressOBC[]       = {0xB4, 0xE6, 0x2D, 0x85, 0x49, 0x4D}; // TODO poprawny adres!!!
