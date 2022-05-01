@@ -8,7 +8,6 @@ extern RocketControl rc;
 
 void watchdogTimerCallback(TimerHandle_t xTimer){
  //Serial.println("WATCHDOG TIMER"); //DEBUG
-  char log[SD_FRAME_ARRAY_SIZE] = {};
   /*
   if(wt.loraTaskFlag == false){
     if(StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() > FIRST_STAGE_RECOVERY){

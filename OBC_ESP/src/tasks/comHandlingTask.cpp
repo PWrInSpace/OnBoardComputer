@@ -2,7 +2,6 @@
 
 void rxHandlingTask(void *arg){
   char loraData[LORA_FRAME_ARRAY_SIZE] = {};
-  //char log[SD_FRAME_ARRAY_SIZE] = {};
   uint8_t rxEspNumber = 0;
   int oldState = 0;
   int newState = 0;
@@ -24,6 +23,10 @@ void rxHandlingTask(void *arg){
               rc.sendLog("invalid state change request");
               rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
             }
+
+          }else{
+            rc.sendLog("invalid state change command");
+            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
         
         }else if (strstr(loraData, "ABRT") != NULL) {
@@ -34,7 +37,7 @@ void rxHandlingTask(void *arg){
 
         }else if (strstr(loraData, "HOLD") != NULL){
           if(StateMachine::changeStateRequest(States::HOLD) == false){
-            rc.sendLog("invalid ABORT request");
+            rc.sendLog("invalid HOLD request");
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
 

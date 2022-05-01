@@ -3,7 +3,7 @@
 void stateTask(void *arg){
   StateMachine stateMachine(rc.hardware.stateTask);
   TxDataEspNow txDataEspNow;
-  char log[LORA_FRAME_ARRAY_SIZE] = {};
+  
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
       //portENTER_CRITICAL(&rc.stateLock);
@@ -179,8 +179,7 @@ void stateTask(void *arg){
           break;
 
         default:
-          strcpy(log, "Unknown state event");
-          rc.sendLog(log);
+          rc.sendLog("Unknown state event");
           ESP.restart();
           break;
       }

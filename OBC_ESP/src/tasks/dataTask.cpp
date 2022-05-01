@@ -8,7 +8,6 @@ void dataTask(void *arg){
   TickType_t sdTimer = 0;
   char sd[SD_FRAME_ARRAY_SIZE] = {};
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
-  char log[SD_FRAME_ARRAY_SIZE] = {};
 
   SFE_UBLOX_GNSS gps;
 

@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <string>
 #include "FreeRTOS.h"
 #include "../include/com/RecoverySTM.h"
 #include "options.h"
@@ -33,8 +34,9 @@ struct RocketControl{
 
 	RocketControl() = default;
   void updateCurrentState();
-  void sendLog(char *message);
-  void sendLog(String message);
+  void sendLog(const char *message);
+  //void sendLog(String message);
+  //void sendLog(std::string message);
   uint32_t getDisconnectRemainingTime();
   void restartDisconnectTimer(bool _force = false);
   bool deactiveDisconnectTimer();

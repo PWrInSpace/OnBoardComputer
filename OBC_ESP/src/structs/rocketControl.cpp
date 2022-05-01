@@ -13,7 +13,7 @@ void RocketControl::updateCurrentState(){
  * 
  * @param message log message
  */
-void RocketControl::sendLog(char * message){
+void RocketControl::sendLog(const char * message){
   static char log[SD_FRAME_ARRAY_SIZE] = {};
   char temp[40] = {};
   strcpy(log, "LOG ");
@@ -24,7 +24,7 @@ void RocketControl::sendLog(char * message){
   //Serial.println(log); //DEBUG
   xQueueSend(hardware.sdQueue, (void*)&log, 0);
 }
-
+/*
 void RocketControl::sendLog(String message){
   static char log[SD_FRAME_ARRAY_SIZE] = {};
   char temp[40] = {};
@@ -38,6 +38,20 @@ void RocketControl::sendLog(String message){
   //Serial.println(log); //DEBUG
   xQueueSend(hardware.sdQueue, (void*)&log, 0);
 }
+
+void RocketControl::sendLog(std::string message){
+  static char log[SD_FRAME_ARRAY_SIZE] = {};
+  char temp[40] = {};
+  char mess[40];
+  strcpy(mess, message.c_str());
+  strcpy(log, "LOG ");
+  snprintf(temp, 40, " [ %d , %lu ]\n", dataFrame.mcb.state, millis());
+  strcat(log, mess);
+  strcat(log, temp);
+
+  //Serial.println(log); //DEBUG
+  xQueueSend(hardware.sdQueue, (void*)&log, 0);
+}*/
 
 /**
  * @brief disconnect timer 
