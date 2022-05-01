@@ -70,6 +70,5 @@ void disconnectTimerCallback(TimerHandle_t xTimer){
     StateMachine::changeStateRequest(States::ABORT);
   }
   
-  char log[] = "Disconnect Timer";
-  rc.sendLog(log);
+  rc.sendLog("Disconnect timer");
 }

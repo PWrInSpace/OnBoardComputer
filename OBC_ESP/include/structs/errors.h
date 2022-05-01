@@ -8,14 +8,14 @@
 #include <stdint.h>
 #include <Arduino.h> //DEBUG
 //loop error
-enum SDError{
+enum SDError{ //GIT
   SD_NO_ERROR = 0,
   SD_INIT_ERROR,
   SD_WRITE_ERROR,
 };
 
 //loop error
-enum FlashError{
+enum FlashError{ //+-
   FLASH_NO_ERROR = 0,
   FLASH_WRITE_ERROR,
   FLASH_NO_SPACE_ERROR,
@@ -27,10 +27,8 @@ enum RTOSError{
   RTOS_SD_QUEUE_ADD_ERROR,
   RTOS_LORA_QUEUE_ADD_ERROR,
   RTOS_FLASH_QUEUE_ADD_ERROR,
-  RTOS_SPI_MUTEX_ERROR,
 };
 
-//idk 
 enum EspNowError{
   ESPNOW_NO_ERROR = 0,
   ESPNOW_INIT_ERROR,
@@ -52,6 +50,7 @@ enum WatchDogError{
 enum SensorsError{
   SENSORS_NO_ERROR = 0,
   IMU_INIT_ERROR,
+  GPS_INIT_ERROR,
 };
 
 enum LastException{
@@ -61,7 +60,13 @@ enum LastException{
   INVALID_PREFIX_EXCEPTION, //FRAME
   DEVICE_NOT_ARMED_EXCEPTION,
   INVALID_STATE_CHANGE_EXCEPTION,
+  INVALID_OPTION_NUMBER,
   INVALID_OPTION_VALUE,
+};
+
+enum RecoveryError{
+  COM_NO_ERROR = 0,
+  I2C_INIT_ERROR,
 };
 
 struct Errors{
@@ -72,6 +77,7 @@ struct Errors{
   WatchDogError watchdog;
   SensorsError sensors;
   LastException exceptions;
+  RecoveryError recovery;
   bool newError;
 
   Errors() = default;
@@ -82,6 +88,7 @@ struct Errors{
   void setWatchDogError(WatchDogError error);
   void setSensorError(SensorsError error);
   void setLastException(LastException error); 
+  void setRecoveryError(RecoveryError error); 
   void reset(uint8_t triger);
 };
 

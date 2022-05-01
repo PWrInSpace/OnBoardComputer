@@ -21,7 +21,9 @@ void flashTask(void *arg){
       while (uxQueueMessagesWaiting(rc.hardware.flashQueue) > 0) {
 
         xQueueReceive(rc.hardware.flashQueue, &frame, portMAX_DELAY);
-        file.write((uint8_t*) &frame, sizeof(frame));
+        if(!file.write((uint8_t*) &frame, sizeof(frame))){
+          rc.errors.setFlashError(FLASH_WRITE_ERROR);
+        }
       }
 
       file.close();

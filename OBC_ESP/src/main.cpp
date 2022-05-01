@@ -15,15 +15,15 @@ void setup() {
 
   //set esp now
 
-  nowInit();
-  nowAddPeer(adressPitot, 0);
-  nowAddPeer(adressMValve, 0);
-  nowAddPeer(adressUpust, 0);
-  nowAddPeer(adressBlackBox, 0);
-  nowAddPeer(adressTanWa, 0);
+  if(nowInit() == false) ESP.restart();
+  if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressMValve, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressUpust, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressBlackBox, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
 
   //init all components
-  rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
+  if(rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3) == false) rc.errors.setRecoveryError(I2C_INIT_ERROR);
   rc.hardware.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
   rc.hardware.i2c1.setTimeOut(20);
   rc.hardware.i2c2.setTimeOut(20);
@@ -55,37 +55,37 @@ void setup() {
   rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   
   //check created elements
-  /*
-  if(hm.loraRxQueue == NULL || hm.loraTxQueue == NULL || hm.sdQueue == NULL || hm.flashQueue == NULL || hm.espNowQueue == NULL){
+  
+  if(rc.hardware.loraRxQueue == NULL || rc.hardware.loraTxQueue == NULL || rc.hardware.sdQueue == NULL || rc.hardware.flashQueue == NULL || rc.hardware.espNowQueue == NULL){
     //error handling
     Serial.println("Queue create error!"); //DEBUG
     ESP.restart();
   }
 
-  if(hm.spiMutex == NULL){
+  if(rc.hardware.spiMutex == NULL){
     //error handling
     Serial.println("Mutex create error!"); //DEBUG
     ESP.restart();
   }
 
-  if(hm.loraTask == NULL || hm.rxHandlingTask == NULL){
+  if(rc.hardware.loraTask == NULL || rc.hardware.rxHandlingTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
     ESP.restart();  
   }
 
-  if(hm.stateTask == NULL || hm.dataTask == NULL || hm.sdTask == NULL || hm.flashTask == NULL){
+  if(rc.hardware.stateTask == NULL || rc.hardware.dataTask == NULL || rc.hardware.sdTask == NULL || rc.hardware.flashTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
     ESP.restart();  
   }
 
-  if(hm.watchdogTimer == NULL || hm.disconnectTimer == NULL){
+  if(rc.hardware.watchdogTimer == NULL || rc.hardware.disconnectTimer == NULL){
     //error handling
     Serial.println("timer create error!"); //DEBUG
     ESP.restart();
   }
-  */
+  
   
   //watchdogtimer
   wt.begin();

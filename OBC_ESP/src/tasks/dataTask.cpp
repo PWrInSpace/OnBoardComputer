@@ -13,8 +13,8 @@ void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
 
   if(gps.begin(rc.hardware.i2c2, 0x42, 10, false) == false){
-    //TODO error handling
-    Serial.println("GPS INIT ERROR!"); //DEBUG
+    rc.sendLog("GPS INIT ERROR");
+    rc.errors.setSensorError(GPS_INIT_ERROR);
   }
 
   rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
@@ -68,16 +68,16 @@ void dataTask(void *arg){
     }
 
     //LoRa
-    if((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod){
+    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
+      
+      rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
-      //Serial.print("LORA: "); Serial.println(xTaskGetTickCount());
-      Serial.print(lora);
+      
 
       if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){
         rc.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
-        strcpy(log, "LoRa queue full"); // log
-        rc.sendLog(log);
+        rc.sendLog("LoRa quque is full");
       }
       rc.errors.reset(ERROR_RESET_LORA);
     }
@@ -86,11 +86,11 @@ void dataTask(void *arg){
     if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND) && rc.options.flashWrite){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
+        rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
        
         if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
           rc.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
-          strcpy(log, "Flash queue full");
-          rc.sendLog(log);
+          rc.sendLog("Flash queue is full");
         }
       }
         
@@ -100,8 +100,11 @@ void dataTask(void *arg){
     //SD
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
+      
+      rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createSDFrame(sd);
-      //Serial.print(sd);
+      Serial.print(sd);
+
       if(xQueueSend(rc.hardware.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         rc.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
       }  

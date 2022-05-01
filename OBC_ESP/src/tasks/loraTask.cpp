@@ -30,11 +30,13 @@ void loraTask(void *arg){
       if (LoRa.available()) {
 
         String rxStr = LoRa.readString();
-        Serial.print(rxStr); // DEBUG
+        //Serial.print(rxStr); // DEBUG
 
         strcpy(loraRx, rxStr.c_str());
         xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
-        xTimerReset(rc.hardware.disconnectTimer, 0);
+        if(rc.hardware.disconnectTimer != NULL){
+          xTimerReset(rc.hardware.disconnectTimer, 0);
+        }
       }
 
     xSemaphoreGive(rc.hardware.spiMutex);

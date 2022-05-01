@@ -13,8 +13,13 @@ void sdTask(void *arg){
 
   while(!mySD.init()){
     rc.errors.setSDError(SD_INIT_ERROR);
-    Serial.println("SD INIT ERROR!");
-    vTaskDelay(50 / portTICK_PERIOD_MS);
+    Serial.println("SD INIT ERROR!"); //DEBUG
+    
+    xSemaphoreGive(rc.hardware.spiMutex);
+    
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
+    xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
   }
 
   while(mySD.fileExists(dataPath + String(sd_i) + ".txt")){

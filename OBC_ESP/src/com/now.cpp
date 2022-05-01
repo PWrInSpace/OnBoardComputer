@@ -34,7 +34,9 @@ bool nowAddPeer(const uint8_t* address, uint8_t channel) {
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
-  // if (status) ... - Dodanie errora ESP-now.
+  if (status != ESP_NOW_SEND_SUCCESS){
+    rc.errors.setEspNowError(ESPNOW_DELIVERY_ERROR);
+  }
 }
 
 /**********************************************************************************************/
@@ -56,7 +58,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   }
 
   else if(adressCompare(mac, adressMValve)) {
-
+    Serial.println("MainValve Data");
     memcpy(&rc.dataFrame.mainValve, (MainValveData*) incomingData, sizeof(rc.dataFrame.mainValve));
     adressToQueue = MAIN_VALVE;
   }

@@ -73,7 +73,7 @@ struct MCB{
   float GPSalt;
   uint8_t GPSsat;
   uint8_t GPSsec;
-  uint8_t temp;
+  float temp;
   float pressure;
   float altitude;
   float velocity;

@@ -39,6 +39,8 @@ struct RocketControl{
   void createLoRaFrame(char *_array);
   void createOptionsFrame(char *_array);
   bool allDevicesWokenUp();
+  bool queueSend(xQueueHandle _handle, char *data);
+  //void loraFrameForce();
 };
 
 #endif
