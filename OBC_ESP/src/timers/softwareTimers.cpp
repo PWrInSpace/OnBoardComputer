@@ -66,8 +66,9 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
 
 
 void disconnectTimerCallback(TimerHandle_t xTimer){
-  if(StateMachine::getCurrentState() <= COUNTDOWN){
-    StateMachine::changeStateRequest(States::ABORT);
+    
+  if(StateMachine::changeStateRequest(States::ABORT) == false){
+    rc.sendLog("Disconnect timer abort request rejected");
   }
   
   rc.sendLog("Disconnect timer");

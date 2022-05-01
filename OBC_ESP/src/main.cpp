@@ -3,6 +3,8 @@
 #include "../include/structs/dataStructs.h"
 #include "../include/tasks/tasks.h"
 #include "../include/com/now.h"
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 
 WatchdogTimer wt;
 RocketControl rc;
@@ -13,8 +15,13 @@ void setup() {
   Serial.print("Setup state: "); //DEBUG
   Serial.println(StateMachine::getCurrentState()); //DEBUG
 
-  //set esp now
+  //BROWNOUT DETECTOT DISABLING
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
+  //set mission timer
+  rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
+
+  //set esp now
   if(nowInit() == false) ESP.restart();
   if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
   if(nowAddPeer(adressMValve, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
@@ -23,10 +30,12 @@ void setup() {
   if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
 
   //init all components
-  if(rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3) == false) rc.errors.setRecoveryError(I2C_INIT_ERROR);
+  rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
   rc.hardware.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
   rc.hardware.i2c1.setTimeOut(20);
   rc.hardware.i2c2.setTimeOut(20);
+
+  rc.hardware.mySPI.begin();
 
   //create Queues and Mutex //TODO
   rc.hardware.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));

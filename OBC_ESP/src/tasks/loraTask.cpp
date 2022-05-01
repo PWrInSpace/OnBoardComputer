@@ -12,7 +12,9 @@ void loraTask(void *arg){
   
   while(LoRa.begin((int)rc.options.LoRaFrequencyMHz * 1E6) == 0){
     Serial.println("LORA begin error!");
+    xSemaphoreGive(rc.hardware.spiMutex);
     vTaskDelay(500 / portTICK_PERIOD_MS);
+    xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
   }
 
   LoRa.setSignalBandwidth(250E3);
@@ -20,8 +22,9 @@ void loraTask(void *arg){
   LoRa.setSpreadingFactor(7);
   LoRa.setTxPower(14);
   LoRa.setTimeout(10);
-
   xSemaphoreGive(rc.hardware.spiMutex);
+
+  vTaskDelay(100 / portTICK_PERIOD_MS);
 
   while(1){
     xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);

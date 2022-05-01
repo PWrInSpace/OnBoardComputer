@@ -2,26 +2,53 @@
 
 StateMachine::StateMachine(xTaskHandle _stateTask){
   stateTask = _stateTask;
-  currentState = INIT;
-  requestState = INIT;
+  currentState = States::INIT;
+  requestState = States::INIT;
+  holdedState = States::HOLD;
 }
 
 //notify that changing state event occure
 bool StateMachine::changeStateRequest(States _newState){
- //out of range
+ //task handler wasn't set
   if(stateTask == NULL){
     return false;
   }
 
-  if(_newState < IDLE || _newState > ABORT){
+  //out of range
+  if(_newState < States::IDLE || _newState > States::ABORT){
     return false;
   }
 
-  if((_newState - 1) != currentState && _newState != ABORT){
+  //ABORT CASAE
+  if(currentState == States::ABORT){ 
     return false;
   }
-    
-  requestState = _newState;
+
+  //Flight case, prevent rocket block in flight
+  if((currentState > COUNTDOWN && currentState < HOLD) && (_newState == States::ABORT || _newState == States::HOLD)){
+    return false;
+  }
+
+  //check new state correctness
+  if((_newState - 1) != currentState && (_newState != States::ABORT && _newState != States::HOLD)){
+    return false;
+  }
+  
+  if(currentState == States::HOLD){ //current state is hold
+    if(_newState == States::ABORT){ //abort in hold case
+      requestState = _newState;
+    }else if(holdedState == States::COUNTDOWN){ //hold in countdown case
+      requestState = (States)((uint8_t)holdedState - 1);
+    }else{
+      requestState = holdedState;
+    }
+    holdedState = States::HOLD;
+  }else if(_newState == States::HOLD){ //new state is hold
+    holdedState = currentState;
+    requestState = _newState;
+  }else{ //normal states or abort
+    requestState = _newState;
+  }
 
   xTaskNotifyGive(stateTask);
   return true;
@@ -48,6 +75,7 @@ States StateMachine::getCurrentState(){
   return currentState;
 }
 
-States StateMachine::currentState = INIT;
-States StateMachine::requestState = INIT;
+States StateMachine::currentState = States::INIT;
+States StateMachine::requestState = States::INIT;
+States StateMachine::holdedState = States::HOLD;
 xTaskHandle StateMachine::stateTask = NULL;

@@ -25,6 +25,20 @@ void RocketControl::sendLog(char * message){
   xQueueSend(hardware.sdQueue, (void*)&log, 0);
 }
 
+void RocketControl::sendLog(String message){
+  static char log[SD_FRAME_ARRAY_SIZE] = {};
+  char temp[40] = {};
+  char mess[40];
+  strcpy(mess, message.c_str());
+  strcpy(log, "LOG ");
+  snprintf(temp, 40, " [ %d , %lu ]\n", dataFrame.mcb.state, millis());
+  strcat(log, mess);
+  strcat(log, temp);
+
+  //Serial.println(log); //DEBUG
+  xQueueSend(hardware.sdQueue, (void*)&log, 0);
+}
+
 /**
  * @brief disconnect timer 
  * 
@@ -210,7 +224,7 @@ void RocketControl::createLoRaFrame(char* data){
   //error third byte  
   byteData[2] |= (errors.rtos << 0);
 
-  snprintf(errorsFrame, errorsSize, "%d;%d%d", byteData[0], byteData[1], byteData[2]);
+  snprintf(errorsFrame, errorsSize, "%d;%d;%d", byteData[0], byteData[1], byteData[2]);
 
   strcpy(data, LORA_TX_DATA_PREFIX);
   strcat(data, mcbFrame);

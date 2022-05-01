@@ -7,6 +7,7 @@
 class Timer{
   uint32_t timer;
   bool enable;
+  uint32_t disableValue;
 
   public:
   Timer();
@@ -14,6 +15,7 @@ class Timer{
   int getTime() const;
   bool isEnable() const;
   void turnOffTimer();
+  void setDisableValue(uint32_t _disableValue);
 };
 
 

@@ -25,11 +25,23 @@ void rxHandlingTask(void *arg){
               rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
             }
           }
+        
         }else if (strstr(loraData, "ABRT") != NULL) {
           if(StateMachine::changeStateRequest(States::ABORT) == false){
             rc.sendLog("invalid ABORT request");
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
+
+        }else if (strstr(loraData, "HOLD") != NULL){
+          if(StateMachine::changeStateRequest(States::HOLD) == false){
+            rc.sendLog("invalid ABORT request");
+            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+          }
+
+        }else{
+          strcat(loraData, " - INVALID COMMAND");
+          rc.sendLog(loraData);
+          rc.errors.setLastException(INVALID_PREFIX_EXCEPTION);
         }
       
       /*** R4O ***/
@@ -38,7 +50,7 @@ void rxHandlingTask(void *arg){
         if (strstr(loraData, "OPTS;") != NULL) {
           int optionNumber;
           int optionValue;
-
+          
           sscanf(loraData, "R4O;OPTS;%d;%d", &optionNumber, &optionValue);
 
           switch (optionNumber) {
@@ -51,8 +63,9 @@ void rxHandlingTask(void *arg){
             break;
           
           case 2: 
-            if(optionValue >= 100000){
+            if(optionValue >= 10000){
               rc.options.countdownTime = optionValue; 
+              rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
             }else{
               rc.sendLog("Invalid countdown time set");
               rc.errors.setLastException(INVALID_OPTION_VALUE);
@@ -134,10 +147,14 @@ void rxHandlingTask(void *arg){
         }
 
         else{
-          strcat(loraData, " - invalid prefix");
+          strcat(loraData, " - INVALID COMMAND");
           rc.sendLog(loraData);
           rc.errors.setLastException(INVALID_PREFIX_EXCEPTION);
         }
+      }else{
+        strcat(loraData, " - INVALID PREFIX");
+        rc.sendLog(loraData);
+        rc.errors.setLastException(INVALID_PREFIX_EXCEPTION);
       }
     }
 

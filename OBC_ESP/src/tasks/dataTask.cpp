@@ -58,15 +58,16 @@ void dataTask(void *arg){
         //close valve
         rc.options.mainValveRequestState = VALVE_CLOSE;
       }*/
+
       /*
       if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
         rc.changeStateEvent(FIRST_STAGE_RECOVERY_EVENT);
       }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
         rc.changeState(SECOND_STAGE_RECOVERY);
-      }*/
+      }
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
+      */
     }
-
     //LoRa
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
@@ -103,7 +104,7 @@ void dataTask(void *arg){
       
       rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createSDFrame(sd);
-      Serial.print(sd);
+      //Serial.print(sd);
 
       if(xQueueSend(rc.hardware.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         rc.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);

@@ -131,15 +131,46 @@ void stateTask(void *arg){
           
           stateMachine.changeStateConfirmation();
           break;
+        
+        case HOLD:
+          //create disconnect timer
+          if(rc.hardware.disconnectTimer == NULL){
+            rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
+            xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
+          }
+
+          //disable mission timer
+          if(rc.missionTimer.isEnable()){
+            rc.missionTimer.turnOffTimer();
+          }
+
+          //CLOSE ALL VALVES
+          txDataEspNow.setVal(VALVE_CLOSE, 0);
+          //Main valve
+          if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+          //Upust valve
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+          //TanWa
+          //if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+          //  rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          //}
+
+          stateMachine.changeStateConfirmation();
+          break;
 
         case ABORT:
           if(rc.hardware.disconnectTimer != NULL){
             xTimerDelete(rc.hardware.disconnectTimer, 25); //turn off if abort wasn't triger by timer
             rc.hardware.disconnectTimer = NULL;
           }
-      
-          //txDataEspNow.setVal(VALVE_OPEN, 0);
-          //if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK) rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+
+          //Upust valve open
+          txDataEspNow.setVal(VALVE_OPEN, 0);
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK) rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
 
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
@@ -164,7 +195,7 @@ void stateTask(void *arg){
       //portEXIT_CRITICAL(&rc.stateLock);
     }
 
-    //Serial.println("Test");
+    //LOOP 
     switch(StateMachine::getCurrentState()){
       case COUNTDOWN:
         if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity == true){
@@ -185,7 +216,6 @@ void stateTask(void *arg){
         }
 
         break;
-
       case FIRST_STAGE_RECOVERY:
         if(rc.dataFrame.recovery.firstStageDone == false){
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);

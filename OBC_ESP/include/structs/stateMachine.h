@@ -2,6 +2,7 @@
 #define STATE_MACHINE_HH
 
 #include "FreeRTOS.h"
+#include "Arduino.h"
 
 enum States{
   INIT = 0,
@@ -14,13 +15,15 @@ enum States{
   FIRST_STAGE_RECOVERY,
   SECOND_STAGE_RECOVERY,
   ON_GROUND,
-  ABORT,
+  HOLD,
+  ABORT
 };
 
 class StateMachine{
   static States currentState;
   static States requestState;
   static xTaskHandle stateTask;
+  static States holdedState; //keep holded state default is States::HOLD
 
   public:
   StateMachine(xTaskHandle _stateTask);
