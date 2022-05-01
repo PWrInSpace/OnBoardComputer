@@ -3,6 +3,7 @@
 
 #include <Wire.h>
 #include "config.h"
+#include "txEspNow.h"
 
 class RecoverySTM {
 

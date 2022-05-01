@@ -1,38 +1,37 @@
 #include "../include/timers/watchdog.h"
-#include "../include/structs/mainStructs.h"
+#include "../include/structs/rocketControl.h"
 #include "../include/structs/dataStructs.h"
+#include "../include/structs/stateMachine.h"
 
 extern WatchdogTimer wt;
 extern RocketControl rc;
-extern DataFrame dataFrame;
 
 void watchdogTimerCallback(TimerHandle_t xTimer){
  //Serial.println("WATCHDOG TIMER"); //DEBUG
-  char log[SD_FRAME_ARRAY_SIZE] = {};
-  
+  /*
   if(wt.loraTaskFlag == false){
-    if(rc.state < COUNTDOWN || rc.state > FIRST_STAGE_RECOVERY){
-      wt.reset(rc.state);
+    if(StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() > FIRST_STAGE_RECOVERY){
+      wt.reset(StateMachine::getCurrentState());
     }else{
       //error handling
-      dataFrame.errors.setWatchDogError(WATCHDOG_LORA_ERROR);
+      //dataFrame.errors.setWatchDogError(WATCHDOG_LORA_ERROR);
       strcpy(log, "Watchdog timer LORA");
       rc.sendLog(log);
     }
   }
 
   if(wt.rxHandlingTaskFlag == false){
-    if(rc.state < COUNTDOWN){
-      wt.reset(rc.state);
-    }else if(rc.state == COUNTDOWN){ //esp now down [*]
+    if(StateMachine::getCurrentState() < COUNTDOWN){
+      wt.reset(StateMachine::getCurrentState());
+    }else if(StateMachine::getCurrentState() == COUNTDOWN){ //esp now down [*]
       //error handling
-      rc.changeState(StateMachine::ABORT);
-      dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
+      StateMachine::changeStateRequest(States::ABORT);
+      //dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
       
       strcpy(log, "Watchdog timer rxHandling");
       rc.sendLog(log);
     }else{
-      dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
+      //dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
       
       strcpy(log, "Watchdog timer rxHandling");
       rc.sendLog(log);
@@ -40,36 +39,36 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
   }
 
   if(wt.stateTaskFlag == false){
-    wt.reset(rc.state);
+    wt.reset(StateMachine::getCurrentState());
   }
 
   if(wt.dataTaskFlag == false){
-    wt.reset(rc.state);
+    wt.reset(StateMachine::getCurrentState());
   }
 
   if(wt.sdTaskFlag == false && wt.flashTaskFlag == false){
-    wt.reset(rc.state);
+    wt.reset(StateMachine::getCurrentState());
   }else if(wt.sdTaskFlag == false){
-    dataFrame.errors.setWatchDogError(WATCHDOG_SD_ERROR);
+    //dataFrame.errors.setWatchDogError(WATCHDOG_SD_ERROR);
     
     strcpy(log, "Watchdog timer SD");
     rc.sendLog(log);
   }else if(wt.flashTaskFlag == false){
-    dataFrame.errors.setWatchDogError(WATCHDOG_FLASH_ERROR);
+    //dataFrame.errors.setWatchDogError(WATCHDOG_FLASH_ERROR);
     
     strcpy(log, "Watchdog timer flash");
     rc.sendLog(log);
   }
-
+  */
   wt.setFlags(false);
 }
 
 
 void disconnectTimerCallback(TimerHandle_t xTimer){
-  if(rc.state <= COUNTDOWN){
-    rc.changeState(ABORT);
+    
+  if(StateMachine::changeStateRequest(States::ABORT) == false){
+    rc.sendLog("Disconnect timer abort request rejected");
   }
   
-  char log[] = "Disconnect Timer";
-  rc.sendLog(log);
+  rc.sendLog("Disconnect timer");
 }

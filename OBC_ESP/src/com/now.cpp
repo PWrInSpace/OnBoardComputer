@@ -1,6 +1,5 @@
 #include "../include/com/now.h"
 
-extern DataFrame dataFrame;
 extern RocketControl rc;
 
 bool adressCompare(const uint8_t *addr1, const uint8_t *addr2);
@@ -35,7 +34,9 @@ bool nowAddPeer(const uint8_t* address, uint8_t channel) {
 
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
-  // if (status) ... - Dodanie errora ESP-now.
+  if (status != ESP_NOW_SEND_SUCCESS){
+    rc.errors.setEspNowError(ESPNOW_DELIVERY_ERROR);
+  }
 }
 
 /**********************************************************************************************/
@@ -46,41 +47,41 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   if(adressCompare(mac, adressPitot)) {
 
-    memcpy(&dataFrame.pitot, (PitotData*) incomingData, sizeof(dataFrame.pitot));
+    memcpy(&rc.dataFrame.pitot, (PitotData*) incomingData, sizeof(rc.dataFrame.pitot));
     adressToQueue = PITOT;
   }
 
   else if(adressCompare(mac, adressTanWa)) {
 
-    memcpy(&dataFrame.tanWa, (TanWaData*) incomingData, sizeof(dataFrame.tanWa));
+    memcpy(&rc.dataFrame.tanWa, (TanWaData*) incomingData, sizeof(rc.dataFrame.tanWa));
     adressToQueue = TANWA;
   }
 
   else if(adressCompare(mac, adressMValve)) {
-
-    memcpy(&dataFrame.mainValve, (MainValveData*) incomingData, sizeof(dataFrame.mainValve));
+    Serial.println("MainValve Data");
+    memcpy(&rc.dataFrame.mainValve, (MainValveData*) incomingData, sizeof(rc.dataFrame.mainValve));
     adressToQueue = MAIN_VALVE;
   }
 
   else if(adressCompare(mac, adressUpust)) {
 
-    memcpy(&dataFrame.upustValve, (UpustValveData*) incomingData, sizeof(dataFrame.upustValve));
+    memcpy(&rc.dataFrame.upustValve, (UpustValveData*) incomingData, sizeof(rc.dataFrame.upustValve));
     adressToQueue = UPUST_VALVE;
   }
 
   else if(adressCompare(mac, adressBlackBox)) {
 
-    memcpy(&dataFrame.blackBox, (SlaveData*) incomingData, sizeof(dataFrame.blackBox));
+    memcpy(&rc.dataFrame.blackBox, (SlaveData*) incomingData, sizeof(rc.dataFrame.blackBox));
     adressToQueue = BLACK_BOX;
   }
 
   else if(adressCompare(mac, adressPayLoad)) {
 
-    memcpy(&dataFrame.payLoad, (SlaveData*) incomingData, sizeof(dataFrame.payLoad));
+    memcpy(&rc.dataFrame.payLoad, (SlaveData*) incomingData, sizeof(rc.dataFrame.payLoad));
     adressToQueue = PAYLOAD;
   }
 
-  xQueueSend(rc.espNowQueue, &adressToQueue, portMAX_DELAY);
+  xQueueSend(rc.hardware.espNowQueue, &adressToQueue, portMAX_DELAY);
 }
 
 /**********************************************************************************************/

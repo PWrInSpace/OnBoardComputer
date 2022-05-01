@@ -4,7 +4,7 @@
  * @brief Construct a new Timer object
  * 
  */
-Timer::Timer(): timer(0), enable(false){}
+Timer::Timer(): timer(0), enable(false), disableValue(-999){}
 
 /**
  * @brief turn on timer
@@ -19,11 +19,11 @@ void Timer::startTimer(uint32_t _timer){
 /**
  * @brief get time
  * 
- * @return int32_t return time that has elapsed since startTimer, if timer is enable return NAN
+ * @return int32_t return time that has elapsed since startTimer, if timer is enable return disable value
  */
 int Timer::getTime() const{
   if(enable) return (millis() - timer);
-  else return -999;
+  else return disableValue;
 }
 
 /**
@@ -43,4 +43,13 @@ bool Timer::isEnable() const{
 void Timer::turnOffTimer(){
   timer = 0;
   enable = false;
+}
+
+/**
+ * @brief set disable value
+ * 
+ * @param _disableValue time or sth
+ */
+void Timer::setDisableValue(uint32_t _disableValue){
+  disableValue = _disableValue;
 }

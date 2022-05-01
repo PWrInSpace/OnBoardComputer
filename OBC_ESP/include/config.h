@@ -1,6 +1,11 @@
 #ifndef CONFIG_HH
 #define CONFIG_HH
 
+#include "Arduino.h"
+#include "FreeRTOS.h"
+#include <stdint.h>
+#include "../include/structs/stateMachine.h"
+
 #define SD_FRAME_ARRAY_SIZE 512
 #define LORA_FRAME_ARRAY_SIZE 256
 #define LORA_TX_DATA_PREFIX "R4D;"
@@ -60,5 +65,6 @@ static String logFileName = "/log_";
 //TIMERS
 static const TickType_t watchdogDelay = 1000 / portTICK_PERIOD_MS; //250ms
 static const TickType_t disconnectDelay = 0.5 * 60 * 1000 / portTICK_PERIOD_MS; //15min
+
 
 #endif

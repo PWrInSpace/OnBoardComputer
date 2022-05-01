@@ -2,11 +2,6 @@
 #define DATA_STRUCTS_HH
 
 #include <cstdint>
-#include <Arduino.h>
-#include "../include/structs/mainStructs.h"
-#include "../include/structs/errors.h"
-#include "../include/timers/missionTimer.h"
-
 /**   RX    **/
 
 struct PitotData {
@@ -70,6 +65,23 @@ struct SlaveData {
   float batteryVoltage;
 };
 
+struct MCB{
+  //float imuData[12]; //TODO
+  float batteryVoltage;
+  float GPSlal;
+  float GPSlong;
+  float GPSalt;
+  uint8_t GPSsat;
+  uint8_t GPSsec;
+  float temp;
+  float pressure;
+  float altitude;
+  float velocity;
+  uint8_t watchdogResets;
+  uint8_t state;
+  bool ignition : 1;
+};
+
 struct DataFrame {
   PitotData       pitot;
   MainValveData   mainValve;
@@ -78,44 +90,9 @@ struct DataFrame {
   RecoveryData    recovery;
   SlaveData       blackBox;
   SlaveData       payLoad;
-  Errors          errors;
-  Timer missionTimer;
-  //float imuData[12]; //TODO
-  float batteryVoltage;
-  float GPSlal;
-  float GPSlong;
-  float GPSalt;
-  uint8_t GPSsat;
-  uint8_t GPSsec;
-  uint8_t temp;
-  float pressure;
-  float altitude;
-  float velocity;
-  uint8_t watchdogResets;
-  bool ignition : 1;
-  uint8_t state : 4;
+  MCB mcb;
 
   DataFrame() = default;
-  bool allDevicesWokeUp();
-  void createLoRaDataFrame(StateMachine state, uint32_t disconnectTime, char* data);
-  void createLoRaOptionsFrame(Options options, char *data);
-  void createSDFrame(StateMachine state, uint32_t disconnectTime, Options options, char* data);
-  
-//String createLoRaFrame(StateMachine state, uint32_t disconnectTime);
-//String createSDFrame(StateMachine state, uint32_t disconnectTime, Options options);
-};
-
-
-/**   TX    **/
-
-struct TxDataEspNow {
-
-  uint8_t command;
-  uint16_t commandTime;
-
-  TxDataEspNow() = default;
-  TxDataEspNow(uint8_t _command, uint16_t _commandTime);
-  void setVal(uint8_t _command, uint16_t _commandTime);
 };
 
 #endif

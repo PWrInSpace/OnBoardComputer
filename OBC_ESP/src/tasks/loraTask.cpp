@@ -5,14 +5,16 @@ void loraTask(void *arg){
   char loraRx[LORA_FRAME_ARRAY_SIZE / 2] = {};
   char loraTx[LORA_FRAME_ARRAY_SIZE] = {};
 
-  xSemaphoreTake(rc.spiMutex, pdTRUE);
+  xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
 
-  LoRa.setSPI(rc.mySPI);
+  LoRa.setSPI(rc.hardware.mySPI);
   LoRa.setPins(LORA_CS, LORA_RS, LORA_D0);
   
   while(LoRa.begin((int)rc.options.LoRaFrequencyMHz * 1E6) == 0){
     Serial.println("LORA begin error!");
+    xSemaphoreGive(rc.hardware.spiMutex);
     vTaskDelay(500 / portTICK_PERIOD_MS);
+    xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
   }
 
   LoRa.setSignalBandwidth(250E3);
@@ -20,60 +22,35 @@ void loraTask(void *arg){
   LoRa.setSpreadingFactor(7);
   LoRa.setTxPower(14);
   LoRa.setTimeout(10);
+  xSemaphoreGive(rc.hardware.spiMutex);
 
-  xSemaphoreGive(rc.spiMutex);
+  vTaskDelay(100 / portTICK_PERIOD_MS);
 
   while(1){
-    //DEBUG GIGA
-    // To mi wywalało ESP, podczas odłączania seriala :D
-    /*if(Serial.available()){
-      int x = Serial.readStringUntil('\n').toInt();
-      if(x == 0){
-        ESP.restart();
-      }else if(!rc.changeStateEvent((StateMachineEvent)x)){
-        dataFrame.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
-      }
-    }*/
-    //DEBUG GIGA
+    xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
 
-    xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
-
-      if(LoRa.parsePacket() != 0){
-        Serial.println("Super parse 152");
-      }
-      //Serial.print("RSSI: ");
-      //Serial.println(LoRa.rssi());
-      //Serial.print("DO: ");
-      //Serial.println(digitalRead(LORA_D0));
-      //Serial.print("FREQ_ERROR: ");
-      //Serial.println(LoRa.packetFrequencyError());
+      LoRa.parsePacket();
       if (LoRa.available()) {
 
         String rxStr = LoRa.readString();
-        Serial.print(rxStr); // DEBUG
+        //Serial.print(rxStr); // DEBUG
 
         strcpy(loraRx, rxStr.c_str());
-        xQueueSend(rc.loraRxQueue, (void*)&loraRx, 0);
+        xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
+        
+        rc.restartDisconnectTimer(); 
       }
 
-    xSemaphoreGive(rc.spiMutex);
+    xSemaphoreGive(rc.hardware.spiMutex);
 
-    if(xQueueReceive(rc.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
-      //Serial.print("LORA: ");
-      //Serial.print(loraTx); //DEBUG
-      xSemaphoreTake(rc.spiMutex, portMAX_DELAY);
+    if(xQueueReceive(rc.hardware.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
+      xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
         
-        if(LoRa.beginPacket() == 0){
-          Serial.println("LORA is transmitnig");
-        }
+        if(LoRa.beginPacket() == 0);
         LoRa.write((uint8_t*) loraTx, strlen(loraTx));
-        //Serial.print("LORA SEND: ");
-        //Serial.println(digitalRead(LORA_D0));
-        if(LoRa.endPacket() != 1){
-          Serial.println("End packet error!");
-        }
+        if(LoRa.endPacket() != 1);
 
-      xSemaphoreGive(rc.spiMutex);
+      xSemaphoreGive(rc.hardware.spiMutex);
     }
 
     wt.loraTaskFlag = true;

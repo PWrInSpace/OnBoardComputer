@@ -1,176 +1,240 @@
 #include "../include/tasks/tasks.h"
 
 void stateTask(void *arg){
+  StateMachine stateMachine(rc.hardware.stateTask);
   TxDataEspNow txDataEspNow;
-  char log[LORA_FRAME_ARRAY_SIZE] = {};
+  
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
       //portENTER_CRITICAL(&rc.stateLock);
       //setup
       
-      switch(rc.stateEvent){
-        case IDLE_EVENT:
-          rc.changeState(IDLE);
+      switch(stateMachine.getRequestedState()){
+        case IDLE:
+          stateMachine.changeStateConfirmation();
           break;
 
-        case ARMED_EVENT:
+        case ARMED:
           //recovery arm request
-          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(true);
           rc.recoveryStm.setTelemetrum(true);
-          xSemaphoreGive(rc.i2c1Mutex);
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
           //check recovery arm answer
           
-          rc.changeState(ARMED);
+          stateMachine.changeStateConfirmation();
           break;
 
-        case FUELING_EVENT:
+        case FUELING:
           //TODO in future, check valves state
           rc.options.sdDataCurrentPeriod = rc.options.sdLongPeriod * portTICK_PERIOD_MS;
 
           txDataEspNow.setVal(VALVE_CLOSE, 0);
-          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
-          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+          if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
             
-          rc.changeState(FUELING);
+          stateMachine.changeStateConfirmation();
           break;
 
-        case RDY_TO_LAUNCH_EVENT:
+        case RDY_TO_LAUNCH:
           digitalWrite(CAMERA, HIGH); //turn on camera
-          rc.changeState(RDY_TO_LAUNCH);
+          stateMachine.changeStateConfirmation();
           break;
 
-        case COUNTDOWN_EVENT:
+        case COUNTDOWN:
           //dataframe 
-          if(dataFrame.allDevicesWokeUp() || rc.options.forceLaunch == true){
+          if(rc.allDevicesWokenUp() || rc.options.forceLaunch == true){
             
             //set options
             rc.options.sdDataCurrentPeriod = rc.options.sdShortPeriod * portTICK_PERIOD_MS;
             rc.options.flashDataCurrentPeriod = rc.options.flashShortPeriod * portTICK_PERIOD_MS;
 
             //turn on mission timer
-            dataFrame.missionTimer.startTimer(millis() + rc.options.countdownTime);
+            rc.missionTimer.startTimer(millis() + rc.options.countdownTime);
 
-            if(dataFrame.missionTimer.isEnable()){
-              if(xTimerDelete(rc.disconnectTimer, 25) == pdFALSE){
-                strcpy(log, "Timer delete error");
-                rc.sendLog(log);
+            if(rc.missionTimer.isEnable()){
+              if(rc.deactiveDisconnectTimer() == false){
+                rc.sendLog("Timer delete error");
               } //turn off disconnectTimer
-              rc.disconnectTimer = NULL;
               
-              rc.changeState(COUNTDOWN);
+              stateMachine.changeStateConfirmation();
             }else{
-              dataFrame.errors.setLastException(MISSION_TIMER_EXCEPTION);
-              rc.unsuccessfulEvent();
+              rc.errors.setLastException(MISSION_TIMER_EXCEPTION);
+              stateMachine.changeStateRejection();
             }
           }else{
-            dataFrame.errors.setLastException(WAKE_UP_EXCEPTION);
-            rc.unsuccessfulEvent();
+            rc.errors.setLastException(WAKE_UP_EXCEPTION);
+            stateMachine.changeStateRejection();
           }
 
           break;
 
-        case FLIGHT_EVENT:
-          txDataEspNow.setVal(VALVE_OPEN, 0); //IDK
-          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+        case FLIGHT:
+          txDataEspNow.setVal(VALVE_OPEN, 0); 
+          if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
           
           //set options
-         
-
-          rc.changeState(FLIGHT);
+          stateMachine.changeStateConfirmation();
           break;
 
-        case FIRST_STAGE_RECOVERY_EVENT:
+        case FIRST_STAGE_RECOVERY:
           //i2c force 1 stage recovery
-          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.forceFirstStageSeparation();
-          xSemaphoreGive(rc.i2c1Mutex);
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
 
-          txDataEspNow.setVal(VALVE_CLOSE, 0);
-          esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+          //close main valve
+          //txDataEspNow.setVal(VALVE_CLOSE, 0); 
+          //if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+          //  rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          //};
 
           rc.options.flashDataCurrentPeriod = rc.options.flashLongPeriod * portTICK_PERIOD_MS;
           
-          rc.changeState(FIRST_STAGE_RECOVERY);
+          stateMachine.changeStateConfirmation();
           break;
 
-        case SECOND_STAGE_RECOVERY_EVENT:
+        case SECOND_STAGE_RECOVERY:
           //i2c force 2 stage recovery
-          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.forceSecondStageSeparation();
-          xSemaphoreGive(rc.i2c1Mutex);
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
 
+          //UPUST OPEN
           txDataEspNow.setVal(VALVE_OPEN, 0);
-          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
           
-          rc.changeState(SECOND_STAGE_RECOVERY);
+          stateMachine.changeStateConfirmation();
           break;
 
-        case ON_GROUND_EVENT:
+        case ON_GROUND:
           rc.options.sdDataCurrentPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
           rc.options.dataFramePeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
           rc.options.loraPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
 
-          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
           rc.recoveryStm.setTelemetrum(false);
-          xSemaphoreGive(rc.i2c1Mutex);
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
 
           //dataFrame.missionTimer.turnOffTimer();
           
-          rc.changeState(ON_GROUND);
+          stateMachine.changeStateConfirmation();
+          break;
+        
+        case HOLD:
+          //create disconnect timer
+          rc.restartDisconnectTimer(true);
+
+          //disable mission timer
+          if(rc.missionTimer.isEnable()){
+            rc.missionTimer.turnOffTimer();
+          }
+
+          //CLOSE ALL VALVES
+          txDataEspNow.setVal(VALVE_CLOSE, 0);
+          //Main valve
+          if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+          //Upust valve
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+          //TanWa
+          //if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+          //  rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          //}
+
+          stateMachine.changeStateConfirmation();
           break;
 
-        case ABORT_EVENT:
-          if(rc.disconnectTimer != NULL){
-            xTimerDelete(rc.disconnectTimer, 25); //turn off disconnectTimer
-          }
-      
-          txDataEspNow.setVal(VALVE_OPEN, 0);
-          esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)); //IDK
+        case ABORT:
+          //xTimerDelete(rc.hardware.disconnectTimer, 25); //turn off if abort wasn't triger by timer
+          //rc.hardware.disconnectTimer = NULL;
+          rc.deactiveDisconnectTimer();
 
-          xSemaphoreTake(rc.i2c1Mutex, portMAX_DELAY);
+          //Upust valve open
+          txDataEspNow.setVal(VALVE_OPEN, 0);
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK) rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
           rc.recoveryStm.setTelemetrum(false);
-          xSemaphoreGive(rc.i2c1Mutex);
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
 
           rc.options.sdDataCurrentPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
           rc.options.dataFramePeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
           rc.options.loraPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
 
-          rc.changeState(ABORT);
+          stateMachine.changeStateConfirmation();
           break;
 
         default:
-          strcpy(log, "Unknown state event");
-          rc.sendLog(log);
+          rc.sendLog("Unknown state event");
           ESP.restart();
           break;
       }
+      
+      xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
       //portEXIT_CRITICAL(&rc.stateLock);
     }
 
-    //Serial.println("Test");
-    switch(rc.state){
+    //LOOP 
+    switch(StateMachine::getCurrentState()){
       case COUNTDOWN:
-        if(dataFrame.missionTimer.getTime() >= rc.options.ignitionTime && dataFrame.ignition == false){
+        if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity == true){
           txDataEspNow.setVal(IGNITION_COMMAND, 0);  //IDK
           //send ignition request
-          esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow));
-          dataFrame.ignition = true;
+          if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            rc.sendLog("Esp send error - IGNITION");
+          }
+
+          //TODO uncomment
+          //rc.sendLog("IGNITION REQUEST");
         }
 
-        if(dataFrame.missionTimer.getTime() > 0){
-          rc.changeStateEvent(FLIGHT_EVENT);
+        if(rc.missionTimer.getTime() > 0){
+          StateMachine::changeStateRequest(States::FLIGHT);
+          rc.sendLog("CHANGE TO FLIGHT STATE");
         }
 
         break;
+      case FIRST_STAGE_RECOVERY:
+        if(rc.dataFrame.recovery.firstStageDone == false){
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.forceFirstStageSeparation();
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
+        }
+        break;
+      
+      case SECOND_STAGE_RECOVERY:
+        if(rc.dataFrame.recovery.secondStageDone == false){
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.forceSecondStageSeparation();
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
+        }
+        break;
+
+      case ABORT:
+        if(rc.dataFrame.recovery.isArmed){
+          xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
+          rc.recoveryStm.arm(false);
+          rc.recoveryStm.setTelemetrum(false);
+          xSemaphoreGive(rc.hardware.i2c1Mutex);
+        }
       default:
         break;
     }
-    
-
-    //Serial.println("State TASK"); //DEBUG
 
     wt.stateTaskFlag = true;
     vTaskDelay(10 / portTICK_PERIOD_MS); //DEBUG TIME
