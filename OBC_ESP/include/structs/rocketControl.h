@@ -36,6 +36,8 @@ struct RocketControl{
   void sendLog(char *message);
   void sendLog(String message);
   uint32_t getDisconnectRemainingTime();
+  void restartDisconnectTimer(bool _force = false);
+  bool deactiveDisconnectTimer();
   void createSDFrame(char *_array);
   void createLoRaFrame(char *_array);
   void createOptionsFrame(char *_array);

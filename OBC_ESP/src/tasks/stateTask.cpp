@@ -57,11 +57,9 @@ void stateTask(void *arg){
             rc.missionTimer.startTimer(millis() + rc.options.countdownTime);
 
             if(rc.missionTimer.isEnable()){
-              if(xTimerDelete(rc.hardware.disconnectTimer, 25) == pdFALSE){
-                strcpy(log, "Timer delete error");
-                rc.sendLog(log);
+              if(rc.deactiveDisconnectTimer() == false){
+                rc.sendLog("Timer delete error");
               } //turn off disconnectTimer
-              rc.hardware.disconnectTimer = NULL;
               
               stateMachine.changeStateConfirmation();
             }else{
@@ -134,10 +132,7 @@ void stateTask(void *arg){
         
         case HOLD:
           //create disconnect timer
-          if(rc.hardware.disconnectTimer == NULL){
-            rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
-            xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
-          }
+          rc.restartDisconnectTimer(true);
 
           //disable mission timer
           if(rc.missionTimer.isEnable()){
@@ -163,10 +158,9 @@ void stateTask(void *arg){
           break;
 
         case ABORT:
-          if(rc.hardware.disconnectTimer != NULL){
-            xTimerDelete(rc.hardware.disconnectTimer, 25); //turn off if abort wasn't triger by timer
-            rc.hardware.disconnectTimer = NULL;
-          }
+          //xTimerDelete(rc.hardware.disconnectTimer, 25); //turn off if abort wasn't triger by timer
+          //rc.hardware.disconnectTimer = NULL;
+          rc.deactiveDisconnectTimer();
 
           //Upust valve open
           txDataEspNow.setVal(VALVE_OPEN, 0);

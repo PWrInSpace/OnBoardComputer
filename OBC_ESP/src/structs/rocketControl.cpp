@@ -45,11 +45,26 @@ void RocketControl::sendLog(String message){
  * @return uint32_t remaining time
  */
 uint32_t RocketControl::getDisconnectRemainingTime(){
-  if(hardware.disconnectTimer == NULL || xTimerIsTimerActive(hardware.disconnectTimer) == pdFALSE){
+  if(xTimerIsTimerActive(hardware.disconnectTimer) == pdFALSE){
     return disconnectDelay;
   }
   
   return (xTimerGetExpiryTime(hardware.disconnectTimer) - xTaskGetTickCount()) * portTICK_PERIOD_MS;
+}
+
+/**
+ * @brief restar disconnect timer or active timer
+ * 
+ */
+void RocketControl::restartDisconnectTimer(bool _force){
+  //if timer is active or is in hold state -> restart timer
+  if(xTimerIsTimerActive(hardware.disconnectTimer) == pdTRUE || _force){
+    xTimerReset(hardware.disconnectTimer, 0);
+  }
+}
+
+bool RocketControl::deactiveDisconnectTimer(){
+  return xTimerStop(hardware.disconnectTimer, 0) == pdTRUE ? true : false; 
 }
 
 /**

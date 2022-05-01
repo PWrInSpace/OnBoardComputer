@@ -37,27 +37,18 @@ void loraTask(void *arg){
 
         strcpy(loraRx, rxStr.c_str());
         xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
-        if(rc.hardware.disconnectTimer != NULL){
-          xTimerReset(rc.hardware.disconnectTimer, 0);
-        }
+        
+        rc.restartDisconnectTimer(); 
       }
 
     xSemaphoreGive(rc.hardware.spiMutex);
 
     if(xQueueReceive(rc.hardware.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
-      //Serial.print("LORA: ");
-      //Serial.print(loraTx); //DEBUG
       xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
         
-        if(LoRa.beginPacket() == 0){
-          Serial.println("LORA is transmitnig");
-        }
+        if(LoRa.beginPacket() == 0);
         LoRa.write((uint8_t*) loraTx, strlen(loraTx));
-        //Serial.print("LORA SEND: ");
-        //Serial.println(digitalRead(LORA_D0));
-        if(LoRa.endPacket() != 1){
-          Serial.println("End packet error!");
-        }
+        if(LoRa.endPacket() != 1);
 
       xSemaphoreGive(rc.hardware.spiMutex);
     }
