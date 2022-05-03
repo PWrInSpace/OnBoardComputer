@@ -90,6 +90,10 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
+  /*while(1) {
+	  TelArm_GPIO_Port->ODR ^= TelArm_Pin;
+	  HAL_Delay(2000);
+  }*/
   initAll();
 
   /* USER CODE END 2 */

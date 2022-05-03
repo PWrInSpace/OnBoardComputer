@@ -59,10 +59,6 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define TelArm_Pin GPIO_PIN_13
 #define TelArm_GPIO_Port GPIOC
-#define Dir1_2_Pin GPIO_PIN_14
-#define Dir1_2_GPIO_Port GPIOC
-#define Dir1_1_Pin GPIO_PIN_15
-#define Dir1_1_GPIO_Port GPIOC
 #define Dir2_1_Pin GPIO_PIN_0
 #define Dir2_1_GPIO_Port GPIOA
 #define Dir2_2_Pin GPIO_PIN_1
