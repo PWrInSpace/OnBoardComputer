@@ -58,6 +58,7 @@ struct RecoveryData {
   bool apogemixSecondStage : 1;
   bool firstStageDone : 1;
   bool secondStageDone : 1;
+  bool isTeleActive :1;
 };
 
 struct SlaveData {
