@@ -2,6 +2,7 @@
 #define INC_FUNCTIONS_H_
 
 #include <string.h>
+#include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"
 
@@ -14,20 +15,20 @@ typedef struct {
 
 typedef struct {
 
-	_Bool isArmed :1;
-	_Bool firstStageContinouity :1;
-	_Bool secondStageContinouity :1;
-	_Bool separationSwitch1 :1;
-	_Bool separationSwitch2 :1;
-	_Bool telemetrumFirstStage :1;
-	_Bool telemetrumSecondStage :1;
-	_Bool altimaxFirstStage :1;
-	_Bool altimaxSecondStage :1;
-	_Bool apogemixFirstStage :1;
-	_Bool apogemixSecondStage :1;
-	_Bool firstStageDone :1;
-	_Bool secondStageDone :1;
-	_Bool isTeleActive :1;
+	bool isArmed :1;
+	bool firstStageContinouity :1;
+	bool secondStageContinouity :1;
+	bool separationSwitch1 :1;
+	bool separationSwitch2 :1;
+	bool telemetrumFirstStage :1;
+	bool telemetrumSecondStage :1;
+	bool altimaxFirstStage :1;
+	bool altimaxSecondStage :1;
+	bool apogemixFirstStage :1;
+	bool apogemixSecondStage :1;
+	bool firstStageDone :1;
+	bool secondStageDone :1;
+	bool isTeleActive :1;
 
 } RecoveryData;
 
