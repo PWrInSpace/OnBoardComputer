@@ -27,6 +27,7 @@ typedef struct {
 	_Bool apogemixSecondStage :1;
 	_Bool firstStageDone :1;
 	_Bool secondStageDone :1;
+	_Bool isTeleActive :1;
 
 } RecoveryData;
 
@@ -35,8 +36,6 @@ RecoveryData recData;
 void initAll(void);
 
 void checkComputers(void);
-
-void armDisarm(_Bool arm);
 
 void doFirstSeparation(void);
 

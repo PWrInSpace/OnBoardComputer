@@ -26,17 +26,9 @@ void checkComputers(void) {
 
 	// Arming Check:
 	recData.isArmed = SoftArm_GPIO_Port->IDR & SoftArm_Pin;
-}
 
-/*****************************************************************/
-
-void armDisarm(_Bool arm) {
-
-	if (arm) {
-		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;
-	} else {
-		SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin;
-	}
+	// Telemetrum Arming Check:
+	recData.isTeleActive = TelArm_GPIO_Port->IDR & TelArm_Pin;
 }
 
 /*****************************************************************/
@@ -85,8 +77,8 @@ void executeCommand(DataFromComm dataFromComm) {
 
 	switch (dataFromComm.command) {
 
-	case 1: 	armDisarm(1); 							break;
-	case 2: 	armDisarm(0); 							break;
+	case 1: 	SoftArm_GPIO_Port->ODR |= SoftArm_Pin; 	break;
+	case 2: 	SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin; break;
 	case 3: 	TelArm_GPIO_Port->ODR |= TelArm_Pin; 	break;
 	case 4: 	TelArm_GPIO_Port->ODR &= ~TelArm_Pin; 	break;
 	case 165: 	doFirstSeparation(); 					break;
