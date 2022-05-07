@@ -30,7 +30,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+DataFromComm test;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -104,6 +104,11 @@ int main(void)
   {
 	  checkComputers();
 
+	  if(test.command != 0){
+		  executeCommand(dataFromComm);
+		  test.command = 0;
+	  }
+
 	  if (recData.isArmed) {
 
 		  // Warunki separacji 1 stopnia:
@@ -167,9 +172,10 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 		HAL_I2C_Slave_Transmit(hi2c, (uint8_t*) &recData, sizeof(recData), 5);
 	}
 	else {
-		DataFromComm dataFromComm;
+		//DataFromComm dataFromComm;
 		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
-		executeCommand(dataFromComm);
+		//executeCommand(dataFromComm);
+		memcpy(&test, &dataFromComm, sizeof(DataFromComm));
 	}
 	HAL_I2C_EnableListen_IT(hi2c);
 }

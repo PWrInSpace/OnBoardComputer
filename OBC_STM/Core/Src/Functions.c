@@ -6,13 +6,19 @@ void initAll(void) {
 	HAL_I2C_EnableListen_IT(&hi2c1);
 }
 
+
 /*****************************************************************/
 
 void checkComputers(void) {
 
 	// COTSy + Apogemix:
-	recData.altimaxFirstStage 		= !(AltiPilotCheck_GPIO_Port->IDR & AltiPilotCheck_Pin);
-	recData.altimaxSecondStage 		= !(AltiDuzyCheck_GPIO_Port->IDR & AltiDuzyCheck_Pin);
+	//for tests
+	//recData.altimaxFirstStage 		= !(AltiPilotCheck_GPIO_Port->IDR & AltiPilotCheck_Pin);
+	//recData.altimaxSecondStage 		= !(AltiDuzyCheck_GPIO_Port->IDR & AltiDuzyCheck_Pin);
+	recData.altimaxFirstStage 		= 0;
+	recData.altimaxSecondStage 		= 0;
+
+
 	recData.telemetrumFirstStage 	= !(TelPilotCheck_GPIO_Port->IDR & TelPilotCheck_Pin);
 	recData.telemetrumSecondStage 	= !(TelDuzyCheck_GPIO_Port->IDR & TelDuzyCheck_Pin);
 	recData.apogemixFirstStage 		= !(ApogPilotCheck_GPIO_Port->IDR & ApogPilotCheck_Pin);
@@ -38,7 +44,7 @@ void doFirstSeparation(void) {
 	_Bool workingSwitch = recData.separationSwitch1;
 	Igniter1Fire_GPIO_Port->ODR |= Igniter1Fire_Pin;
 
-	for (uint16_t i = 0; i < 2000; i++) {
+	for (uint16_t i = 0; i < 200; i++) {
 
 		checkComputers();
 		HAL_Delay(1);
@@ -58,7 +64,7 @@ void doSecondSeparation(void) {
 	_Bool workingSwitch = recData.separationSwitch2;
 	Igniter2Fire_GPIO_Port->ODR |= Igniter2Fire_Pin;
 
-	for (uint16_t i = 0; i < 2000; i++) {
+	for (uint16_t i = 0; i < 200; i++) {
 
 		checkComputers();
 		HAL_Delay(1);
@@ -73,11 +79,13 @@ void doSecondSeparation(void) {
 
 /*****************************************************************/
 
-void executeCommand(DataFromComm dataFromComm) {
+void executeCommand(DataFromComm _dataFromComm) {
 
-	switch (dataFromComm.command) {
+	switch (_dataFromComm.command) {
 
-	case 1: 	SoftArm_GPIO_Port->ODR |= SoftArm_Pin; 	break;
+	case 1:
+		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;
+		break;
 	case 2: 	SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin; break;
 	case 3: 	TelArm_GPIO_Port->ODR |= TelArm_Pin; 	break;
 	case 4: 	TelArm_GPIO_Port->ODR &= ~TelArm_Pin; 	break;
