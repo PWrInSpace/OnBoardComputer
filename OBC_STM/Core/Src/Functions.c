@@ -6,21 +6,43 @@ void initAll(void) {
 	HAL_I2C_EnableListen_IT(&hi2c1);
 }
 
+/*****************************************************************/
+
+#define TEST_NUM 2
+
+void checkCOTS(void) {
+
+	bool altiTestPilot[TEST_NUM];
+	bool teleTestPilot[TEST_NUM];
+	bool altiTestBig[TEST_NUM];
+	bool teleTestBig[TEST_NUM];
+
+	for (uint8_t i = 0; i < TEST_NUM; i++) {
+
+		altiTestPilot[i] 	= AltiPilotCheck_GPIO_Port->IDR & AltiPilotCheck_Pin;
+		altiTestBig[i] 		= AltiDuzyCheck_GPIO_Port->IDR & AltiDuzyCheck_Pin;
+		teleTestPilot[i]	= TelPilotCheck_GPIO_Port->IDR & TelPilotCheck_Pin;
+		teleTestBig[i]		= TelDuzyCheck_GPIO_Port->IDR & TelDuzyCheck_Pin;
+		HAL_Delay(100);
+	}
+
+	if (recData.isArmed) {
+		recData.altimaxFirstStage 		= altiTestPilot[0] 	&& altiTestPilot [1];
+		recData.altimaxSecondStage 		= altiTestBig[0] 	&& altiTestBig[1];
+
+		if (recData.isTeleActive) {
+			recData.telemetrumFirstStage 	= teleTestPilot[0]	&& teleTestPilot[1];
+			recData.telemetrumSecondStage 	= teleTestBig[0]	&& teleTestBig[1];
+		}
+	}
+}
 
 /*****************************************************************/
 
 void checkComputers(void) {
 
 	// COTSy + Apogemix:
-	//for tests
-	//recData.altimaxFirstStage 		= !(AltiPilotCheck_GPIO_Port->IDR & AltiPilotCheck_Pin);
-	//recData.altimaxSecondStage 		= !(AltiDuzyCheck_GPIO_Port->IDR & AltiDuzyCheck_Pin);
-	recData.altimaxFirstStage 		= 0;
-	recData.altimaxSecondStage 		= 0;
-
-
-	recData.telemetrumFirstStage 	= !(TelPilotCheck_GPIO_Port->IDR & TelPilotCheck_Pin);
-	recData.telemetrumSecondStage 	= !(TelDuzyCheck_GPIO_Port->IDR & TelDuzyCheck_Pin);
+	checkCOTS();
 	recData.apogemixFirstStage 		= !(ApogPilotCheck_GPIO_Port->IDR & ApogPilotCheck_Pin);
 	recData.apogemixSecondStage 	= !(ApogDuzyCheck_GPIO_Port->IDR & ApogDuzyCheck_Pin);
 
@@ -83,11 +105,12 @@ void executeCommand(DataFromComm _dataFromComm) {
 
 	switch (_dataFromComm.command) {
 
-	case 1:
-		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;
-		break;
+	case 1:		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;  break;
 	case 2: 	SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin; break;
-	case 3: 	TelArm_GPIO_Port->ODR |= TelArm_Pin; 	break;
+	case 3:
+		TelArm_GPIO_Port->ODR |= TelArm_Pin;
+		if ()
+		break;
 	case 4: 	TelArm_GPIO_Port->ODR &= ~TelArm_Pin; 	break;
 	case 165: 	doFirstSeparation(); 					break;
 	case 90: 	doSecondSeparation(); 					break;
