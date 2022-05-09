@@ -23,7 +23,7 @@ void checkCOTS(void) {
 		altiTestBig[i] 		= AltiDuzyCheck_GPIO_Port->IDR & AltiDuzyCheck_Pin;
 		teleTestPilot[i]	= TelPilotCheck_GPIO_Port->IDR & TelPilotCheck_Pin;
 		teleTestBig[i]		= TelDuzyCheck_GPIO_Port->IDR & TelDuzyCheck_Pin;
-		HAL_Delay(100);
+		HAL_Delay(10);
 	}
 
 	if (recData.isArmed) {
@@ -68,8 +68,7 @@ void doFirstSeparation(void) {
 
 	for (uint16_t i = 0; i < 200; i++) {
 
-		checkComputers();
-		HAL_Delay(1);
+		checkComputers(); // Trwa 10ms
 
 		// Jeśli wcześniej była ciągłość głowicy, a teraz jej nie ma, to znaczy, że separacja się udała i można wyłączyć mosfet:
 		if (!recData.separationSwitch1 && workingSwitch) break;
@@ -88,8 +87,7 @@ void doSecondSeparation(void) {
 
 	for (uint16_t i = 0; i < 200; i++) {
 
-		checkComputers();
-		HAL_Delay(1);
+		checkComputers(); // Trwa 10ms
 
 		// Jeśli wcześniej była ciągłość głowicy, a teraz jej nie ma, to znaczy, że separacja się udała i można wyłączyć mosfet:
 		if (!recData.separationSwitch2 && workingSwitch) break;
@@ -107,10 +105,7 @@ void executeCommand(DataFromComm _dataFromComm) {
 
 	case 1:		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;  break;
 	case 2: 	SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin; break;
-	case 3:
-		TelArm_GPIO_Port->ODR |= TelArm_Pin;
-		if ()
-		break;
+	case 3:		TelArm_GPIO_Port->ODR |= TelArm_Pin;	break;
 	case 4: 	TelArm_GPIO_Port->ODR &= ~TelArm_Pin; 	break;
 	case 165: 	doFirstSeparation(); 					break;
 	case 90: 	doSecondSeparation(); 					break;
