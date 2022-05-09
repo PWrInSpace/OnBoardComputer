@@ -42,7 +42,7 @@ void checkCOTS(void) {
 void checkComputers(void) {
 
 	// COTSy + Apogemix:
-	checkCOTS();
+	checkCOTS(); // Trwa 10ms
 	recData.apogemixFirstStage 		= !(ApogPilotCheck_GPIO_Port->IDR & ApogPilotCheck_Pin);
 	recData.apogemixSecondStage 	= !(ApogDuzyCheck_GPIO_Port->IDR & ApogDuzyCheck_Pin);
 
@@ -63,7 +63,7 @@ void checkComputers(void) {
 
 void doFirstSeparation(void) {
 
-	_Bool workingSwitch = recData.separationSwitch1;
+	_Bool workingSwitch = recData.separationSwitch2;
 	Igniter1Fire_GPIO_Port->ODR |= Igniter1Fire_Pin;
 
 	for (uint16_t i = 0; i < 200; i++) {
@@ -71,7 +71,7 @@ void doFirstSeparation(void) {
 		checkComputers(); // Trwa 10ms
 
 		// Jeśli wcześniej była ciągłość głowicy, a teraz jej nie ma, to znaczy, że separacja się udała i można wyłączyć mosfet:
-		if (!recData.separationSwitch1 && workingSwitch) break;
+		if (!recData.separationSwitch2 && workingSwitch) break;
 	}
 
 	Igniter1Fire_GPIO_Port->ODR &= ~Igniter1Fire_Pin;
@@ -82,15 +82,11 @@ void doFirstSeparation(void) {
 
 void doSecondSeparation(void) {
 
-	_Bool workingSwitch = recData.separationSwitch2;
 	Igniter2Fire_GPIO_Port->ODR |= Igniter2Fire_Pin;
 
 	for (uint16_t i = 0; i < 200; i++) {
 
 		checkComputers(); // Trwa 10ms
-
-		// Jeśli wcześniej była ciągłość głowicy, a teraz jej nie ma, to znaczy, że separacja się udała i można wyłączyć mosfet:
-		if (!recData.separationSwitch2 && workingSwitch) break;
 	}
 
 	Igniter2Fire_GPIO_Port->ODR &= ~Igniter2Fire_Pin;
