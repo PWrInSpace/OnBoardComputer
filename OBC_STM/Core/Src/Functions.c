@@ -99,13 +99,47 @@ void executeCommand(DataFromComm _dataFromComm) {
 
 	switch (_dataFromComm.command) {
 
-	case 1:		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;  break;
-	case 2: 	SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin; break;
-	case 3:		TelArm_GPIO_Port->ODR |= TelArm_Pin;	break;
-	case 4: 	TelArm_GPIO_Port->ODR &= ~TelArm_Pin; 	break;
-	case 165: 	doFirstSeparation(); 					break;
-	case 90: 	doSecondSeparation(); 					break;
+	case 1:		armDisarm(1);  			break;
+	case 2: 	armDisarm(0); 			break;
+	case 3:		teleOnOff(1);			break;
+	case 4: 	teleOnOff(0); 			break;
+	case 165: 	doFirstSeparation(); 	break;
+	case 90: 	doSecondSeparation(); 	break;
 	}
 
 	// TODO Silniki na Portugalię :)
+}
+
+void armDisarm(bool on) {
+
+	if (on) {
+		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;
+		HAL_Delay(100);
+
+		// Test czy się udało zaarmować altimaxa:
+		checkCOTS();
+		if (recData.altimaxFirstStage || recData.altimaxSecondStage) {
+
+			// Disarm:
+			armDisarm(0);
+		}
+	}
+	else SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin;
+}
+
+void teleOnOff(bool on) {
+
+	if (on) {
+		TelArm_GPIO_Port->ODR |= TelArm_Pin;
+		HAL_Delay(100);
+
+		// Test czy się udało zaarmować telemetrum:
+		checkCOTS();
+		if (recData.telemetrumFirstStage || recData.telemetrumSecondStage) {
+
+			// Disarm:
+			teleOnOff(0);
+		}
+	}
+	else TelArm_GPIO_Port->ODR &= ~TelArm_Pin;
 }

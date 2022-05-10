@@ -104,6 +104,14 @@ int main(void)
   {
 	  checkComputers();
 
+	  // Obsługa danych przychodzących z i2c:
+	  if (dataFromComm.command > 0 && dataFromComm.command < 255) {
+
+		  executeCommand(dataFromComm);
+		  dataFromComm.command = 0;
+	  }
+
+
 	  if (recData.isArmed) {
 
 		  // Warunki separacji 1 stopnia:
@@ -170,7 +178,6 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 	else {
 
 		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
-		executeCommand(dataFromComm);
 	}
 	HAL_I2C_EnableListen_IT(hi2c);
 }
