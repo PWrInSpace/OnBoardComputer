@@ -51,6 +51,7 @@ enum SensorsError{
   SENSORS_NO_ERROR = 0,
   IMU_INIT_ERROR,
   GPS_INIT_ERROR,
+  PRESSURE_SENSOR_INIT_ERROR,
 };
 
 enum LastException{

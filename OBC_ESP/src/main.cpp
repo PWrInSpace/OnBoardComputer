@@ -12,11 +12,12 @@ RocketControl rc;
 
 void setup() {
   Serial.begin(115200); //DEBUG
+  
   Serial.print("Setup state: "); //DEBUG
   Serial.println(StateMachine::getCurrentState()); //DEBUG
 
   //BROWNOUT DETECTOT DISABLING
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+  //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
   //set mission timer
   rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
@@ -55,7 +56,7 @@ void setup() {
   //app cpu
   xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.hardware.stateTask, APP_CPU_NUM);
   xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.hardware.dataTask,  APP_CPU_NUM);
-  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 3, &rc.hardware.sdTask,    APP_CPU_NUM);
+  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 1, &rc.hardware.sdTask,    APP_CPU_NUM);
   xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
 
   //create Timers
@@ -111,7 +112,6 @@ void setup() {
   //start timers
   xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
-
   vTaskDelete(NULL); //delete main task (loop())
 }
 

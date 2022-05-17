@@ -12,6 +12,7 @@
 #include "pinout.h"
 #include "../include/components/SDcard.h"
 #include "../include/structs/stateMachine.h"
+#include "SparkFun_LPS25HB_Arduino_Library.h"
 
 extern RocketControl rc;
 extern WatchdogTimer wt;

@@ -2,6 +2,7 @@
 
 void dataTask(void *arg){
   DataFrame dataFrame;
+  LPS25HB pressureSensor; 
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
@@ -11,9 +12,16 @@ void dataTask(void *arg){
 
   SFE_UBLOX_GNSS gps;
 
-  if(gps.begin(rc.hardware.i2c2, 0x42, 10, false) == false){
+  if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
     rc.sendLog("GPS INIT ERROR");
     rc.errors.setSensorError(GPS_INIT_ERROR);
+  }
+
+  pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
+
+  if (pressureSensor.isConnected() == false){
+    rc.sendLog("PRESSURE SENSOR ERROR");
+    rc.errors.setSensorError(PRESSURE_SENSOR_INIT_ERROR);
   }
 
   rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
@@ -38,7 +46,14 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
 
+      //LP26HB - pressure
+      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
+      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      
       // IMU:
+
+      //SD error handling
+      
 
       // TODO!!!
 
@@ -73,6 +88,7 @@ void dataTask(void *arg){
       
       rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
+      Serial.print(lora);
       
 
       if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){
@@ -103,7 +119,7 @@ void dataTask(void *arg){
       
       rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createSDFrame(sd);
-      //Serial.print(sd);
+      
 
       if(xQueueSend(rc.hardware.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
         rc.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);

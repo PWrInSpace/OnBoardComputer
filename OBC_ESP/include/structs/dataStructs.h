@@ -2,7 +2,17 @@
 #define DATA_STRUCTS_HH
 
 #include <cstdint>
+#include "stateMachine.h"
 /**   RX    **/
+
+enum ValveState {
+  ValveStateClose = 0, 
+  ValveStateOpen = 1, 
+  ValveStateIDK = 2 , 
+  ValveStateVent = 3, 
+  ValveStateAttemptToOpen = 4, 
+  ValveStateAttemptToClose = 5
+};
 
 struct PitotData {
   bool wakeUp : 1;
@@ -35,7 +45,22 @@ struct TanWaData {
   uint32_t butlaWeightRaw;
   float batteryVoltage;
 };
-
+/*
+struct TanWaData {
+  States tanWaState : 4; //
+  bool iginiterContinouity[2] :2; //
+  bool tankHeating : 1;
+  bool abortButton : 1;
+  bool armButton : 1;
+  float vbat; //
+  ValveState motorState[5]; //
+  float rocketWeight;
+  float butlaWeight; 
+  uint32_t rocketWeightRaw;
+  uint32_t butlaWeightRaw;
+  float thermocouple[3];
+};
+*/
 struct UpustValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
@@ -74,7 +99,8 @@ struct MCB{
   float GPSalt;
   uint8_t GPSsat;
   uint8_t GPSsec;
-  float temp;
+  float temp_mcp;
+  float temp_lp25;
   float pressure;
   float altitude;
   float velocity;

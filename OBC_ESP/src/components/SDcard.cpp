@@ -21,7 +21,18 @@ bool SDCard::write(String path, const String & dataFrame){
     if(file == 0x00){
       Serial.print("Open error: ");
       Serial.println(path);
-      return false;
+      
+      SD.end();
+      if(!SD.begin(cs, spi)){ 
+        Serial.println("Begin error ");
+        return false;
+      }
+      file = SD.open(path, "a"); 
+      if(file == 0x00){
+        Serial.println("Open v2");
+        return false;
+      }
+      Serial.println("Udalo sie");
     }
     if(file) {
         if(!file.write((uint8_t *) dataFrame.c_str(), dataFrame.length())) {
@@ -39,10 +50,21 @@ bool SDCard::write(String path, const String & dataFrame){
 
 bool SDCard::write(String path, char *dataFrame){
     File file = SD.open(path, "a");  
-    if(!file){
+    if(file == 0x00){
       Serial.print("Open error: ");
       Serial.println(path);
-      return false;
+      
+      SD.end();
+      if(!SD.begin(cs, spi)){ 
+        Serial.println("Begin error ");
+        return false;
+      }
+      file = SD.open(path, "a"); 
+      if(file == 0x00){
+        Serial.println("Open v2");
+        return false;
+      }
+      Serial.println("Udalo sie");
     }
     
     if(file) {

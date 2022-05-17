@@ -40,9 +40,9 @@ struct Options{
     sdLongPeriod(SD_LONG_PERIOD),
     idlePeriod(IDLE_PERIOD),
     dataFramePeriod(DATA_PERIOD),
-    loraPeriod(LORA_PERIOD),
+    loraPeriod(IDLE_PERIOD),
     flashDataCurrentPeriod(FLASH_LONG_PERIOD),
-    sdDataCurrentPeriod(SD_LONG_PERIOD)
+    sdDataCurrentPeriod(IDLE_PERIOD)
     {}
 };
 

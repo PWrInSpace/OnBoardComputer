@@ -164,6 +164,11 @@ void rxHandlingTask(void *arg){
     if(xQueueReceive(rc.hardware.espNowQueue, (void*) &rxEspNumber, 25)){
 
       uint16_t sleepTime;
+      uint8_t currentState = StateMachine::getCurrentState();
+      if(currentState >= PERIOD_ARRAY_SIZE){
+        rc.sendLog("Out of period array size :C");
+        rxEspNumber = 0xff;
+      }
 
       switch(rxEspNumber){
         case TANWA:
@@ -173,10 +178,8 @@ void rxHandlingTask(void *arg){
 
         case PITOT:
           Serial.println("Pitot notify"); //DEBUG
-          if (StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
-          else sleepTime = rc.options.espnowLongPeriod;
-
+          sleepTime = pitotPeriod[currentState];
+          
           if(esp_now_send(adressPitot, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           }
@@ -185,9 +188,7 @@ void rxHandlingTask(void *arg){
 
         case MAIN_VALVE:
           Serial.println("MainValve notify"); //DEBUG
-          if (StateMachine::getCurrentState() < FUELING || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
-          else sleepTime = rc.options.espnowLongPeriod;
+          sleepTime = mainValvePeriod[currentState];
           
           if(esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -197,9 +198,7 @@ void rxHandlingTask(void *arg){
 
         case UPUST_VALVE:
           Serial.println("UpustValve notify"); //DEBUG
-          if (StateMachine::getCurrentState() < FUELING || StateMachine::getCurrentState() == ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
-          else sleepTime = rc.options.espnowLongPeriod;
+          sleepTime = upustValvePeriod[currentState];
           
           if(esp_now_send(adressUpust, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -209,9 +208,7 @@ void rxHandlingTask(void *arg){
 
         case BLACK_BOX:
           Serial.println("Black Box notify"); //DEBUG
-          if (StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
-          else sleepTime = rc.options.espnowLongPeriod;
+          sleepTime = espNowDefaultPeriod[currentState];
 
           if(esp_now_send(adressBlackBox, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -221,14 +218,52 @@ void rxHandlingTask(void *arg){
 
         case PAYLOAD:
           Serial.println("Payload notify"); //DEBUG
-          if (StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() >= ON_GROUND) sleepTime = rc.options.espnowSleepTime;
-          else if (StateMachine::getCurrentState() == FLIGHT) sleepTime = rc.options.espnowShortPeriod;
-          else sleepTime = rc.options.espnowLongPeriod;
-
+          sleepTime = espNowDefaultPeriod[currentState];
+          
           if(esp_now_send(adressPayLoad, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           }
 
+          break;
+
+        case ACS:
+          Serial.println("ACS notify"); //DEBUG
+          sleepTime = espNowDefaultPeriod[currentState];
+          
+          if(esp_now_send(adressACS, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+
+          break;
+        case CAMERA_ACS:
+          Serial.println("camera ACS notify"); //DEBUG
+          sleepTime = espNowDefaultPeriod[currentState];
+          
+          if(esp_now_send(cameraACS, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+         
+          break;
+
+        case CAMERA_PITOT:
+          Serial.println("Camera pitot notify"); //DEBUG
+          sleepTime = espNowDefaultPeriod[currentState];
+          
+          if(esp_now_send(cameraPitot, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+
+          break;
+        case CAMERA_RECOVERY:
+          Serial.println("Camera recovery"); //DEBUG
+          sleepTime = espNowDefaultPeriod[currentState];
+          
+          if(esp_now_send(cameraRecovery, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+
+          break;
+        case 0xFF:
           break;
 
         default:

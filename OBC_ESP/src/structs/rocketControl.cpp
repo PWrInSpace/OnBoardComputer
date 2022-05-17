@@ -251,6 +251,7 @@ void RocketControl::createLoRaFrame(char* data){
   byteData[1] |= (errors.espnow << 0);
 
   //error third byte  
+  byteData[2] |= (errors.sensors << 2);
   byteData[2] |= (errors.rtos << 0);
 
   snprintf(errorsFrame, errorsSize, "%d;%d;%d", byteData[0], byteData[1], byteData[2]);
@@ -298,7 +299,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
     dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
     dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
-    dataFrame.mcb.temp, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity) + 1;
+    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity) + 1;
 
   pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
@@ -313,13 +314,21 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
     dataFrame.upustValve.tankPressure, dataFrame.upustValve.hall[0], dataFrame.upustValve.hall[1],
     dataFrame.upustValve.hall[2], dataFrame.upustValve.hall[3], dataFrame.upustValve.hall[4]) + 1; //9
-  
+  /*
+  tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;",
+    dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
+    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
+    dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
+    dataFrame.tanwa.rocketWeight, dataFrmae.tanwa.butlaWeight, dataFrame.tanWa.rocketWeightRaw, 
+    dataFrame.tanWa.butlaWeightRaw, thermocouple[0], thermocouple[1], thermocouple[2]) + 1;//10
+  */
+
   tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.batteryVoltage, dataFrame.tanWa.igniterContinouity,
     dataFrame.tanWa.fillValveState, dataFrame.tanWa.deprValveState, dataFrame.tanWa.pullState,
     dataFrame.tanWa.rocketWeightRaw, dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.rocketWeight,
-    dataFrame.tanWa.butlaWeight) + 1;//10
-
+    dataFrame.tanWa.butlaWeight) + 1;
+  
   optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d:%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime, options.tankMinPressure,
     options.flashWrite, options.forceLaunch, options.espnowSleepTime, options.espnowLongPeriod,
@@ -357,7 +366,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
     dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
     dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
-    dataFrame.mcb.temp, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity);
+    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity);
 
   snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
