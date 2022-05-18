@@ -73,7 +73,6 @@ void rxHandlingTask(void *arg){
               rc.sendLog("Invalid countdown time set");
               rc.errors.setLastException(INVALID_OPTION_VALUE);
             }
-          
             break;
           
           case 3: 
@@ -83,26 +82,72 @@ void rxHandlingTask(void *arg){
               rc.sendLog("Invalid ignition time set");
               rc.errors.setLastException(INVALID_OPTION_VALUE);
             }
-          
             break;    
           
-          case 4: rc.options.tankMinPressure  = optionValue; break;
-          case 5: rc.options.flashWrite       = optionValue; break;
-          case 6: rc.options.forceLaunch      = optionValue; break;
-          case 15: rc.options.dataFramePeriod = optionValue; break;
-          case 16: rc.options.loraPeriod      = optionValue; break;
+          case 4: 
+            rc.options.tankMinPressure  = optionValue;
+            break;
           
+          case 5: 
+            if(optionValue > 0){
+              rc.options.flashWrite = true;
+            }else{
+              rc.options.flashWrite = false;
+            }
+            break;
+
+          case 6: 
+            if(optionValue > 0){
+              rc.options.forceLaunch = true;
+            }else{
+              rc.options.forceLaunch = false;
+            }
+            break;
+
+          case 7: 
+            if(optionValue > 5 && optionValue < 60000){
+              rc.options.dataCurrentPeriod = optionValue; break;
+            }else{
+              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+            }
+            break;
+          
+          case 8: 
+            if(optionValue > 100 && optionValue < 60000){
+              rc.options.loraCurrentPeriod = optionValue; break;
+            }else{
+              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+            }
+            break;
+
+          case 9: 
+            if(optionValue > 25 && optionValue < 60000){
+              rc.options.flashDataCurrentPeriod = optionValue; break;
+            }else{
+              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+            }
+            break;
+
+          case 10: 
+            if(optionValue > 25 && optionValue < 60000){
+              rc.options.sdDataCurrentPeriod = optionValue; break;
+            }else{
+              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+            }
+            break;
+
           default:
             rc.sendLog("Invalid option NUMBER");
             rc.errors.setLastException(INVALID_OPTION_NUMBER);
             break;
           }
 
+          //send calback with new options
           rc.createOptionsFrame(callback);
           xQueueSend(rc.hardware.loraTxQueue, (void*)callback, 0);
         }
 
-        // Valves:1
+        //Valves main
         else if (strstr(loraData, "MVAL;") != NULL) {
           TxDataEspNow txDataEspNow;
           sscanf(loraData, "R4O;MVAL;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
@@ -117,6 +162,7 @@ void rxHandlingTask(void *arg){
           }
         }
 
+        // Valve upust
         else if (strstr(loraData, "UVAL;") != NULL) {
           
           TxDataEspNow txDataEspNow;
@@ -127,10 +173,27 @@ void rxHandlingTask(void *arg){
           }
         }
 
+        //Wake up
         else if (strstr(loraData, "WKUP") != NULL) {
-          // TODO budzonko
+          States tempState = StateMachine::getCurrentState();
+          
+          while(tempState < States::COUNTDOWN){
+            if(valvePeriod[tempState] > 500) valvePeriod[tempState] = 500;
+            if(pitotPeriod[tempState] > 500) pitotPeriod[tempState] = 500;
+            if(espNowDefaultPeriod[tempState] > 500) espNowDefaultPeriod[tempState] = 500;
+            tempState = static_cast<States>(tempState + 1);
+          }
         }
 
+        //go off
+        else if (strstr(loraData, "GOFF") != NULL){
+          States tempState = StateMachine::getCurrentState();
+          valvePeriod[tempState] = ESP_NOW_SLEEP_TIME;
+          pitotPeriod[tempState] = ESP_NOW_SLEEP_TIME;
+          espNowDefaultPeriod[tempState] = ESP_NOW_SLEEP_TIME;
+        }
+
+        //recovery
         else if (strstr(loraData, "RECOV") != NULL) {
 
           TxDataEspNow txDataEspNow;
@@ -141,14 +204,26 @@ void rxHandlingTask(void *arg){
           xSemaphoreGive(rc.hardware.i2c1Mutex);
         }
 
+        else if(strstr(loraData, "TANWA") != NULL){
+          TxDataEspNow txDataEspNow;
+          sscanf(loraData, "R4O;TANWA;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
+          
+          if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+        }
+
+        //reset
         else if (strstr(loraData, "RST")){
           ESP.restart();
         }
 
+        //void command
         else if (strstr(loraData, "VOID")){
           rc.sendLog("VOID command appear");
         }
 
+        //invalid command logger
         else{
           strcat(loraData, " - INVALID COMMAND");
           rc.sendLog(loraData);
@@ -188,7 +263,7 @@ void rxHandlingTask(void *arg){
 
         case MAIN_VALVE:
           Serial.println("MainValve notify"); //DEBUG
-          sleepTime = mainValvePeriod[currentState];
+          sleepTime = valvePeriod[currentState];
           
           if(esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -198,7 +273,7 @@ void rxHandlingTask(void *arg){
 
         case UPUST_VALVE:
           Serial.println("UpustValve notify"); //DEBUG
-          sleepTime = upustValvePeriod[currentState];
+          sleepTime = valvePeriod[currentState];
           
           if(esp_now_send(adressUpust, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);

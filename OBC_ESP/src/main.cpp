@@ -5,6 +5,7 @@
 #include "../include/com/now.h"
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
+#include <esp_wifi.h>
 
 WatchdogTimer wt;
 RocketControl rc;
@@ -18,17 +19,21 @@ void setup() {
 
   //BROWNOUT DETECTOT DISABLING
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
-
+  WiFi.mode(WIFI_STA);
+  esp_wifi_set_mac(ESP_IF_WIFI_STA, adressOBC);
   //set mission timer
   rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
 
   //set esp now
   if(nowInit() == false) ESP.restart();
-  if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressMValve, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressUpust, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressBlackBox, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  //if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressMValve, 0) == false){
+     rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+    Serial.println("MVal add error");
+  } 
+  //if(nowAddPeer(adressUpust, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  //if(nowAddPeer(adressBlackBox, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  //if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
 
   //init all components
   rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);

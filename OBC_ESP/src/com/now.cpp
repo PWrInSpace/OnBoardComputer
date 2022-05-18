@@ -45,6 +45,8 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   uint8_t adressToQueue = 0;
 
+  Serial.println("Odpiur");
+
   if(adressCompare(mac, adressPitot)) {
 
     memcpy(&rc.dataFrame.pitot, (PitotData*) incomingData, sizeof(rc.dataFrame.pitot));

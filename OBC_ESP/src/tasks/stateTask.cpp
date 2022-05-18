@@ -11,7 +11,7 @@ void stateTask(void *arg){
       
       switch(stateMachine.getRequestedState()){
         case IDLE:
-          rc.options.dataFramePeriod = DATA_PERIOD;
+          rc.options.dataCurrentPeriod = DATA_PERIOD;
           stateMachine.changeStateConfirmation();
           break;
 
@@ -19,6 +19,7 @@ void stateTask(void *arg){
           //recovery arm request
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(true);
+          vTaskDelay(1000);
           rc.recoveryStm.setTelemetrum(true);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
           //check recovery arm answer
@@ -112,6 +113,7 @@ void stateTask(void *arg){
         case ON_GROUND:
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
+          vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
 
@@ -160,6 +162,7 @@ void stateTask(void *arg){
 
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
+          vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
 
@@ -173,7 +176,7 @@ void stateTask(void *arg){
       }
       //FIX out of range
       rc.options.sdDataCurrentPeriod = sdPeriod[StateMachine::getCurrentState()];
-      rc.options.loraPeriod = loraPeriod[StateMachine::getCurrentState()];
+      rc.options.loraCurrentPeriod = loraPeriod[StateMachine::getCurrentState()];
       rc.options.flashDataCurrentPeriod = flashPeriod[StateMachine::getCurrentState()];
           
           
@@ -185,7 +188,7 @@ void stateTask(void *arg){
     //LOOP 
     switch(StateMachine::getCurrentState()){
       case COUNTDOWN:
-        if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity == true){
+        if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
           txDataEspNow.setVal(IGNITION_COMMAND, 0);  //IDK
           //send ignition request
           if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
@@ -223,6 +226,7 @@ void stateTask(void *arg){
         if(rc.dataFrame.recovery.isArmed){
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
+          vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
         }

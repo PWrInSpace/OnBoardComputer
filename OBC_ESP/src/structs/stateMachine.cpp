@@ -3,7 +3,7 @@
 StateMachine::StateMachine(xTaskHandle _stateTask){
   stateTask = _stateTask;
   currentState = States::INIT;
-  requestState = States::INIT;
+  requestState = States::NO_CHANGE;
   holdedState = States::HOLD;
 }
 
@@ -56,15 +56,15 @@ bool StateMachine::changeStateRequest(States _newState){
 
 //Use only in stateTask
 void StateMachine::changeStateConfirmation(){
-  if(requestState != INIT){
+  if(requestState != States::NO_CHANGE){
     currentState = requestState;
   }
 
-  requestState = INIT;
+  requestState = NO_CHANGE;
 }
 
 void StateMachine::changeStateRejection(){
-  requestState = INIT;
+  requestState = NO_CHANGE;
 }
 
 States StateMachine::getRequestedState(){
@@ -76,6 +76,6 @@ States StateMachine::getCurrentState(){
 }
 
 States StateMachine::currentState = States::INIT;
-States StateMachine::requestState = States::INIT;
+States StateMachine::requestState = States::NO_CHANGE;
 States StateMachine::holdedState = States::HOLD;
 xTaskHandle StateMachine::stateTask = NULL;

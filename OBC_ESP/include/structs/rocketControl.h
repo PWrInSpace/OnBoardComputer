@@ -35,17 +35,16 @@ struct RocketControl{
 	RocketControl() = default;
   void updateCurrentState();
   void sendLog(const char *message);
-  //void sendLog(String message);
-  //void sendLog(std::string message);
   uint32_t getDisconnectRemainingTime();
   void restartDisconnectTimer(bool _force = false);
   bool deactiveDisconnectTimer();
-  void createSDFrame(char *_array);
-  void createLoRaFrame(char *_array);
-  void createOptionsFrame(char *_array);
-  bool allDevicesWokenUp();
   bool queueSend(xQueueHandle _handle, char *data);
-  //void loraFrameForce();
+  bool allDevicesWokenUp();
+
+  void createOptionsFrame(char *_array);
+  void createLoRaFrame(char *_array);
+  void createSDFrame(char *_array);
+  
 };
 
 #endif

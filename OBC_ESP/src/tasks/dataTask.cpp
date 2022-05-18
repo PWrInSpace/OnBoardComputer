@@ -29,16 +29,12 @@ void dataTask(void *arg){
   while(1){
 
     //data
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataFramePeriod){
+    if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      //Serial.print("DATA Start: "); Serial.println(xTaskGetTickCount()); //DEBUG
-      
-      //read data from sensors and gps
-      //i2c spi ect...
     
       rc.dataFrame.mcb.state = StateMachine::getCurrentState();
-      // GPS:
       
+      // GPS:
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSalt = gps.getAltitude(10) / 10.0E2;
@@ -52,10 +48,6 @@ void dataTask(void *arg){
       
       // IMU:
 
-      //SD error handling
-      
-
-      // TODO!!!
 
       // Recovery:
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
@@ -82,8 +74,10 @@ void dataTask(void *arg){
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
       */
     }
+
+
     //LoRa
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
+    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       
       rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state

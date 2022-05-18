@@ -7,8 +7,8 @@
 enum States{
   INIT = 0,
   IDLE,
-  ARMED,
   FUELING,
+  ARMED,
   RDY_TO_LAUNCH,
   COUNTDOWN,
   FLIGHT,
@@ -16,7 +16,8 @@ enum States{
   SECOND_STAGE_RECOVERY,
   ON_GROUND,
   HOLD,
-  ABORT
+  ABORT,
+  NO_CHANGE = 0xff //DO NOT USE, ONLY FOR REQUEST PURPOSE
 };
 
 class StateMachine{

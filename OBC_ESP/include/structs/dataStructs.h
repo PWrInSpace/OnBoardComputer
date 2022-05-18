@@ -30,37 +30,26 @@ struct MainValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
   float thermocouple[2];
+  float termistor[5];
+  float pressure;
   float batteryVoltage;
 };
 
 struct TanWaData {
-  uint8_t fillValveState : 2;
-  uint8_t deprValveState : 2;
-  uint8_t pullState : 2;
-  uint8_t tanWaState : 4;
-  bool igniterContinouity : 1;
-  float rocketWeight;
-  float butlaWeight; 
-  uint32_t rocketWeightRaw;
-  uint32_t butlaWeightRaw;
-  float batteryVoltage;
-};
-/*
-struct TanWaData {
-  States tanWaState : 4; //
-  bool iginiterContinouity[2] :2; //
-  bool tankHeating : 1;
-  bool abortButton : 1;
-  bool armButton : 1;
+  States tanWaState; //
+  bool igniterContinouity[2]; //
   float vbat; //
   ValveState motorState[5]; //
-  float rocketWeight;
-  float butlaWeight; 
-  uint32_t rocketWeightRaw;
-  uint32_t butlaWeightRaw;
-  float thermocouple[3];
+  float rocketWeight; //
+  float butlaWeight; //
+  uint32_t rocketWeightRaw; //
+  uint32_t butlaWeightRaw; //
+  float thermocouple[3]; //
+  bool tankHeating : 1;//
+  bool abortButton : 1;//
+  bool armButton : 1; //
 };
-*/
+
 struct UpustValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;

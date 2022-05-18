@@ -59,7 +59,7 @@
 #define DATA_PERIOD 100 / portTICK_PERIOD_MS
 #define PERIOD_ARRAY_SIZE 12
 
-static const uint16_t loraPeriod[PERIOD_ARRAY_SIZE] = {  
+static const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {  
   1000 / portTICK_PERIOD_MS, //INIT                  0
   1000 / portTICK_PERIOD_MS, //IDLE                  1
   1000 / portTICK_PERIOD_MS, //ARM                   2
@@ -74,7 +74,7 @@ static const uint16_t loraPeriod[PERIOD_ARRAY_SIZE] = {
   10000 / portTICK_PERIOD_MS  //ABORT                 11
 };
 
-static const uint16_t sdPeriod[ESP_NOW_SLEEP_TIME] = {  
+static const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {  
   10000 / portTICK_PERIOD_MS, //INIT
   10000 / portTICK_PERIOD_MS, //IDLE
   10000 / portTICK_PERIOD_MS, //ARM
@@ -89,7 +89,7 @@ static const uint16_t sdPeriod[ESP_NOW_SLEEP_TIME] = {
   10000 / portTICK_PERIOD_MS //ABORT
 };
 
-static const uint16_t flashPeriod[ESP_NOW_SLEEP_TIME] = {  
+static const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {  
   10000 / portTICK_PERIOD_MS , //INIT
   10000 / portTICK_PERIOD_MS, //IDLE
   10000 / portTICK_PERIOD_MS, //ARM
@@ -109,17 +109,17 @@ static const uint16_t flashPeriod[ESP_NOW_SLEEP_TIME] = {
 /********************************************/
 
 //ADRESSES
-const uint8_t adressOBC[]       = {0xB4, 0xE6, 0x2D, 0x85, 0x49, 0x4D}; // TODO poprawny adres!!!
+const uint8_t adressOBC[]       = {0x21, 0x37, 0x21, 0x37, 0x21, 0x37}; 
 const uint8_t adressPitot[]     = {0x94, 0xB9, 0x7E, 0xC2, 0xE6, 0x28}; // TODO poprawny adres!!!
 const uint8_t adressMValve[]    = {0x34, 0x94, 0x54, 0xD9, 0x2D, 0x20};
-const uint8_t adressUpust[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
+const uint8_t adressUpust[]     = {0xE8, 0x31, 0xCD, 0x85, 0xDA, 0x84}; 
 const uint8_t adressBlackBox[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 const uint8_t adressTanWa[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 const uint8_t adressPayLoad[]   = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
-const uint8_t adressACS[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D};
-const uint8_t cameraACS[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D};
-const uint8_t cameraPitot[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D};
-const uint8_t cameraRecovery[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D};
+const uint8_t adressACS[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
+const uint8_t cameraACS[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
+const uint8_t cameraPitot[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
+const uint8_t cameraRecovery[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 
 
 //ESP NOW NOTIFICATION 
@@ -137,65 +137,50 @@ const uint8_t cameraRecovery[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D};
 #define ESP_NOW_SLEEP_TIME 30 * 1000
 
 //ESP NOW PERIODS
-static const uint16_t mainValvePeriod[ESP_NOW_SLEEP_TIME] = {  
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //INIT
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //IDLE
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //ARM
-  500 / portTICK_PERIOD_MS, //FILLING
-  500 / portTICK_PERIOD_MS, //RTL
-  100 / portTICK_PERIOD_MS, //COUNTDOWN
-  500 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //on ground
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //HOLD
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS //ABORT
+static uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {  
+  ESP_NOW_SLEEP_TIME, //INIT
+  ESP_NOW_SLEEP_TIME, //IDLE
+  ESP_NOW_SLEEP_TIME, //ARM
+  500, //FILLING
+  500, //RTL
+  100, //COUNTDOWN
+  100, //flight
+  500, //first_stage_recov
+  500, //second_stage_recov
+  ESP_NOW_SLEEP_TIME, //on ground
+  ESP_NOW_SLEEP_TIME, //HOLD
+  ESP_NOW_SLEEP_TIME,//ABORT
 };
 
-static const uint16_t upustValvePeriod[ESP_NOW_SLEEP_TIME] = {  
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //INIT
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //IDLE
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //ARM
-  500 / portTICK_PERIOD_MS, //FILLING
-  500 / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  100 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //on ground
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //HOLD
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS //ABORT
-};
-
-static const uint16_t pitotPeriod[ESP_NOW_SLEEP_TIME] = {  
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //INIT
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //IDLE
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //ARM
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //FILLING
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  100 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //on ground
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //HOLD
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS //ABORT
+static uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {  
+  ESP_NOW_SLEEP_TIME, //INIT
+  ESP_NOW_SLEEP_TIME, //IDLE
+  ESP_NOW_SLEEP_TIME, //ARM
+  ESP_NOW_SLEEP_TIME, //FILLING
+  ESP_NOW_SLEEP_TIME, //RTL
+  500, //COUNTDOWN
+  100, //flight
+  500, //first_stage_recov
+  500, //second_stage_recov
+  ESP_NOW_SLEEP_TIME, //on ground
+  ESP_NOW_SLEEP_TIME, //HOLD
+  ESP_NOW_SLEEP_TIME,//ABORT
 };
 
 
-static const uint16_t espNowDefaultPeriod[ESP_NOW_SLEEP_TIME] = {  
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //INIT
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //IDLE
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //ARM
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //FILLING
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  500 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //on ground
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS, //HOLD
-  ESP_NOW_SLEEP_TIME / portTICK_PERIOD_MS //ABORT
+static uint16_t espNowDefaultPeriod[PERIOD_ARRAY_SIZE] = {  
+  ESP_NOW_SLEEP_TIME, //INIT
+  ESP_NOW_SLEEP_TIME, //IDLE
+  ESP_NOW_SLEEP_TIME, //ARM
+  ESP_NOW_SLEEP_TIME, //FILLING
+  ESP_NOW_SLEEP_TIME, //RTL
+  500, //COUNTDOWN
+  100, //flight
+  500, //first_stage_recov
+  500, //second_stage_recov
+  ESP_NOW_SLEEP_TIME, //on ground
+  ESP_NOW_SLEEP_TIME, //HOLD
+  ESP_NOW_SLEEP_TIME,//ABORT
 };
 
 
