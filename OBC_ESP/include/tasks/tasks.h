@@ -10,7 +10,7 @@
 #include "../include/timers/watchdog.h"
 #include "../include/com/now.h"
 #include "pinout.h"
-#include "../include/components/SDCard.h"
+#include "../include/components/SDcard.h"
 #include "../include/structs/stateMachine.h"
 
 extern RocketControl rc;

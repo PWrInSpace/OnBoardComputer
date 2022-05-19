@@ -104,15 +104,24 @@ int main(void)
   {
 	  checkComputers();
 
+	  // Obsługa danych przychodzących z i2c:
+	  if (dataFromComm.command > 0 && dataFromComm.command < 255) {
+
+		  executeCommand(dataFromComm);
+		  dataFromComm.command = 0;
+	  }
+
+
 	  if (recData.isArmed) {
 
 		  // Warunki separacji 1 stopnia:
-		  if (!recData.firstStageDone && (recData.altimaxFirstStage || recData.telemetrumFirstStage))
+		  if (!recData.firstStageDone && (recData.altimaxFirstStage ||
+				  (recData.telemetrumFirstStage && recData.isTeleActive)))
 			  doFirstSeparation();
 
 		  // Warunki separacji 2 stopnia:
 		  if (!recData.secondStageDone && recData.firstStageDone &&
-				  (recData.altimaxSecondStage || recData.telemetrumSecondStage))
+				  (recData.altimaxSecondStage || (recData.telemetrumSecondStage && recData.isTeleActive)))
 			  doSecondSeparation();
 	  }
 
@@ -167,9 +176,8 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 		HAL_I2C_Slave_Transmit(hi2c, (uint8_t*) &recData, sizeof(recData), 5);
 	}
 	else {
-		DataFromComm dataFromComm;
+
 		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
-		executeCommand(dataFromComm);
 	}
 	HAL_I2C_EnableListen_IT(hi2c);
 }
