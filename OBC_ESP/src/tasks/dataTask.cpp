@@ -1,8 +1,10 @@
 #include "../include/tasks/tasks.h"
+#include "Adafruit_MCP9808.h"
 
 void dataTask(void *arg){
   DataFrame dataFrame;
-  LPS25HB pressureSensor; 
+  LPS25HB pressureSensor;
+  Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
@@ -12,10 +14,6 @@ void dataTask(void *arg){
 
   SFE_UBLOX_GNSS gps;
 
-  if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
-    rc.sendLog("GPS INIT ERROR");
-    rc.errors.setSensorError(GPS_INIT_ERROR);
-  }
 
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
@@ -24,6 +22,19 @@ void dataTask(void *arg){
     rc.errors.setSensorError(PRESSURE_SENSOR_INIT_ERROR);
   }
 
+  if (tempsensor.begin(0x18) == false) {
+    rc.sendLog("TEMP SENSOR INIT");
+    rc.errors.setSensorError(TEMP_SENSOR_INIT_ERROR);
+  }else{
+    tempsensor.setResolution(1);
+    tempsensor.wake();
+  }
+  
+
+  if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
+    rc.sendLog("GPS INIT ERROR");
+    rc.errors.setSensorError(GPS_INIT_ERROR);
+  }
   rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
 
   while(1){
@@ -33,6 +44,8 @@ void dataTask(void *arg){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
     
       rc.dataFrame.mcb.state = StateMachine::getCurrentState();
+
+      rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0;
       
       // GPS:
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
@@ -46,6 +59,9 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
       rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
       
+      //MCP temp
+      rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
+
       // IMU:
 
 
@@ -82,7 +98,7 @@ void dataTask(void *arg){
       
       rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
-      Serial.print(lora);
+      //Serial.print(lora);
       
 
       if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){

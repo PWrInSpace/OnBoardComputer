@@ -19,4 +19,6 @@
 #define I2C2_SDA GPIO_NUM_27
 #define I2C2_SCL GPIO_NUM_26
 
+#define BATTERY GPIO_NUM_36
+
 #endif

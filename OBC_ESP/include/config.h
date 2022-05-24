@@ -7,13 +7,13 @@
 #include "../include/structs/stateMachine.h"
 
 #define SD_FRAME_ARRAY_SIZE 512
-#define LORA_FRAME_ARRAY_SIZE 256
+#define LORA_FRAME_ARRAY_SIZE 512
 #define LORA_TX_DATA_PREFIX "R4D;"
 #define LORA_TX_OPTIONS_PREFIX "R4C;"
 
 //VALVE
-#define VALVE_OPEN 0x00
-#define VALVE_CLOSE 0x01
+#define VALVE_CLOSE 0x00
+#define VALVE_OPEN 0x01
 #define VALVE_UNKNOWN 0x02
 
 //COMMANDS
@@ -69,7 +69,7 @@ static const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {
   1000 / portTICK_PERIOD_MS,  //flight                6
   1000 / portTICK_PERIOD_MS,  //first_stage_recov     7
   1000 / portTICK_PERIOD_MS,  //second_stage_recov    8
-  1000 / portTICK_PERIOD_MS,  //on ground             9
+  10000 / portTICK_PERIOD_MS,  //on ground             9
   10000 / portTICK_PERIOD_MS, //HOLD                  10
   10000 / portTICK_PERIOD_MS  //ABORT                 11
 };
@@ -84,7 +84,7 @@ static const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {
   100 / portTICK_PERIOD_MS, //flight
   500 / portTICK_PERIOD_MS, //first_stage_recov
   500 / portTICK_PERIOD_MS, //second_stage_recov
-  1000 / portTICK_PERIOD_MS, //on ground
+  10000 / portTICK_PERIOD_MS, //on ground
   10000 / portTICK_PERIOD_MS, //HOLD
   10000 / portTICK_PERIOD_MS //ABORT
 };
@@ -99,7 +99,7 @@ static const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {
   500 / portTICK_PERIOD_MS, //flight
   500 / portTICK_PERIOD_MS, //first_stage_recov
   500 / portTICK_PERIOD_MS, //second_stage_recov
-  1000 / portTICK_PERIOD_MS, //on ground
+  10000 / portTICK_PERIOD_MS, //on ground
   10000 / portTICK_PERIOD_MS, //HOLD
   10000 / portTICK_PERIOD_MS //ABORT
 };
@@ -109,12 +109,12 @@ static const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {
 /********************************************/
 
 //ADRESSES
-const uint8_t adressOBC[]       = {0x21, 0x37, 0x21, 0x37, 0x21, 0x37}; 
+const uint8_t adressOBC[]       = {0x04, 0x20, 0x04, 0x20, 0x04, 0x20}; 
 const uint8_t adressPitot[]     = {0x94, 0xB9, 0x7E, 0xC2, 0xE6, 0x28}; // TODO poprawny adres!!!
 const uint8_t adressMValve[]    = {0x34, 0x94, 0x54, 0xD9, 0x2D, 0x20};
 const uint8_t adressUpust[]     = {0xE8, 0x31, 0xCD, 0x85, 0xDA, 0x84}; 
 const uint8_t adressBlackBox[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
-const uint8_t adressTanWa[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
+const uint8_t adressTanWa[]     = {0x80, 0x08, 0x50, 0x80, 0x08, 0x50}; 
 const uint8_t adressPayLoad[]   = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 const uint8_t adressACS[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 const uint8_t cameraACS[]       = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!

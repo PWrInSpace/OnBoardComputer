@@ -48,6 +48,9 @@ void loraTask(void *arg){
       xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
         
         if(LoRa.beginPacket() == 0);
+        Serial.print("Dlugos: ");
+        Serial.println(strlen(loraTx));
+        Serial.print(loraTx);
         LoRa.write((uint8_t*) loraTx, strlen(loraTx));
         if(LoRa.endPacket() != 1);
 

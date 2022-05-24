@@ -7,8 +7,8 @@
 enum States{
   INIT = 0,
   IDLE,
-  FUELING,
   ARMED,
+  FUELING,
   RDY_TO_LAUNCH,
   COUNTDOWN,
   FLIGHT,
@@ -36,7 +36,8 @@ class StateMachine{
 };
 
 //static init value
-
+//8
+//155
 
 
 #endif

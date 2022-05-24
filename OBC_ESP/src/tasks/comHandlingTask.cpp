@@ -178,9 +178,9 @@ void rxHandlingTask(void *arg){
           States tempState = StateMachine::getCurrentState();
           
           while(tempState < States::COUNTDOWN){
-            if(valvePeriod[tempState] > 500) valvePeriod[tempState] = 500;
-            if(pitotPeriod[tempState] > 500) pitotPeriod[tempState] = 500;
-            if(espNowDefaultPeriod[tempState] > 500) espNowDefaultPeriod[tempState] = 500;
+            valvePeriod[tempState] = 500;
+            pitotPeriod[tempState] = 500;
+            espNowDefaultPeriod[tempState] = 500;
             tempState = static_cast<States>(tempState + 1);
           }
         }

@@ -19,7 +19,7 @@ void stateTask(void *arg){
           //recovery arm request
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(true);
-          vTaskDelay(1000);
+          vTaskDelay(150);
           rc.recoveryStm.setTelemetrum(true);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
           //check recovery arm answer
