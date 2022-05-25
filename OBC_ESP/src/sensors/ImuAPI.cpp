@@ -100,6 +100,10 @@ void ImuAPI::readData(){
   data.altitude = ps.pressureToAltitudeMeters(data.pressure, initPressure);
 }
 
+float ImuAPI::getInitPressure(){
+  return initPressure;
+}
+
 /*
 void ImuAPI::mahonyFilterUpdate(){
   static uint32_t lastExecuteTime = {};

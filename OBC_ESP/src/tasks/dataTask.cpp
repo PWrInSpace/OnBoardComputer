@@ -3,16 +3,18 @@
 
 void dataTask(void *arg){
   DataFrame dataFrame;
+  ImuData imuData;
   LPS25HB pressureSensor;
   Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
+  SFE_UBLOX_GNSS gps;
+  ImuAPI imu(&rc.hardware.i2c2);
+
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
   TickType_t sdTimer = 0;
   char sd[SD_FRAME_ARRAY_SIZE] = {};
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
-
-  SFE_UBLOX_GNSS gps;
 
 
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
@@ -23,19 +25,28 @@ void dataTask(void *arg){
   }
 
   if (tempsensor.begin(0x18) == false) {
-    rc.sendLog("TEMP SENSOR INIT");
+    rc.sendLog("TEMP SENSOR INIT ERROR");
     rc.errors.setSensorError(TEMP_SENSOR_INIT_ERROR);
   }else{
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
-  
+
+  if(!imu.begin()){
+    rc.sendLog("IMU INIT ERROR");
+    rc.errors.setSensorError(IMU_INIT_ERROR);
+  }else{
+    imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
+    imu.setInitPressure();
+  }
 
   if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
     rc.sendLog("GPS INIT ERROR");
     rc.errors.setSensorError(GPS_INIT_ERROR);
   }
   rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
+
+
 
   while(1){
 
@@ -63,7 +74,20 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // IMU:
-
+      imu.readData();
+      imuData = imu.getData();
+      rc.dataFrame.mcb.imuData[0] = imuData.ax;
+      rc.dataFrame.mcb.imuData[0] = imuData.ay;
+      rc.dataFrame.mcb.imuData[0] = imuData.az;
+      rc.dataFrame.mcb.imuData[0] = imuData.gx;
+      rc.dataFrame.mcb.imuData[0] = imuData.gy;
+      rc.dataFrame.mcb.imuData[0] = imuData.gz;
+      rc.dataFrame.mcb.imuData[0] = imuData.mx;
+      rc.dataFrame.mcb.imuData[0] = imuData.my;
+      rc.dataFrame.mcb.imuData[0] = imuData.mz;
+      rc.dataFrame.mcb.imuData[0] = imuData.temperature;
+      rc.dataFrame.mcb.imuData[0] = imuData.pressure;
+      rc.dataFrame.mcb.imuData[0] = imuData.altitude;
 
       // Recovery:
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
@@ -98,7 +122,9 @@ void dataTask(void *arg){
       
       rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
-      //Serial.print(lora);
+      //Serial.print("Dlugos: ");
+      //Serial.println(strlen(lora));
+      Serial.print(lora);
       
 
       if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){

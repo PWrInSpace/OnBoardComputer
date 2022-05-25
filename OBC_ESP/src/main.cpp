@@ -11,14 +11,9 @@
 WatchdogTimer wt;
 RocketControl rc;
 
-ImuAPI imu(&rc.hardware.i2c2);
-ImuData imuData;
-
 void setup() {
   Serial.begin(115200); //DEBUG
   
-  
-  /*
   Serial.print("Setup state: "); //DEBUG
   Serial.println(StateMachine::getCurrentState()); //DEBUG
   //BROWNOUT DETECTOT DISABLING
@@ -59,13 +54,13 @@ void setup() {
 
   //create Tasks
   //pro cpu
-  xTaskCreatePinnedToCore(loraTask,       "LoRa task",        8192, NULL, 2, &rc.hardware.loraTask,       PRO_CPU_NUM);
+  //xTaskCreatePinnedToCore(loraTask,       "LoRa task",        8192, NULL, 2, &rc.hardware.loraTask,       PRO_CPU_NUM);
   xTaskCreatePinnedToCore(rxHandlingTask, "RX handling task", 8192, NULL, 2, &rc.hardware.rxHandlingTask, PRO_CPU_NUM);
 
   //app cpu
   xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.hardware.stateTask, APP_CPU_NUM);
   xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.hardware.dataTask,  APP_CPU_NUM);
-  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 1, &rc.hardware.sdTask,    APP_CPU_NUM);
+  //xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 1, &rc.hardware.sdTask,    APP_CPU_NUM);
   xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
 
   //create Timers
@@ -74,7 +69,6 @@ void setup() {
   rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
   
   //check created elements
-  
   if(rc.hardware.loraRxQueue == NULL || rc.hardware.loraTxQueue == NULL || rc.hardware.sdQueue == NULL || rc.hardware.flashQueue == NULL || rc.hardware.espNowQueue == NULL){
     //error handling
     Serial.println("Queue create error!"); //DEBUG
@@ -103,8 +97,7 @@ void setup() {
     //error handling
     Serial.println("timer create error!"); //DEBUG
     ESP.restart();
-  }
-  
+  }  
   
   //watchdogtimer
   wt.begin();
@@ -122,61 +115,8 @@ void setup() {
   xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
   xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
   vTaskDelete(NULL); //delete main task (loop())
-  */
-
- rc.hardware.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
-
- while(!imu.begin()){
-   Serial.println("Imu error!");
-   vTaskDelay(1000 / portTICK_PERIOD_MS);
- }
- imu.setInitPressure();
 }
 
 void loop() {
-  imu.readData();
-  
-  imuData = imu.getData();
 
-  Serial.println("IMU DATA");
-  Serial.print("a.x: ");
-  Serial.print(imuData.ax);
-  Serial.print("\t");
-  Serial.print("a.y: ");
-  Serial.print(imuData.ay);
-  Serial.print("\t");
-  Serial.print("a.z: ");
-  Serial.print(imuData.az);
-  Serial.println("");
-
-  Serial.print("g.x: ");
-  Serial.print(imuData.gx);
-  Serial.print("\t");
-  Serial.print("g.y: ");
-  Serial.print(imuData.gy);
-  Serial.print("\t");
-  Serial.print("g.z: ");
-  Serial.print(imuData.gz);
-  Serial.println("");
-
-  Serial.print("m.x: ");
-  Serial.print(imuData.mx);
-  Serial.print("\t");
-  Serial.print("m.y: ");
-  Serial.print(imuData.my);
-  Serial.print("\t");
-  Serial.print("m.z: ");
-  Serial.print(imuData.mz);
-  Serial.println("");
-
-  Serial.print("tmp: ");
-  Serial.print(imuData.temperature);
-  Serial.print("\t");
-  Serial.print("prs: ");
-  Serial.print(imuData.pressure);
-  Serial.print("\t");
-  Serial.print("alt: ");
-  Serial.print(imuData.altitude);
-  Serial.println("");
-  delay(100);
 }

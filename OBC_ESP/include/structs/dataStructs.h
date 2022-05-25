@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include "stateMachine.h"
+
 /**   RX    **/
 
 enum ValveState {
@@ -88,7 +89,7 @@ struct SlaveData {
 };
 
 struct MCB{
-  //float imuData[12]; //TODO
+  float imuData[12];
   float batteryVoltage;
   float GPSlal;
   float GPSlong;
@@ -103,6 +104,7 @@ struct MCB{
   uint8_t watchdogResets;
   uint8_t state;
   bool ignition : 1;
+
 };
 
 struct DataFrame {

@@ -153,7 +153,7 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
     dataFrame.pl.data, dataFrame.pl.vbat) + 1;
 
-  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.batteryVoltage) + 1;
+  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.wakeUp) + 1;
 
   char mcbFrame[mcbSize] = {};
   char pitotFrame[pitotSize] = {};
@@ -200,7 +200,7 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
     dataFrame.pl.data, dataFrame.pl.vbat);
 
-  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.batteryVoltage) + 1;
+  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.wakeUp);
 
 
   //recovery first byte
@@ -281,11 +281,14 @@ void RocketControl::createLoRaFrame(char* data){
 void RocketControl::createSDFrame(char* data){
   size_t mcbSize, pitotSize, mvSize, uvSize, tanwaSize, bbSize, plSize, optionsSize, recoverySize, errorsSize;
 
-  mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;",
+  mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
     dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
     dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
-    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity) + 1;
+    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
+    dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
+    dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
+    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
 
   pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
@@ -314,7 +317,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
     dataFrame.pl.data, dataFrame.pl.vbat) + 1;
 
-  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.batteryVoltage) + 1;
+  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.wakeUp) + 1;
 
   optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
@@ -346,11 +349,14 @@ void RocketControl::createSDFrame(char* data){
 
 
   //MCB
-  snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;",
+  snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
     dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
     dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
-    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity);
+    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
+     dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
+    dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
+    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
 
   snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
@@ -379,7 +385,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
     dataFrame.pl.data, dataFrame.pl.vbat);
 
-  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.batteryVoltage);
+  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.wakeUp);
 
   snprintf(optionsFrame, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,

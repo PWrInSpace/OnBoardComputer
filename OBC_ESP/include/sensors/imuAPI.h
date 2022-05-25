@@ -99,6 +99,7 @@ class ImuAPI{
   void setIntegralTerm(float _newKi);
   ImuData getData();
   float getAltitude();
+  float getInitPressure();
     
   //void mahonyFilterUpdate();
   //void qToPYW();
