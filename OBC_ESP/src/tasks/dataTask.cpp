@@ -109,18 +109,25 @@ void dataTask(void *arg){
     }
 
     //FLASH
-    if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND) && rc.options.flashWrite){
+    if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND)){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
         rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
-       
-        if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
-          rc.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
-          rc.sendLog("Flash queue is full");
+
+        if(rc.options.flashWrite){
+          if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
+            rc.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
+            rc.sendLog("Flash queue is full");
+          }
+        }
+
+        if(esp_now_send(adressBlackBox, (uint8_t*) &dataFrame, sizeof(dataFrame)) != ESP_OK){
+          rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          rc.sendLog("Black box send error");
         }
       }
         
-        //TODO send data to blackbox
+      
     }
 
     //SD

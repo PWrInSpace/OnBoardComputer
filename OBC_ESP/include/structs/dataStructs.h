@@ -58,6 +58,13 @@ struct UpustValveData {
   float batteryVoltage;
 };
 
+struct PlData {
+  bool wakeUp : 1;
+  bool isRecording : 1;
+  bool data : 1;
+  float vbat;
+};
+
 struct RecoveryData {
   bool isArmed : 1;
   bool firstStageContinouity : 1;
@@ -105,7 +112,7 @@ struct DataFrame {
   UpustValveData  upustValve;
   RecoveryData    recovery;
   SlaveData       blackBox;
-  SlaveData       payLoad;
+  PlData          pl;
   MCB mcb;
 
   DataFrame() = default;

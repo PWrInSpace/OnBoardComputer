@@ -9,6 +9,7 @@ ImuAPI::ImuAPI(TwoWire* _wire, uint8_t accgyrAddress, uint8_t magAddress, uint8_
   accScale = AccelerometerScale::A_2g;
   bandwith = Bandwith::B_400Hz;
   magScale = MagnetometerScale::M_4g;
+  initPressure = 1023.0;
 }
 
 

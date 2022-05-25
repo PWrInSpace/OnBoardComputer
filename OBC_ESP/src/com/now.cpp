@@ -79,7 +79,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   else if(adressCompare(mac, adressPayLoad)) {
 
-    memcpy(&rc.dataFrame.payLoad, (SlaveData*) incomingData, sizeof(rc.dataFrame.payLoad));
+    memcpy(&rc.dataFrame.pl, (PlData*) incomingData, sizeof(rc.dataFrame.pl));
     adressToQueue = PAYLOAD;
   }
 

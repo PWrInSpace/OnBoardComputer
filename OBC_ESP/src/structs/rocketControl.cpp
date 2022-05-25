@@ -148,10 +148,12 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
     dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
+  
+  plSize = snprintf(NULL, 0, "%d;%d;%d;%f;",
+    dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
+    dataFrame.pl.data, dataFrame.pl.vbat) + 1;
 
-  //recoverySize = snprintf(NULL, 0, "%d;%d;", byteData[0], byteData[1]) + 1;
-
-  //errorsSize = snprintf(NULL, 0, "%d;%d", byteData[0], byteData[1]) + 1;
+  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.batteryVoltage) + 1;
 
   char mcbFrame[mcbSize] = {};
   char pitotFrame[pitotSize] = {};
@@ -159,6 +161,8 @@ void RocketControl::createLoRaFrame(char* data){
   char uvFrame[uvSize] = {};
   char tanwaFrame[tanwaSize] = {};
   //char otherSlaves[30] = {};
+  char plFrame[plSize] = {};
+  char bbFrame[bbSize] = {};
   char recoveryFrame[recoverySize] = {};
   char errorsFrame[errorsSize] = {};
 
@@ -191,6 +195,13 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
     dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating);//19
+
+  snprintf(plFrame, plSize, "%d;%d;%d;%f;",
+    dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
+    dataFrame.pl.data, dataFrame.pl.vbat);
+
+  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.batteryVoltage) + 1;
+
 
   //recovery first byte
   memset(byteData, 0, 4);
@@ -235,6 +246,8 @@ void RocketControl::createLoRaFrame(char* data){
   strcat(data, mvFrame);
   strcat(data, uvFrame);
   strcat(data, tanwaFrame);
+  strcat(data, plFrame);
+  strcat(data, bbFrame);
   strcat(data, recoveryFrame); //2
   strcat(data, errorsFrame); //2
   strcat(data, "\n");
@@ -297,6 +310,12 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
   
+  plSize = snprintf(NULL, 0, "%d;%d;%d;%f;",
+    dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
+    dataFrame.pl.data, dataFrame.pl.vbat) + 1;
+
+  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.batteryVoltage) + 1;
+
   optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
     options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
@@ -319,8 +338,8 @@ void RocketControl::createSDFrame(char* data){
   char mvFrame[mvSize] = {};
   char uvFrame[uvSize] = {};
   char tanwaFrame[tanwaSize] = {};
-  //char payloadFrame[plSize] = {};
-  //char blackboxFrame[bbSize] = {};
+  char plFrame[plSize] = {};
+  char bbFrame[bbSize] = {};
   char optionsFrame[optionsSize] = {};
   char recoveryFrame[recoverySize] = {};
   char errorsFrame[errorsSize] = {};
@@ -356,6 +375,12 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating); //19
 
+  snprintf(plFrame, plSize, "%d;%d;%d;%f;",
+    dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
+    dataFrame.pl.data, dataFrame.pl.vbat);
+
+  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.batteryVoltage);
+
   snprintf(optionsFrame, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
     options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
@@ -379,6 +404,8 @@ void RocketControl::createSDFrame(char* data){
   strcat(data, mvFrame);
   strcat(data, uvFrame);
   strcat(data, tanwaFrame);
+  strcat(data, plFrame);
+  strcat(data, bbFrame);
   strcat(data, optionsFrame);
   strcat(data, recoveryFrame);
   strcat(data, errorsFrame); 
