@@ -3,7 +3,7 @@
 
 void dataTask(void *arg){
   DataFrame dataFrame;
-  ImuData imuData;
+  //ImuData imuData;
   LPS25HB pressureSensor;
   Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
   SFE_UBLOX_GNSS gps;
@@ -33,7 +33,7 @@ void dataTask(void *arg){
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
-
+  /*
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
     rc.errors.setSensorError(IMU_INIT_ERROR);
@@ -41,13 +41,13 @@ void dataTask(void *arg){
     imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
     imu.setInitPressure();
     launchPadAltitude = imu.getAltitude();
-  }
+  }*/
 
   if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
     rc.sendLog("GPS INIT ERROR");
     rc.errors.setSensorError(GPS_INIT_ERROR);
   }
-  rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
+  //rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
 
 
 
@@ -59,7 +59,7 @@ void dataTask(void *arg){
     
       rc.dataFrame.mcb.state = StateMachine::getCurrentState();
 
-      rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0;
+      rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
       
       // GPS:
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
@@ -70,13 +70,14 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
 
       //LP26HB - pressure
-      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
-      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      //rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
+      //rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
       
       //MCP temp
       rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // IMU:
+      /*
       imu.readData();
       imuData = imu.getData();
       rc.dataFrame.mcb.imuData[0] = imuData.ax;
@@ -91,7 +92,7 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.imuData[0] = imuData.temperature;
       rc.dataFrame.mcb.imuData[0] = imuData.pressure;
       rc.dataFrame.mcb.imuData[0] = imuData.altitude;
-
+      */
       // Recovery:
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
       rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
@@ -116,12 +117,12 @@ void dataTask(void *arg){
       }
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
       */
-
+     /*
      if(StateMachine::getCurrentState() == States::SECOND_STAGE_RECOVERY){
        if(imuData.altitude < (launchPadAltitude + 50)){
          StateMachine::changeStateRequest(States::ON_GROUND);
        }
-     }
+     }*/
 
     }
 
@@ -156,8 +157,9 @@ void dataTask(void *arg){
             rc.sendLog("Flash queue is full");
           }
         }
-
-        if(esp_now_send(adressBlackBox, (uint8_t*) &dataFrame, sizeof(dataFrame)) != ESP_OK){
+        Serial.print("Data frame sizeof: ");
+        Serial.println(sizeof(DataFrame));
+        if(esp_now_send(adressBlackBox, (uint8_t*) &dataFrame, sizeof(DataFrame)) != ESP_OK){
           rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           rc.sendLog("Black box send error");
         }

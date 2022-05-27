@@ -31,16 +31,16 @@ struct MainValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
   float thermocouple[2];
-  float termistor[5];
+  //sfloat termistor;
   float pressure;
   float batteryVoltage;
 };
 
 struct TanWaData {
-  States tanWaState; //
+  uint8_t tanWaState; //
   bool igniterContinouity[2]; //
   float vbat; //
-  ValveState motorState[5]; //
+  uint8_t motorState[5]; //
   float rocketWeight; //
   float butlaWeight; //
   uint32_t rocketWeightRaw; //
@@ -54,7 +54,7 @@ struct TanWaData {
 struct UpustValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
-  uint16_t hall[5];
+  uint16_t termistor;
   float tankPressure;
   float batteryVoltage;
 };

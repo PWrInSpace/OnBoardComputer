@@ -135,10 +135,9 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
     dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]) + 1; //5
 
-  uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+  uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.hall[0], dataFrame.upustValve.hall[1],
-    dataFrame.upustValve.hall[2], dataFrame.upustValve.hall[3], dataFrame.upustValve.hall[4]) + 1; //9
+    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor) + 1; //9
   
   tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
@@ -182,10 +181,9 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
     dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]); //5
 
-  snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+  snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.hall[0], dataFrame.upustValve.hall[1],
-    dataFrame.upustValve.hall[2], dataFrame.upustValve.hall[3], dataFrame.upustValve.hall[4]); //9
+    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor); //9
   
   snprintf(tanwaFrame, tanwaSize, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
@@ -299,10 +297,9 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
     dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]) + 1; //5
 
-  uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+  uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.hall[0], dataFrame.upustValve.hall[1],
-    dataFrame.upustValve.hall[2], dataFrame.upustValve.hall[3], dataFrame.upustValve.hall[4]) + 1; //9
+    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor) + 1;
   
   tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
@@ -367,10 +364,9 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
     dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]); //5
 
-  snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;%d;%d;%d;%d;",
+  snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.hall[0], dataFrame.upustValve.hall[1],
-    dataFrame.upustValve.hall[2], dataFrame.upustValve.hall[3], dataFrame.upustValve.hall[4]); //9
+    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor);
   
   snprintf(tanwaFrame, tanwaSize, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
