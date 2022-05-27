@@ -16,6 +16,8 @@ void dataTask(void *arg){
   char sd[SD_FRAME_ARRAY_SIZE] = {};
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
 
+  float launchPadAltitude = 0;
+
 
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
@@ -38,6 +40,7 @@ void dataTask(void *arg){
   }else{
     imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
     imu.setInitPressure();
+    launchPadAltitude = imu.getAltitude();
   }
 
   if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
@@ -113,6 +116,13 @@ void dataTask(void *arg){
       }
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
       */
+
+     if(StateMachine::getCurrentState() == States::SECOND_STAGE_RECOVERY){
+       if(imuData.altitude < (launchPadAltitude + 50)){
+         StateMachine::changeStateRequest(States::ON_GROUND);
+       }
+     }
+
     }
 
 

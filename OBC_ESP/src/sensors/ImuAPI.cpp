@@ -223,6 +223,7 @@ ImuData ImuAPI::getData(){
 }
 
 float ImuAPI::getAltitude(){
+  readData();
   return data.altitude;
 }
 
