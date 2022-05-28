@@ -33,6 +33,8 @@ void setup() {
   if(nowAddPeer(adressUpust, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
   if(nowAddPeer(adressBlackBox, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
   if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressPayLoad, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+
 
   //init all components
   rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
@@ -67,6 +69,8 @@ void setup() {
   rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
 
   rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
+
+  rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer", espNowConnectionCheckPeriod, pdTRUE, NULL, espNowConnectionCallback);
   
   //check created elements
   if(rc.hardware.loraRxQueue == NULL || rc.hardware.loraTxQueue == NULL || rc.hardware.sdQueue == NULL || rc.hardware.flashQueue == NULL || rc.hardware.espNowQueue == NULL){
@@ -100,6 +104,7 @@ void setup() {
   }  
   
   //watchdogtimer
+  /*
   wt.begin();
   wt.EEPROMread();
   Serial.println(wt.previousState); //DEBUG
@@ -111,9 +116,14 @@ void setup() {
     StateMachine::changeStateRequest(States::IDLE);
   }
 
+  */
   //start timers
-  xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
+  StateMachine::changeStateRequest(States::IDLE);
   xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
+  xTimerStart(rc.hardware.espNowConnectionTimer, portMAX_DELAY);
+  //xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
+  
+  
   vTaskDelete(NULL); //delete main task (loop())
 }
 

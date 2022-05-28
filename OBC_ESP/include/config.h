@@ -19,7 +19,7 @@
 //COMMANDS
 #define VALVE_CLOSE_COMMAND 0x10
 #define VALVE_OPEN_COMMAND  0x11
-#define IGNITION_COMMAND 0x32
+#define IGNITION_COMMAND 60
 
 //SENSORS ADRESS
 #define PRESSURE_SENSOR_ADRESS  0x5C
@@ -123,16 +123,16 @@ const uint8_t cameraRecovery[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO 
 
 
 //ESP NOW NOTIFICATION 
-#define TANWA 1
-#define PITOT 2
-#define MAIN_VALVE 3
-#define UPUST_VALVE 4
-#define BLACK_BOX 5
-#define PAYLOAD 6
-#define ACS 7
-#define CAMERA_ACS 8
-#define CAMERA_PITOT 9
-#define CAMERA_RECOVERY 10
+#define TANWA 0
+#define PITOT 1
+#define MAIN_VALVE 2
+#define UPUST_VALVE 3
+#define BLACK_BOX 4
+#define PAYLOAD 5
+#define ACS 6
+#define CAMERA_ACS 7
+#define CAMERA_PITOT 8
+#define CAMERA_RECOVERY 9
 
 #define ESP_NOW_SLEEP_TIME 30 * 1000
 
@@ -183,11 +183,14 @@ static uint16_t espNowDefaultPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME,//ABORT
 };
 
-
+//esp now connection array
+//static bool isConnectedFlags[6];
+//#define CONNECTION_CHECK_DEVICE_NUMBER 6
 
 //TIMERS
 static const TickType_t watchdogDelay = 1000 / portTICK_PERIOD_MS; //250ms
 static const TickType_t disconnectDelay = 15 * 60 * 1000 / portTICK_PERIOD_MS; //15min
+static const TickType_t espNowConnectionCheckPeriod =  35 * 1000 / portTICK_PERIOD_MS; //45sec
 
 static String dataFileName= "/data_";
 static String logFileName = "/log_";

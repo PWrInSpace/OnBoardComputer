@@ -23,12 +23,16 @@
 #define FLASH_QUEUE_LENGTH 20
 #define ESP_NOW_QUEUE_LENGTH 5
 
+#define CONNECTION_CHECK_DEVICE_NUMBER 6
+
 struct RocketControl{
 	Options options;  
   HardwareManagment hardware;
   Timer missionTimer;
   Errors errors;
   DataFrame dataFrame;
+  bool isConnectedFlags[CONNECTION_CHECK_DEVICE_NUMBER];
+  uint8_t connectedStatus;
 
   RecoverySTM recoveryStm = RecoverySTM(hardware.i2c1, RECOVERY_ADDRES);
 

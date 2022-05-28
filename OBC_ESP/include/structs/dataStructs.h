@@ -54,7 +54,7 @@ struct TanWaData {
 struct UpustValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
-  uint16_t termistor;
+  uint16_t thermistor;
   float tankPressure;
   float batteryVoltage;
 };
@@ -116,6 +116,7 @@ struct DataFrame {
   SlaveData       blackBox;
   PlData          pl;
   MCB mcb;
+  uint32_t missionTimer; //DRUT
 
   DataFrame() = default;
 };

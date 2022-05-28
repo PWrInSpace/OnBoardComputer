@@ -29,6 +29,7 @@ void flashTask(void *arg);
 //Timers
 void watchdogTimerCallback(TimerHandle_t xTimer);
 void disconnectTimerCallback(TimerHandle_t xTimer);
+void espNowConnectionCallback(TimerHandle_t xTimer);
 
 // Functions
 void parseR4A(char* data);

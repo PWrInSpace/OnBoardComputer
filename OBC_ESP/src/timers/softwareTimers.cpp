@@ -72,3 +72,50 @@ void disconnectTimerCallback(TimerHandle_t xTimer){
   
   rc.sendLog("Disconnect timer");
 }
+
+void espNowConnectionCallback(TimerHandle_t xTimer){
+
+  if(rc.isConnectedFlags[TANWA] == false){
+    rc.sendLog("Tanwa not connected");
+  }
+
+  if(rc.isConnectedFlags[PITOT] == false){
+    rc.sendLog("Pitot not connected");
+  }
+  
+  if(rc.isConnectedFlags[MAIN_VALVE] == false){
+    rc.sendLog("Main valve not connected");
+  }
+  
+  if(rc.isConnectedFlags[UPUST_VALVE] == false){
+    rc.sendLog("Upus not connected");
+  }
+  
+  if(rc.isConnectedFlags[BLACK_BOX] == false){
+    rc.sendLog("BlackBox not connected");
+  }
+  
+  if(rc.isConnectedFlags[PAYLOAD] == false){
+    rc.sendLog("Payload not connected");
+  }
+
+  Serial.println("---ESP NOW CALLBACK---");
+  rc.connectedStatus = 0x00;
+  for(int i = 0; i < CONNECTION_CHECK_DEVICE_NUMBER; ++i){
+    Serial.println(rc.isConnectedFlags[i]);
+    
+    rc.connectedStatus |= ((uint8_t)rc.isConnectedFlags[i] << i);
+  }
+  Serial.println("---END ESP NOW CALLBACK---");
+  
+  memset(rc.isConnectedFlags, 0, CONNECTION_CHECK_DEVICE_NUMBER);
+  
+  Serial.println("---SET---");
+  
+  for(int i = 0; i < CONNECTION_CHECK_DEVICE_NUMBER; ++i){
+    Serial.println(rc.isConnectedFlags[i]);
+  }
+
+  Serial.println("---END SET---");
+  
+}

@@ -245,6 +245,12 @@ void rxHandlingTask(void *arg){
         rxEspNumber = 0xff;
       }
 
+      if(rxEspNumber < CONNECTION_CHECK_DEVICE_NUMBER){
+        Serial.print("Ustawiam: ");
+        Serial.println(rxEspNumber);
+        rc.isConnectedFlags[rxEspNumber] = true;
+      }
+
       switch(rxEspNumber){
         case TANWA:
           //TanWa
@@ -257,6 +263,7 @@ void rxHandlingTask(void *arg){
           
           if(esp_now_send(adressPitot, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            rc.isConnectedFlags[PITOT] = false;
           }
           
           break;
@@ -267,6 +274,7 @@ void rxHandlingTask(void *arg){
           
           if(esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            rc.isConnectedFlags[MAIN_VALVE] = false;
           }
           
           break;
@@ -344,7 +352,9 @@ void rxHandlingTask(void *arg){
         default:
           rc.sendLog("Unknown esp now device");
           break;
+        
       }
+
     }
 
     wt.rxHandlingTaskFlag = true;

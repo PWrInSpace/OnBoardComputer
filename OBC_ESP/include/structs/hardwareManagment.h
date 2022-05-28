@@ -28,6 +28,7 @@ struct HardwareManagment{
 	//software timers
 	TimerHandle_t watchdogTimer;
 	TimerHandle_t disconnectTimer;
+  TimerHandle_t espNowConnectionTimer;
 
   /** SERIAL COMMUNICATION **/
   SPIClass mySPI;

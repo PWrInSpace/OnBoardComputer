@@ -197,7 +197,7 @@ void stateTask(void *arg){
           }
 
           //TODO uncomment
-          //rc.sendLog("IGNITION REQUEST");
+          rc.sendLog("IGNITION REQUEST");
         }
 
         if(rc.missionTimer.getTime() > 0){

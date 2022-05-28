@@ -119,107 +119,93 @@ void RocketControl::createOptionsFrame(char* data){
  */
 void RocketControl::createLoRaFrame(char* data){
   uint8_t byteData[4] = {};
-  size_t mcbSize, pitotSize, mvSize, uvSize, tanwaSize, bbSize, plSize, recoverySize = 10, errorsSize = 10;
 
-  mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;",
-    dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
-    dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec) + 1; //11
-
-  pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-    dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
-    dataFrame.pitot.dynamicPressure, dataFrame.pitot.temperature, dataFrame.pitot.altitude,
-    dataFrame.pitot.velocity, dataFrame.pitot.predictedApogee) + 1; //8
-  
-  mvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%0.2f;",
-    dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
-    dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]) + 1; //5
-
-  uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;",
-    dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor) + 1; //9
-  
-  tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
-    dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
-    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
-    dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
-    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.butlaWeight, dataFrame.tanWa.rocketWeightRaw, 
-    dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
-    dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
-    dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
-  
-  plSize = snprintf(NULL, 0, "%d;%d;%d;%f;",
-    dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
-    dataFrame.pl.data, dataFrame.pl.vbat) + 1;
-
-  bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.wakeUp) + 1;
-
-  char mcbFrame[mcbSize] = {};
-  char pitotFrame[pitotSize] = {};
-  char mvFrame[mvSize] = {};
-  char uvFrame[uvSize] = {};
-  char tanwaFrame[tanwaSize] = {};
-  //char otherSlaves[30] = {};
-  char plFrame[plSize] = {};
-  char bbFrame[bbSize] = {};
-  char recoveryFrame[recoverySize] = {};
-  char errorsFrame[errorsSize] = {};
+  char mcbFrame[100] = {};
+  char pitotFrame[50] = {};
+  char mvFrame[50] = {};
+  char uvFrame[50] = {};
+  char tanwaFrame[100] = {};
+  //char otherSlaves[30];
+  char plFrame[50] = {};
+  char bbFrame[50] = {};
+  char wakenUpFrame[10] = {};
+  char connectionFrame[10] = {};
+  char valveStateFrame[20] = {};
+  char recoveryFrame[10] = {};
+  char errorsFrame[20] = {};
 
 
   //MCB
-  snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;",
-    dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
-    dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec); //11
+  sprintf(mcbFrame, "%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
+    dataFrame.mcb.state, missionTimer.getTime()/1000, getDisconnectRemainingTime()/1000,
+    dataFrame.mcb.batteryVoltage, dataFrame.mcb.GPSlal, dataFrame.mcb.GPSlong, dataFrame.mcb.GPSsat, 
+    dataFrame.mcb.GPSsec, (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
 
-  snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-    dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
-    dataFrame.pitot.dynamicPressure, dataFrame.pitot.temperature, dataFrame.pitot.altitude,
-    dataFrame.pitot.velocity, dataFrame.pitot.predictedApogee); //8
+  sprintf(pitotFrame, "%0.1f;%d;%d;",
+    dataFrame.pitot.batteryVoltage, dataFrame.pitot.altitude, (int)dataFrame.pitot.velocity); //8
 
-  snprintf(mvFrame, mvSize, "%d;%0.2f;%d;%0.2f;%0.2f;",
-    dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
-    dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]); //5
+  sprintf(mvFrame, "%0.1f;",
+    dataFrame.mainValve.batteryVoltage); //5
 
-  snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;",
-    dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor); //9
+  sprintf(uvFrame, "%0.1f;%0.1f;%d;",
+    dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.tankPressure,
+    dataFrame.upustValve.thermistor); //9
   
-  snprintf(tanwaFrame, tanwaSize, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
+  sprintf(tanwaFrame, "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
-    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
-    dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
-    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.butlaWeight, dataFrame.tanWa.rocketWeightRaw, 
-    dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
-    dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
-    dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating);//19
-
-  snprintf(plFrame, plSize, "%d;%d;%d;%f;",
-    dataFrame.pl.wakeUp, dataFrame.pl.isRecording,
+    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.rocketWeight, dataFrame.tanWa.butlaWeight,
+    dataFrame.tanWa.armButton, dataFrame.tanWa.abortButton);//19
+  
+  sprintf(plFrame, "%d;%d;%0.1f;",
+    dataFrame.pl.isRecording,
     dataFrame.pl.data, dataFrame.pl.vbat);
 
-  snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.wakeUp);
+  // Slaves waken up (from top of the rocket):
+  memset(byteData, 0, 4);
+  byteData[0] |= (dataFrame.pitot.wakeUp      << 0);
+  byteData[0] |= (dataFrame.pl.wakeUp         << 1);
+  byteData[0] |= (dataFrame.blackBox.wakeUp   << 2);
+  byteData[0] |= (dataFrame.upustValve.wakeUp << 3);
+  byteData[0] |= (dataFrame.mainValve.wakeUp  << 4);
 
+  sprintf(wakenUpFrame, "%d;", byteData[0]);
+
+  sprintf(connectionFrame, "%d;", connectedStatus);
+
+
+  // Valve states:
+  memset(byteData, 0, 4);
+  byteData[0] |= (dataFrame.mainValve.valveState  << 0);
+  byteData[0] |= (dataFrame.upustValve.valveState << 2);
+  byteData[0] |= (dataFrame.tanWa.motorState[0]   << 4);
+
+  byteData[1] |= (dataFrame.tanWa.motorState[1]   << 0);  
+  byteData[1] |= (dataFrame.tanWa.motorState[2]   << 3);
+  byteData[1] |= (dataFrame.tanWa.motorState[3]   << 6);
+
+  byteData[2] |= (dataFrame.tanWa.motorState[4]   << 0);
+
+  sprintf(valveStateFrame, "%d;%d;%d;", byteData[0], byteData[1], byteData[2]);
 
   //recovery first byte
   memset(byteData, 0, 4);
-  byteData[0] |= (dataFrame.recovery.isArmed << 6);
-  byteData[0] |= (dataFrame.recovery.firstStageContinouity << 5);
+  byteData[0] |= (dataFrame.recovery.isArmed                << 6);
+  byteData[0] |= (dataFrame.recovery.firstStageContinouity  << 5);
   byteData[0] |= (dataFrame.recovery.secondStageContinouity << 4);
-  byteData[0] |= (dataFrame.recovery.separationSwitch1 << 3);
-  byteData[0] |= (dataFrame.recovery.separationSwitch2 << 2);
-  byteData[0] |= (dataFrame.recovery.telemetrumFirstStage << 1);
-  byteData[0] |= (dataFrame.recovery.telemetrumSecondStage << 0);
+  byteData[0] |= (dataFrame.recovery.separationSwitch1      << 3);
+  byteData[0] |= (dataFrame.recovery.separationSwitch2      << 2);
+  byteData[0] |= (dataFrame.recovery.telemetrumFirstStage   << 1);
+  byteData[0] |= (dataFrame.recovery.telemetrumSecondStage  << 0);
   
   //recovery second byte  
-  byteData[1] |= (dataFrame.recovery.altimaxFirstStage << 5);
-  byteData[1] |= (dataFrame.recovery.altimaxSecondStage << 4);
-  byteData[1] |= (dataFrame.recovery.apogemixFirstStage << 3);
-  byteData[1] |= (dataFrame.recovery.apogemixSecondStage << 2);
-  byteData[1] |= (dataFrame.recovery.firstStageDone << 1);
-  byteData[1] |= (dataFrame.recovery.secondStageDone << 0);
+  byteData[1] |= (dataFrame.recovery.altimaxFirstStage    << 5);
+  byteData[1] |= (dataFrame.recovery.altimaxSecondStage   << 4);
+  byteData[1] |= (dataFrame.recovery.apogemixFirstStage   << 3);
+  byteData[1] |= (dataFrame.recovery.apogemixSecondStage  << 2);
+  byteData[1] |= (dataFrame.recovery.firstStageDone       << 1);
+  byteData[1] |= (dataFrame.recovery.secondStageDone      << 0);
 
-  snprintf(recoveryFrame, recoverySize, "%d;%d;", byteData[0], byteData[1]);
+  sprintf(recoveryFrame, "%d;%d;", byteData[0], byteData[1]);
 
   //error first byte  
   memset(byteData, 0, 4);
@@ -236,7 +222,7 @@ void RocketControl::createLoRaFrame(char* data){
   byteData[2] |= (errors.sensors << 2);
   byteData[2] |= (errors.rtos << 0);
 
-  snprintf(errorsFrame, errorsSize, "%d;%d;%d", byteData[0], byteData[1], byteData[2]);
+  sprintf(errorsFrame, "%d;%d;%d", byteData[0], byteData[1], byteData[2]);
 
   strcpy(data, LORA_TX_DATA_PREFIX);
   strcat(data, mcbFrame);
@@ -246,27 +232,12 @@ void RocketControl::createLoRaFrame(char* data){
   strcat(data, tanwaFrame);
   strcat(data, plFrame);
   strcat(data, bbFrame);
+  strcat(data, wakenUpFrame);
+  strcat(data, connectionFrame);
+  strcat(data, valveStateFrame);
   strcat(data, recoveryFrame); //2
   strcat(data, errorsFrame); //2
   strcat(data, "\n");
-  /*
-  Serial.print("MCB SIZE: "); //DEBUG
-  Serial.print(strlen(mcbFrame));
-  Serial.print("\tPITOT SIZE: "); //DEBUG
-  Serial.print(strlen(pitotFrame));
-  Serial.print("\tMAIN VALVE SIZE: "); //DEBUG
-  Serial.print(strlen(mvFrame));
-  Serial.print("\tPupst valve SIZE: "); //DEBUG
-  Serial.print(strlen(uvFrame));
-  Serial.print("\tTanWa SIZE: "); //DEBUG
-  Serial.print(strlen(tanwaFrame));
-  Serial.print("\tRecovery SIZE: "); //DEBUG
-  Serial.print(strlen(recoveryFrame));
-  Serial.print("\tErrors SIZE: "); //DEBUG
-  Serial.print(strlen(errorsFrame));
-  Serial.print("\tTOTAL SIZE: "); //DEBUG
-  Serial.println(strlen(data));
-  */
 }
 
 /**********************************************************************************************/
@@ -299,7 +270,7 @@ void RocketControl::createSDFrame(char* data){
 
   uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor) + 1;
+    dataFrame.upustValve.tankPressure, dataFrame.upustValve.thermistor) + 1;
   
   tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
@@ -366,7 +337,7 @@ void RocketControl::createSDFrame(char* data){
 
   snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.termistor);
+    dataFrame.upustValve.tankPressure, dataFrame.upustValve.thermistor);
   
   snprintf(tanwaFrame, tanwaSize, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],

@@ -2,7 +2,6 @@
 #include "Adafruit_MCP9808.h"
 
 void dataTask(void *arg){
-  DataFrame dataFrame;
   //ImuData imuData;
   LPS25HB pressureSensor;
   Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
@@ -16,7 +15,7 @@ void dataTask(void *arg){
   char sd[SD_FRAME_ARRAY_SIZE] = {};
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
 
-  float launchPadAltitude = 0;
+  //float launchPadAltitude = 0;
 
 
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
@@ -47,9 +46,9 @@ void dataTask(void *arg){
     rc.sendLog("GPS INIT ERROR");
     rc.errors.setSensorError(GPS_INIT_ERROR);
   }
+  
   //rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
-
-
+  rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //DRUT
 
   while(1){
 
@@ -150,6 +149,7 @@ void dataTask(void *arg){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
         rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
+        rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //get mission time
 
         if(rc.options.flashWrite){
           if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
@@ -159,7 +159,7 @@ void dataTask(void *arg){
         }
         Serial.print("Data frame sizeof: ");
         Serial.println(sizeof(DataFrame));
-        if(esp_now_send(adressBlackBox, (uint8_t*) &dataFrame, sizeof(DataFrame)) != ESP_OK){
+        if(esp_now_send(adressBlackBox, (uint8_t*) &rc.dataFrame, sizeof(DataFrame)) != ESP_OK){
           rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           rc.sendLog("Black box send error");
         }
