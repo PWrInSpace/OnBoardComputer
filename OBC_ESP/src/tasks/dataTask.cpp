@@ -58,14 +58,25 @@ void dataTask(void *arg){
         rc.options.mainValveRequestState = VALVE_CLOSE;
       }*/
 
-      /*
+      
       if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
         rc.changeStateEvent(FIRST_STAGE_RECOVERY_EVENT);
+        rc.sendLog("First stage recovery");
+
       }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
         rc.changeState(SECOND_STAGE_RECOVERY);
+        rc.sendLog("Second stage recovery");
+      
       }
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
-      */
+      
+     /*
+     if(StateMachine::getCurrentState() == States::SECOND_STAGE_RECOVERY){
+       if(imuData.altitude < (launchPadAltitude + 50)){
+         StateMachine::changeStateRequest(States::ON_GROUND);
+       }
+     }*/
+
     }
     //LoRa
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
