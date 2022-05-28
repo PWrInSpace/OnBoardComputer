@@ -90,10 +90,6 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
 
-  /*while(1) {
-	  TelArm_GPIO_Port->ODR ^= TelArm_Pin;
-	  HAL_Delay(2000);
-  }*/
   initAll();
 
   /* USER CODE END 2 */
@@ -104,20 +100,23 @@ int main(void)
   {
 	  checkComputers();
 
-	  if(test.command != 0){
+	  // Obsługa danych przychodzących z i2c:
+	  if (dataFromComm.command > 0 && dataFromComm.command < 255) {
+
 		  executeCommand(dataFromComm);
-		  test.command = 0;
+		  dataFromComm.command = 0;
 	  }
 
 	  if (recData.isArmed) {
 
 		  // Warunki separacji 1 stopnia:
-		  if (!recData.firstStageDone && (recData.altimaxFirstStage || recData.telemetrumFirstStage))
+		  if (!recData.firstStageDone && (recData.altimaxFirstStage ||
+				  (recData.telemetrumFirstStage && recData.isTeleActive)))
 			  doFirstSeparation();
 
 		  // Warunki separacji 2 stopnia:
 		  if (!recData.secondStageDone && recData.firstStageDone &&
-				  (recData.altimaxSecondStage || recData.telemetrumSecondStage))
+				  (recData.altimaxSecondStage || (recData.telemetrumSecondStage && recData.isTeleActive)))
 			  doSecondSeparation();
 	  }
 
@@ -172,10 +171,7 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 		HAL_I2C_Slave_Transmit(hi2c, (uint8_t*) &recData, sizeof(recData), 5);
 	}
 	else {
-		//DataFromComm dataFromComm;
 		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
-		//executeCommand(dataFromComm);
-		memcpy(&test, &dataFromComm, sizeof(DataFromComm));
 	}
 	HAL_I2C_EnableListen_IT(hi2c);
 }
