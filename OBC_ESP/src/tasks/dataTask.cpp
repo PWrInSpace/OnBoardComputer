@@ -60,11 +60,11 @@ void dataTask(void *arg){
 
       
       if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
-        rc.changeStateEvent(FIRST_STAGE_RECOVERY_EVENT);
+        StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
         rc.sendLog("First stage recovery");
 
       }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
-        rc.changeState(SECOND_STAGE_RECOVERY);
+        StateMachine::changeStateRequest(SECOND_STAGE_RECOVERY);
         rc.sendLog("Second stage recovery");
       
       }

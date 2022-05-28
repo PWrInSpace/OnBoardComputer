@@ -218,7 +218,7 @@ void stateTask(void *arg){
         }
         
         //force main valve close until confirmation
-        if(rc.dataFrame.mainValve.valveState != 0){
+        if(rc.dataFrame.mainValve.valveState != ValveState::Close){
           txDataEspNow.setVal(VALVE_CLOSE, 0); 
           if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -233,6 +233,16 @@ void stateTask(void *arg){
           rc.recoveryStm.forceSecondStageSeparation();
           xSemaphoreGive(rc.hardware.i2c1Mutex);
         }
+
+        //force main valve close until confirmation
+        if(rc.dataFrame.upustValve.valveState != ValveState::Open){
+          txDataEspNow.setVal(VALVE_OPEN, 0);
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+        }
+
+
         break;
 
       case ABORT:

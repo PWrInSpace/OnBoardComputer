@@ -4,6 +4,15 @@
 #include <cstdint>
 /**   RX    **/
 
+enum ValveState{
+  Close = 0, 
+  Open = 1, 
+  IDK = 2 , 
+  Vent = 3, 
+  AttemptToOpen = 4, 
+  AttemptToClose = 5
+};
+
 struct PitotData {
   bool wakeUp : 1;
   float staticPressure;
