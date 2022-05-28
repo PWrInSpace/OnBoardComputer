@@ -6,6 +6,7 @@ void sdTask(void *arg){
   String dataPath = dataFileName;
   String logPath = logFileName;
   uint8_t sd_i = 0;
+  bool sdError = false;
 
   vTaskDelay(50 / portTICK_RATE_MS);
 
@@ -39,15 +40,27 @@ void sdTask(void *arg){
         if(strncmp(data, "LOG", 3) == 0){
           if(!mySD.write(logPath, data)){
             rc.errors.setSDError(SD_WRITE_ERROR);
+            sdError = true;
+          }else{
+            rc.errors.setSDError(SD_NO_ERROR);
+            sdError = false;
           }
         }else{
           if(!mySD.write(dataPath, data)){
             rc.errors.setSDError(SD_WRITE_ERROR);
+            sdError = true;
+          }else{
+            rc.errors.setSDError(SD_NO_ERROR);
+            sdError = false;
           }
         }  
 
       xSemaphoreGive(rc.hardware.spiMutex);
     } 
+    //FIX temporary
+    if(sdError){
+      vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
 
     wt.sdTaskFlag = true;
     vTaskDelay(25 / portTICK_PERIOD_MS);

@@ -12,6 +12,8 @@
 #include "pinout.h"
 #include "../include/components/SDcard.h"
 #include "../include/structs/stateMachine.h"
+#include "SparkFun_LPS25HB_Arduino_Library.h"
+#include "../sensors/imuAPI.h"
 
 extern RocketControl rc;
 extern WatchdogTimer wt;
@@ -27,6 +29,7 @@ void flashTask(void *arg);
 //Timers
 void watchdogTimerCallback(TimerHandle_t xTimer);
 void disconnectTimerCallback(TimerHandle_t xTimer);
+void espNowConnectionCallback(TimerHandle_t xTimer);
 
 // Functions
 void parseR4A(char* data);

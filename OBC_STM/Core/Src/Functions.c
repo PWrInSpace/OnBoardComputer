@@ -6,6 +6,7 @@ void initAll(void) {
 	HAL_I2C_EnableListen_IT(&hi2c1);
 }
 
+
 /*****************************************************************/
 
 #define TEST_NUM 2

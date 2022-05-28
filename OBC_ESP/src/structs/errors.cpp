@@ -75,10 +75,10 @@ void Errors::reset(uint8_t triger){
   }
 
   if(loraTriger && sdTriger){
-    sd = SD_NO_ERROR;
+    //sd = SD_NO_ERROR;
     flash = FLASH_NO_ERROR;
     rtos = RTOS_NO_ERROR;
-    espnow = (EspNowError)((int)espnow & (int)ESPNOW_ADD_PEER_ERROR); //prevent add peer error reset
+    //espnow = (EspNowError)((int)espnow & (int)ESPNOW_ADD_PEER_ERROR); //prevent add peer error reset
     watchdog = WATCHDOG_NO_ERROR;
     sensors = SENSORS_NO_ERROR;
 

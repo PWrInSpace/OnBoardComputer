@@ -45,6 +45,8 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   uint8_t adressToQueue = 0;
 
+  Serial.println("Odpiur");
+
   if(adressCompare(mac, adressPitot)) {
 
     memcpy(&rc.dataFrame.pitot, (PitotData*) incomingData, sizeof(rc.dataFrame.pitot));
@@ -76,8 +78,8 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   }
 
   else if(adressCompare(mac, adressPayLoad)) {
-
-    memcpy(&rc.dataFrame.payLoad, (SlaveData*) incomingData, sizeof(rc.dataFrame.payLoad));
+    Serial.println("Payload Data");
+    memcpy(&rc.dataFrame.pl, (PlData*) incomingData, sizeof(rc.dataFrame.pl));
     adressToQueue = PAYLOAD;
   }
 

@@ -16,7 +16,8 @@ enum States{
   SECOND_STAGE_RECOVERY,
   ON_GROUND,
   HOLD,
-  ABORT
+  ABORT,
+  NO_CHANGE = 0xff //DO NOT USE, ONLY FOR REQUEST PURPOSE
 };
 
 class StateMachine{
@@ -35,7 +36,8 @@ class StateMachine{
 };
 
 //static init value
-
+//8
+//155
 
 
 #endif

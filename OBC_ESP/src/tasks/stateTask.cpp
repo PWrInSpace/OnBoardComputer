@@ -11,6 +11,7 @@ void stateTask(void *arg){
       
       switch(stateMachine.getRequestedState()){
         case IDLE:
+          rc.options.dataCurrentPeriod = DATA_PERIOD;
           stateMachine.changeStateConfirmation();
           break;
 
@@ -18,6 +19,7 @@ void stateTask(void *arg){
           //recovery arm request
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(true);
+          vTaskDelay(150);
           rc.recoveryStm.setTelemetrum(true);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
           //check recovery arm answer
@@ -27,8 +29,7 @@ void stateTask(void *arg){
 
         case FUELING:
           //TODO in future, check valves state
-          rc.options.sdDataCurrentPeriod = rc.options.sdLongPeriod * portTICK_PERIOD_MS;
-
+          
           txDataEspNow.setVal(VALVE_CLOSE, 0);
           if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -48,11 +49,7 @@ void stateTask(void *arg){
         case COUNTDOWN:
           //dataframe 
           if(rc.allDevicesWokenUp() || rc.options.forceLaunch == true){
-            
-            //set options
-            rc.options.sdDataCurrentPeriod = rc.options.sdShortPeriod * portTICK_PERIOD_MS;
-            rc.options.flashDataCurrentPeriod = rc.options.flashShortPeriod * portTICK_PERIOD_MS;
-
+          
             //turn on mission timer
             rc.missionTimer.startTimer(millis() + rc.options.countdownTime);
 
@@ -95,8 +92,6 @@ void stateTask(void *arg){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           };
 
-          rc.options.flashDataCurrentPeriod = rc.options.flashLongPeriod * portTICK_PERIOD_MS;
-          
           stateMachine.changeStateConfirmation();
           break;
 
@@ -116,12 +111,9 @@ void stateTask(void *arg){
           break;
 
         case ON_GROUND:
-          rc.options.sdDataCurrentPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
-          rc.options.dataFramePeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
-          rc.options.loraPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
-
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
+          vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
 
@@ -158,9 +150,11 @@ void stateTask(void *arg){
           break;
 
         case ABORT:
-          //xTimerDelete(rc.hardware.disconnectTimer, 25); //turn off if abort wasn't triger by timer
-          //rc.hardware.disconnectTimer = NULL;
           rc.deactiveDisconnectTimer();
+
+          if(rc.missionTimer.isEnable()){
+            rc.missionTimer.turnOffTimer();
+          }
 
           //Upust valve open
           txDataEspNow.setVal(VALVE_OPEN, 0);
@@ -168,12 +162,9 @@ void stateTask(void *arg){
 
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
+          vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
-
-          rc.options.sdDataCurrentPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
-          rc.options.dataFramePeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
-          rc.options.loraPeriod = rc.options.idlePeriod * portTICK_PERIOD_MS;
 
           stateMachine.changeStateConfirmation();
           break;
@@ -183,15 +174,21 @@ void stateTask(void *arg){
           ESP.restart();
           break;
       }
-      
+      //FIX out of range
+      rc.options.sdDataCurrentPeriod = sdPeriod[StateMachine::getCurrentState()];
+      rc.options.loraCurrentPeriod = loraPeriod[StateMachine::getCurrentState()];
+      rc.options.flashDataCurrentPeriod = flashPeriod[StateMachine::getCurrentState()];
+          
+          
       xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
+      
       //portEXIT_CRITICAL(&rc.stateLock);
     }
 
     //LOOP 
     switch(StateMachine::getCurrentState()){
       case COUNTDOWN:
-        if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity == true){
+        if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
           txDataEspNow.setVal(IGNITION_COMMAND, 0);  //IDK
           //send ignition request
           if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
@@ -200,7 +197,7 @@ void stateTask(void *arg){
           }
 
           //TODO uncomment
-          //rc.sendLog("IGNITION REQUEST");
+          rc.sendLog("IGNITION REQUEST");
         }
 
         if(rc.missionTimer.getTime() > 0){
@@ -249,6 +246,7 @@ void stateTask(void *arg){
         if(rc.dataFrame.recovery.isArmed){
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
+          vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
         }

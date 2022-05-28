@@ -2,6 +2,8 @@
 #define DATA_STRUCTS_HH
 
 #include <cstdint>
+#include "stateMachine.h"
+
 /**   RX    **/
 
 enum ValveState{
@@ -29,28 +31,39 @@ struct MainValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
   float thermocouple[2];
+  //sfloat termistor;
+  float pressure;
   float batteryVoltage;
 };
 
 struct TanWaData {
-  uint8_t fillValveState : 2;
-  uint8_t deprValveState : 2;
-  uint8_t pullState : 2;
-  uint8_t tanWaState : 4;
-  bool igniterContinouity : 1;
-  float rocketWeight;
-  float butlaWeight; 
-  uint32_t rocketWeightRaw;
-  uint32_t butlaWeightRaw;
-  float batteryVoltage;
+  uint8_t tanWaState; //
+  bool igniterContinouity[2]; //
+  float vbat; //
+  uint8_t motorState[5]; //
+  float rocketWeight; //
+  float butlaWeight; //
+  uint32_t rocketWeightRaw; //
+  uint32_t butlaWeightRaw; //
+  float thermocouple[3]; //
+  bool tankHeating : 1;//
+  bool abortButton : 1;//
+  bool armButton : 1; //
 };
 
 struct UpustValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
-  uint16_t hall[5];
+  uint16_t thermistor;
   float tankPressure;
   float batteryVoltage;
+};
+
+struct PlData {
+  bool wakeUp : 1;
+  bool isRecording : 1;
+  bool data : 1;
+  float vbat;
 };
 
 struct RecoveryData {
@@ -76,20 +89,22 @@ struct SlaveData {
 };
 
 struct MCB{
-  //float imuData[12]; //TODO
+  float imuData[12];
   float batteryVoltage;
   float GPSlal;
   float GPSlong;
   float GPSalt;
   uint8_t GPSsat;
   uint8_t GPSsec;
-  float temp;
+  float temp_mcp;
+  float temp_lp25;
   float pressure;
   float altitude;
   float velocity;
   uint8_t watchdogResets;
   uint8_t state;
   bool ignition : 1;
+
 };
 
 struct DataFrame {
@@ -99,8 +114,9 @@ struct DataFrame {
   UpustValveData  upustValve;
   RecoveryData    recovery;
   SlaveData       blackBox;
-  SlaveData       payLoad;
+  PlData          pl;
   MCB mcb;
+  uint32_t missionTimer; //DRUT
 
   DataFrame() = default;
 };
