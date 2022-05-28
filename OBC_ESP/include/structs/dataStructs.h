@@ -6,13 +6,13 @@
 
 /**   RX    **/
 
-enum ValveState {
-  ValveStateClose = 0, 
-  ValveStateOpen = 1, 
-  ValveStateIDK = 2 , 
-  ValveStateVent = 3, 
-  ValveStateAttemptToOpen = 4, 
-  ValveStateAttemptToClose = 5
+enum ValveState{
+  Close = 0, 
+  Open = 1, 
+  IDK = 2 , 
+  Vent = 3, 
+  AttemptToOpen = 4, 
+  AttemptToClose = 5
 };
 
 struct PitotData {
