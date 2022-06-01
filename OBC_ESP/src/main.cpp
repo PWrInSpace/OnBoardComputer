@@ -1,3 +1,4 @@
+
 #include "../include/timers/watchdog.h"
 #include "../include/structs/rocketControl.h"
 #include "../include/structs/dataStructs.h"
@@ -13,11 +14,7 @@ RocketControl rc;
 
 void setup() {
   Serial.begin(115200); //DEBUG
-  
-  Serial.print("Setup state: "); //DEBUG
-  Serial.println(StateMachine::getCurrentState()); //DEBUG
-  //BROWNOUT DETECTOT DISABLING
-  //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
+
   WiFi.mode(WIFI_STA);
   esp_wifi_set_mac(ESP_IF_WIFI_STA, adressOBC);
   //set mission timer
@@ -35,24 +32,12 @@ void setup() {
   if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
   if(nowAddPeer(adressPayLoad, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
 
-
-  //init all components
-  rc.hardware.i2c1.begin(I2C1_SDA, I2C1_SCL, 100E3);
-  rc.hardware.i2c2.begin(I2C2_SDA, I2C2_SCL, 100E3);
-  rc.hardware.i2c1.setTimeOut(20);
-  rc.hardware.i2c2.setTimeOut(20);
-
-  rc.hardware.mySPI.begin();
-
   //create Queues and Mutex //TODO
   rc.hardware.loraRxQueue = xQueueCreate(LORA_RX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
   rc.hardware.loraTxQueue = xQueueCreate(LORA_TX_QUEUE_LENGTH, sizeof(char[LORA_FRAME_ARRAY_SIZE]));
-  rc.hardware.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(char[SD_FRAME_ARRAY_SIZE]));
-  rc.hardware.flashQueue = xQueueCreate(FLASH_QUEUE_LENGTH, sizeof(DataFrame));
+  //rc.hardware.sdQueue = xQueueCreate(SD_QUEUE_LENGTH, sizeof(char[SD_FRAME_ARRAY_SIZE]));
+  //rc.hardware.flashQueue = xQueueCreate(FLASH_QUEUE_LENGTH, sizeof(DataFrame));
   rc.hardware.espNowQueue = xQueueCreate(ESP_NOW_QUEUE_LENGTH, sizeof(uint8_t));
-
-  rc.hardware.spiMutex = xSemaphoreCreateMutex();
-  rc.hardware.i2c1Mutex = xSemaphoreCreateMutex();
 
   //create Tasks
   //pro cpu
@@ -60,18 +45,16 @@ void setup() {
   xTaskCreatePinnedToCore(rxHandlingTask, "RX handling task", 8192, NULL, 2, &rc.hardware.rxHandlingTask, PRO_CPU_NUM);
 
   //app cpu
-  xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.hardware.stateTask, APP_CPU_NUM);
+//  xTaskCreatePinnedToCore(stateTask, "State task", 8192, NULL, 5, &rc.hardware.stateTask, APP_CPU_NUM);
   xTaskCreatePinnedToCore(dataTask,  "Data task",  30000, NULL, 2, &rc.hardware.dataTask,  APP_CPU_NUM);
-  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 1, &rc.hardware.sdTask,    APP_CPU_NUM);
-  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
+//  xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 1, &rc.hardware.sdTask,    APP_CPU_NUM);
+//  xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
 
   //create Timers
-  rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
-
-  rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
-
-  rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer", espNowConnectionCheckPeriod, pdTRUE, NULL, espNowConnectionCallback);
-  
+  //rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
+  //rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
+  //rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer", espNowConnectionCheckPeriod, pdTRUE, NULL, espNowConnectionCallback);
+  /*
   //check created elements
   if(rc.hardware.loraRxQueue == NULL || rc.hardware.loraTxQueue == NULL || rc.hardware.sdQueue == NULL || rc.hardware.flashQueue == NULL || rc.hardware.espNowQueue == NULL){
     //error handling
@@ -102,7 +85,7 @@ void setup() {
     Serial.println("timer create error!"); //DEBUG
     ESP.restart();
   }  
-  
+  */
   //watchdogtimer
   /*
   wt.begin();
@@ -118,15 +101,16 @@ void setup() {
 
   */
   //start timers
-  StateMachine::changeStateRequest(States::IDLE);
-  xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
-  xTimerStart(rc.hardware.espNowConnectionTimer, portMAX_DELAY);
+//  StateMachine::changeStateRequest(States::IDLE);
+//  xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
+//  xTimerStart(rc.hardware.espNowConnectionTimer, portMAX_DELAY);
   //xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
-  
-  
-  vTaskDelete(NULL); //delete main task (loop())
+  vTaskDelay(1000);
+  Serial.println("Start");
+//  StateMachine::changeStateRequest(States::IDLE);
+  //vTaskDelete(NULL); //delete main task (loop())
 }
 
 void loop() {
-
+  vTaskDelay(5000);
 }

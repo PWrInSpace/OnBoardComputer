@@ -22,7 +22,7 @@ void RocketControl::sendLog(const char * message){
   strcat(log, temp);
 
   //Serial.println(log); //DEBUG
-  xQueueSend(hardware.sdQueue, (void*)&log, 0);
+  //xQueueSend(hardware.sdQueue, (void*)&log, 0);
 }
 
 /**
@@ -31,6 +31,10 @@ void RocketControl::sendLog(const char * message){
  * @return uint32_t remaining time
  */
 uint32_t RocketControl::getDisconnectRemainingTime(){
+  if(hardware.disconnectTimer == NULL){
+    return disconnectDelay;
+  }
+  
   if(xTimerIsTimerActive(hardware.disconnectTimer) == pdFALSE){
     return disconnectDelay;
   }

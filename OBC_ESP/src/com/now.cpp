@@ -45,7 +45,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   uint8_t adressToQueue = 0;
 
-  Serial.println("Odpiur");
+  //Serial.println("Odpiur");
 
   if(adressCompare(mac, adressPitot)) {
 
@@ -60,7 +60,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   }
 
   else if(adressCompare(mac, adressMValve)) {
-    Serial.println("MainValve Data");
+    //Serial.println("MainValve Data");
     memcpy(&rc.dataFrame.mainValve, (MainValveData*) incomingData, sizeof(rc.dataFrame.mainValve));
     adressToQueue = MAIN_VALVE;
   }

@@ -3,10 +3,10 @@
 
 void dataTask(void *arg){
   //ImuData imuData;
-  LPS25HB pressureSensor;
-  Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
-  SFE_UBLOX_GNSS gps;
-  ImuAPI imu(&rc.hardware.i2c2);
+  //LPS25HB pressureSensor;
+  //Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
+  //SFE_UBLOX_GNSS gps;
+  //ImuAPI imu(&rc.hardware.i2c2);
 
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
@@ -15,6 +15,7 @@ void dataTask(void *arg){
   char sd[SD_FRAME_ARRAY_SIZE] = {};
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
 
+  /*
   //float launchPadAltitude = 0;
 
 
@@ -32,6 +33,7 @@ void dataTask(void *arg){
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
+  */
   /*
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
@@ -41,17 +43,18 @@ void dataTask(void *arg){
     imu.setInitPressure();
     launchPadAltitude = imu.getAltitude();
   }*/
-
+  /*
   if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
     rc.sendLog("GPS INIT ERROR");
     rc.errors.setSensorError(GPS_INIT_ERROR);
   }
   
   //rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
+  */
   rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //DRUT
-
+  
   while(1){
-
+    /*
     //data
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -74,7 +77,7 @@ void dataTask(void *arg){
       
       //MCP temp
       rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
-
+    */
       // IMU:
       /*
       imu.readData();
@@ -93,10 +96,11 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.imuData[0] = imuData.altitude;
       */
       // Recovery:
+      /*
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
       rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
       xSemaphoreGive(rc.hardware.i2c1Mutex);
-
+      */
       //read i2c comm data
       //rc.sendLog("Hello space!");
       //filters
@@ -108,7 +112,7 @@ void dataTask(void *arg){
         rc.options.mainValveRequestState = VALVE_CLOSE;
       }*/
 
-      
+      /*
       if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
         StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
         rc.sendLog("First stage recovery");
@@ -118,6 +122,7 @@ void dataTask(void *arg){
         rc.sendLog("Second stage recovery");
       
       }
+      */
       //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
 
      /*
@@ -125,29 +130,26 @@ void dataTask(void *arg){
        if(imuData.altitude < (launchPadAltitude + 50)){
          StateMachine::changeStateRequest(States::ON_GROUND);
        }
-     }*/
+     }
 
     }
-
+    */
 
     //LoRa
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
+    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
-      
-      rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
+      //rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
-      //Serial.print("Dlugos: ");
-      //Serial.println(strlen(lora));
-      Serial.print(lora);
+      //Serial.print(lora);
       
-
+      
       if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){
         rc.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
-        rc.sendLog("LoRa quque is full");
+        //rc.sendLog("LoRa quque is full");
       }
       rc.errors.reset(ERROR_RESET_LORA);
     }
-
+    /*
     //FLASH
     if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND)){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
@@ -188,6 +190,7 @@ void dataTask(void *arg){
     }
 
     wt.dataTaskFlag = true;
+    */
     vTaskDelay(10/ portTICK_PERIOD_MS);  
   }
 }

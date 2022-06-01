@@ -4,7 +4,7 @@
 void loraTask(void *arg){
   char loraRx[LORA_FRAME_ARRAY_SIZE / 2] = {};
   char loraTx[LORA_FRAME_ARRAY_SIZE] = {};
-
+  /*
   xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
 
   LoRa.setSPI(rc.hardware.mySPI);
@@ -23,10 +23,25 @@ void loraTask(void *arg){
   LoRa.setTxPower(14);
   LoRa.setTimeout(10);
   xSemaphoreGive(rc.hardware.spiMutex);
-
+  */
   vTaskDelay(100 / portTICK_PERIOD_MS);
 
   while(1){
+
+    if(Serial.available()){
+      String rxStr = Serial.readString();
+      strcpy(loraRx, rxStr.c_str());
+      Serial.println(loraRx);
+      xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
+    }
+
+    if(xQueueReceive(rc.hardware.loraTxQueue, (void*)&loraTx, 0) == pdTRUE){
+      //Serial.print(loraTx); 
+      Serial.write(loraTx, strlen(loraTx));
+      
+    }
+
+    /*
     xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
 
       LoRa.parsePacket();
@@ -35,9 +50,10 @@ void loraTask(void *arg){
         String rxStr = LoRa.readString();
         //Serial.print(rxStr); // DEBUG
 
-        
-        strcpy(loraRx, rxStr.c_str());
-        xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
+        if(rxStr.size() < LORA_FRAME_ARRAY_SIZE){
+          strcpy(loraRx, rxStr.c_str());
+          xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
+        }
         
         rc.restartDisconnectTimer(); 
       }
@@ -56,6 +72,7 @@ void loraTask(void *arg){
     }
 
     wt.loraTaskFlag = true;
+    */
     vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }

@@ -8,10 +8,10 @@ void rxHandlingTask(void *arg){
   char callback[LORA_FRAME_ARRAY_SIZE];
 
   while(1){
-    //Serial.println("RX handling tasks"); //DEBUG
+   // Serial.println("RX handling tasks"); //DEBUG
     
     if(xQueueReceive(rc.hardware.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
-      Serial.println(loraData);
+      //Serial.println(loraData);
       /*** R4A ***/
       if(strncmp(loraData, "R4A", 3) == 0){
         if (strstr(loraData, "STAT;") != NULL) {
@@ -207,7 +207,11 @@ void rxHandlingTask(void *arg){
         else if(strstr(loraData, "TANWA") != NULL){
           TxDataEspNow txDataEspNow;
           sscanf(loraData, "R4O;TANWA;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
-          
+          Serial.println("=== TANWA TX FRAME ===");
+          Serial.println(txDataEspNow.command);
+          Serial.println(txDataEspNow.commandTime);
+          Serial.println("=== END TX FRAME ===");
+
           if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           }
