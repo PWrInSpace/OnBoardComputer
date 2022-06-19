@@ -37,7 +37,7 @@
 
 
 //OPTIONS DEFAULT VALUE (SETUP)
-#define LoRa_FREQUENCY_MHZ 868
+#define LoRa_FREQUENCY_MHZ 927
 #define COUNTDOWN_TIME 15 * 1000
 #define IGNITION_TIME -3000
 #define TANK_MIN_PRESSURE 35 //bar
@@ -81,7 +81,7 @@ static const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {
   1000 / portTICK_PERIOD_MS,  //FILLING
   2000 / portTICK_PERIOD_MS, //RTL
   500 / portTICK_PERIOD_MS, //COUNTDOWN
-  100 / portTICK_PERIOD_MS, //flight
+  150 / portTICK_PERIOD_MS, //flight
   500 / portTICK_PERIOD_MS, //first_stage_recov
   500 / portTICK_PERIOD_MS, //second_stage_recov
   10000 / portTICK_PERIOD_MS, //on ground
@@ -143,11 +143,11 @@ static uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //ARM
   500, //FILLING
   500, //RTL
-  100, //COUNTDOWN
-  100, //flight
+  250, //COUNTDOWN
+  250, //flight
   500, //first_stage_recov
   500, //second_stage_recov
-  ESP_NOW_SLEEP_TIME, //on ground
+  10000, //on ground
   ESP_NOW_SLEEP_TIME, //HOLD
   ESP_NOW_SLEEP_TIME,//ABORT
 };
@@ -159,7 +159,7 @@ static uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //FILLING
   ESP_NOW_SLEEP_TIME, //RTL
   500, //COUNTDOWN
-  100, //flight
+  500, //flight
   500, //first_stage_recov
   500, //second_stage_recov
   ESP_NOW_SLEEP_TIME, //on ground
@@ -175,7 +175,7 @@ static uint16_t espNowDefaultPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //FILLING
   ESP_NOW_SLEEP_TIME, //RTL
   500, //COUNTDOWN
-  100, //flight
+  500, //flight
   500, //first_stage_recov
   500, //second_stage_recov
   ESP_NOW_SLEEP_TIME, //on ground

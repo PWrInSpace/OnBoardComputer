@@ -17,6 +17,7 @@
 
 extern RocketControl rc;
 extern WatchdogTimer wt;
+
 //Tasks
 void loraTask(void *arg);
 void rxHandlingTask(void *arg);

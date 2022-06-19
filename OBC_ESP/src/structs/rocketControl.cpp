@@ -91,7 +91,7 @@ bool RocketControl::allDevicesWokenUp(){
 void RocketControl::createOptionsFrame(char* data){
   size_t optionsSize;
 
-  optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
+  optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
     options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
     options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod) + 1;
@@ -99,7 +99,7 @@ void RocketControl::createOptionsFrame(char* data){
 
   char opt[optionsSize];
 
-  snprintf(opt, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
+  snprintf(opt, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
     options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
     options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
     options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
@@ -153,7 +153,7 @@ void RocketControl::createLoRaFrame(char* data){
   
   sprintf(tanwaFrame, "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
-    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.rocketWeight, dataFrame.tanWa.butlaWeight,
+    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight,
     dataFrame.tanWa.armButton, dataFrame.tanWa.abortButton);//19
   
   sprintf(plFrame, "%d;%d;%0.1f;",
@@ -172,7 +172,6 @@ void RocketControl::createLoRaFrame(char* data){
 
   sprintf(connectionFrame, "%d;", connectedStatus);
 
-
   // Valve states:
   memset(byteData, 0, 4);
   byteData[0] |= (dataFrame.mainValve.valveState  << 0);
@@ -181,9 +180,9 @@ void RocketControl::createLoRaFrame(char* data){
 
   byteData[1] |= (dataFrame.tanWa.motorState[1]   << 0);  
   byteData[1] |= (dataFrame.tanWa.motorState[2]   << 3);
-  byteData[1] |= (dataFrame.tanWa.motorState[3]   << 6);
 
-  byteData[2] |= (dataFrame.tanWa.motorState[4]   << 0);
+  byteData[2] |= (dataFrame.tanWa.motorState[3]   << 0);
+  byteData[2] |= (dataFrame.tanWa.motorState[4]   << 3);
 
   sprintf(valveStateFrame, "%d;%d;%d;", byteData[0], byteData[1], byteData[2]);
 
@@ -257,7 +256,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
     dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
     dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
-    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
+    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.apogee);
 
   pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.pitot.wakeUp, dataFrame.pitot.batteryVoltage, dataFrame.pitot.staticPressure, 
@@ -276,8 +275,8 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
     dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
     dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
-    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.butlaWeight, dataFrame.tanWa.rocketWeightRaw, 
-    dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
+    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight, dataFrame.tanWa.rocketWeightRaw, 
+    dataFrame.tanWa.tankWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
     dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
   
@@ -343,8 +342,8 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
     dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
     dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
-    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.butlaWeight, dataFrame.tanWa.rocketWeightRaw, 
-    dataFrame.tanWa.butlaWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
+    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight, dataFrame.tanWa.rocketWeightRaw, 
+    dataFrame.tanWa.tankWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
     dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating); //19
 

@@ -48,14 +48,18 @@ void ImuAPI::setReg(AccelerometerScale _accScale, GyroscpoeScale _gyrScale, Band
 
 bool ImuAPI::setInitPressure(){
   float press = 0;
+  float controlPressure = 0;
   float tempPress = 0;
   int measurement = 0;
+
+  controlPressure = ps.readPressureMillibars();
+  delay(25);
 
   for(int i = 0; i<5; ++i){
     tempPress = ps.readPressureMillibars();
     measurement++;
 
-    if(abs(1023 - tempPress) < 75){
+    if(abs(controlPressure -  tempPress) < 75){
       press += tempPress;
     }else{
       i--;
@@ -97,7 +101,9 @@ void ImuAPI::readData(){
 
   data.pressure = ps.readPressureMillibars();
   data.temperature = ps.readTemperatureC();
-  data.altitude = ps.pressureToAltitudeMeters(data.pressure, initPressure);
+  if(data.pressure != 0){
+    data.altitude = ps.pressureToAltitudeMeters(data.pressure, initPressure);
+  }
 }
 
 float ImuAPI::getInitPressure(){

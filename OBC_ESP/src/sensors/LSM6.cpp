@@ -150,16 +150,9 @@ void LSM6::readAcc(void)
   // automatic increment of register address is enabled by default (IF_INC in CTRL3_C)
   wire->write(OUTX_L_XL);
   wire->endTransmission();
-  wire->requestFrom(address, (uint8_t)6);
+  if(wire->requestFrom(address, (uint8_t)6) == 0) return;
 
   uint16_t millis_start = millis();
-  while (wire->available() < 6) {
-    if (io_timeout > 0 && ((uint16_t)millis() - millis_start) > io_timeout)
-    {
-      did_timeout = true;
-      return;
-    }
-  }
 
   uint8_t xla = wire->read();
   uint8_t xha = wire->read();
@@ -181,7 +174,7 @@ void LSM6::readGyro(void)
   // automatic increment of register address is enabled by default (IF_INC in CTRL3_C)
   wire->write(OUTX_L_G);
   wire->endTransmission();
-  wire->requestFrom(address, (uint8_t)6);
+  if(wire->requestFrom(address, (uint8_t)6) == 0) return;
 
   uint16_t millis_start = millis();
   while (wire->available() < 6) {

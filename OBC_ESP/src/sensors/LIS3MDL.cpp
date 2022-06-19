@@ -146,17 +146,9 @@ void LIS3MDL::read()
   // assert MSB to enable subaddress updating
   wire->write(OUT_X_L | 0x80);
   wire->endTransmission();
-  wire->requestFrom(address, (uint8_t)6);
+  if(wire->requestFrom(address, (uint8_t)6) == 0) return;
 
   uint16_t millis_start = millis();
-  while (wire->available() < 6)
-  {
-    if (io_timeout > 0 && ((uint16_t)millis() - millis_start) > io_timeout)
-    {
-      did_timeout = true;
-      return;
-    }
-  }
 
   uint8_t xlm = wire->read();
   uint8_t xhm = wire->read();

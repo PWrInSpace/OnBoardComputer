@@ -73,8 +73,10 @@ void stateTask(void *arg){
         case FLIGHT:
           txDataEspNow.setVal(VALVE_OPEN, 0); 
           if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            Serial.println("Odpalenie error");
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           }
+          Serial.println("Komenda odpalenia");
           
           //set options
           stateMachine.changeStateConfirmation();
@@ -174,11 +176,11 @@ void stateTask(void *arg){
           ESP.restart();
           break;
       }
+
       //FIX out of range
       rc.options.sdDataCurrentPeriod = sdPeriod[StateMachine::getCurrentState()];
       rc.options.loraCurrentPeriod = loraPeriod[StateMachine::getCurrentState()];
       rc.options.flashDataCurrentPeriod = flashPeriod[StateMachine::getCurrentState()];
-          
           
       xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
       
@@ -189,14 +191,13 @@ void stateTask(void *arg){
     switch(StateMachine::getCurrentState()){
       case COUNTDOWN:
         if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
-          txDataEspNow.setVal(IGNITION_COMMAND, 0);  //IDK
+          txDataEspNow.setVal(IGNITION_COMMAND, 1);  //IDK
           //send ignition request
           if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
             rc.sendLog("Esp send error - IGNITION");
           }
 
-          //TODO uncomment
           rc.sendLog("IGNITION REQUEST");
         }
 
@@ -205,6 +206,17 @@ void stateTask(void *arg){
           rc.sendLog("CHANGE TO FLIGHT STATE");
         }
 
+        break;
+      case FLIGHT:
+        //force main valve open until ocnfirmation
+        if(rc.dataFrame.mainValve.valveState != ValveState::Open){
+          txDataEspNow.setVal(VALVE_OPEN, 0); 
+          Serial.println("Loop odpalenia");
+          if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+          //vTaskDelay(25 / portTICK_PERIOD_MS);
+        }
         break;
       case FIRST_STAGE_RECOVERY:
         //force recovery until confirmation
@@ -219,7 +231,7 @@ void stateTask(void *arg){
           txDataEspNow.setVal(VALVE_CLOSE, 0); 
           if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
-          };
+          }
         }
 
         break;
@@ -238,7 +250,6 @@ void stateTask(void *arg){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
           }
         }
-
 
         break;
 

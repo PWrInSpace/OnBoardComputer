@@ -1,9 +1,9 @@
 #ifndef IMUAPI_HH
 #define IMUAPI_HH
 
-#include "../include/sensors/LIS3MDL.h"
-#include "../include/sensors/LPS.h"
-#include "../include/sensors/LSM6.h"
+#include "LIS3MDL.h"
+#include "LPS.h"
+#include "LSM6.h"
 #include <Wire.h>
 
 

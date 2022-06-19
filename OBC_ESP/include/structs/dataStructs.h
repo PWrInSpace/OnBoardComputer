@@ -31,24 +31,24 @@ struct MainValveData {
   bool wakeUp : 1;
   uint8_t valveState : 2;
   float thermocouple[2];
-  //sfloat termistor;
-  float pressure;
+  //float termistor;
+  //float pressure;
   float batteryVoltage;
 };
 
 struct TanWaData {
-  uint8_t tanWaState; //
-  bool igniterContinouity[2]; //
-  float vbat; //
-  uint8_t motorState[5]; //
-  float rocketWeight; //
-  float butlaWeight; //
-  uint32_t rocketWeightRaw; //
-  uint32_t butlaWeightRaw; //
-  float thermocouple[3]; //
-  bool tankHeating : 1;//
-  bool abortButton : 1;//
-  bool armButton : 1; //
+  uint8_t tanWaState;
+  bool tankHeating : 1;
+  bool abortButton : 1;
+  bool armButton : 1;
+  bool igniterContinouity[2];
+  float vbat;
+  uint8_t motorState[5];
+  float rocketWeight;
+  float tankWeight; 
+  uint32_t rocketWeightRaw;
+  uint32_t tankWeightRaw;
+  float thermocouple[3];
 };
 
 struct UpustValveData {
@@ -89,7 +89,7 @@ struct SlaveData {
 };
 
 struct MCB{
-  float imuData[12];
+  float imuData[11];
   float batteryVoltage;
   float GPSlal;
   float GPSlong;
@@ -104,7 +104,7 @@ struct MCB{
   uint8_t watchdogResets;
   uint8_t state;
   bool ignition : 1;
-
+  float apogee;
 };
 
 struct DataFrame {

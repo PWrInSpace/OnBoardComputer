@@ -246,8 +246,8 @@ void rxHandlingTask(void *arg){
       }
 
       if(rxEspNumber < CONNECTION_CHECK_DEVICE_NUMBER){
-        Serial.print("Ustawiam: ");
-        Serial.println(rxEspNumber);
+        //Serial.print("Ustawiam: ");
+        //Serial.println(rxEspNumber);
         rc.isConnectedFlags[rxEspNumber] = true;
       }
 
@@ -269,7 +269,7 @@ void rxHandlingTask(void *arg){
           break;
 
         case MAIN_VALVE:
-          Serial.println("MainValve notify"); //DEBUG
+          //Serial.println("MainValve notify"); //DEBUG
           sleepTime = valvePeriod[currentState];
           
           if(esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
@@ -280,7 +280,7 @@ void rxHandlingTask(void *arg){
           break;
 
         case UPUST_VALVE:
-          Serial.println("UpustValve notify"); //DEBUG
+          //Serial.println("UpustValve notify"); //DEBUG
           sleepTime = valvePeriod[currentState];
           
           if(esp_now_send(adressUpust, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){

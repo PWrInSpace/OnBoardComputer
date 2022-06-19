@@ -125,9 +125,7 @@ int32_t LPS::readPressureRaw(void)
   // assert MSB to enable register address auto-increment
   wire->write(PRESS_OUT_XL | (1 << 7));
   wire->endTransmission();
-  wire->requestFrom(address, (byte)3);
-
-  while (wire->available() < 3);
+  if(wire->requestFrom(address, (byte)3) == 0) return 0;
 
   uint8_t pxl = wire->read();
   uint8_t pl = wire->read();
@@ -156,9 +154,7 @@ int16_t LPS::readTemperatureRaw(void)
   // assert MSB to enable register address auto-increment
   wire->write(TEMP_OUT_L | (1 << 7));
   wire->endTransmission();
-  wire->requestFrom(address, (byte)2);
-
-  while (wire->available() < 2);
+  if(wire->requestFrom(address, (byte)2) == 0) return 0;
 
   uint8_t tl = wire->read();
   uint8_t th = wire->read();

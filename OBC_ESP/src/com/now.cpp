@@ -45,7 +45,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
   uint8_t adressToQueue = 0;
 
-  Serial.println("Odpiur");
+  //Serial.println("Odpiur");
 
   if(adressCompare(mac, adressPitot)) {
 
@@ -57,10 +57,24 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
     memcpy(&rc.dataFrame.tanWa, (TanWaData*) incomingData, sizeof(rc.dataFrame.tanWa));
     adressToQueue = TANWA;
+    Serial.println("====TANWA DATA====");
+    Serial.print("Motor 0: ");
+    Serial.println(rc.dataFrame.tanWa.motorState[0]);
+    Serial.print("Motor 1: ");
+    Serial.println(rc.dataFrame.tanWa.motorState[1]);
+    Serial.print("Motor 2: ");
+    Serial.println(rc.dataFrame.tanWa.motorState[2]);
+    Serial.print("Motor 3: ");
+    Serial.println(rc.dataFrame.tanWa.motorState[3]);
+    Serial.print("Motor 4: ");
+    Serial.println(rc.dataFrame.tanWa.motorState[4]);
+    Serial.println("Bat: ");
+    Serial.println(rc.dataFrame.tanWa.vbat);
+    Serial.println("====TANWA DATA END====");
   }
 
   else if(adressCompare(mac, adressMValve)) {
-    Serial.println("MainValve Data");
+    //Serial.println("MainValve Data");
     memcpy(&rc.dataFrame.mainValve, (MainValveData*) incomingData, sizeof(rc.dataFrame.mainValve));
     adressToQueue = MAIN_VALVE;
   }

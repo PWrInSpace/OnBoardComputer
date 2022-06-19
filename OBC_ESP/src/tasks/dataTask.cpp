@@ -2,12 +2,14 @@
 #include "Adafruit_MCP9808.h"
 
 void dataTask(void *arg){
-  //ImuData imuData;
+  //Sensors object
   LPS25HB pressureSensor;
   Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
   SFE_UBLOX_GNSS gps;
   ImuAPI imu(&rc.hardware.i2c2);
 
+  //data handl,ing variables
+  ImuData imuData;
   TickType_t dataUpdateTimer = 0;
   TickType_t loraTimer = 0;
   TickType_t flashTimer = 0;
@@ -15,8 +17,10 @@ void dataTask(void *arg){
   char sd[SD_FRAME_ARRAY_SIZE] = {};
   char lora[LORA_FRAME_ARRAY_SIZE] = {};
 
-  //float launchPadAltitude = 0;
-
+  //variables for calculations
+  float launchPadAltitude = 0;
+  float lastMaxAltitude = 0;
+  TickType_t apogeeConfirmationTimer = 0;
 
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
@@ -25,14 +29,14 @@ void dataTask(void *arg){
     rc.errors.setSensorError(PRESSURE_SENSOR_INIT_ERROR);
   }
 
-  if (tempsensor.begin(0x18) == false) {
+  if (tempsensor.begin(0x18, &rc.hardware.i2c2) == false) {
     rc.sendLog("TEMP SENSOR INIT ERROR");
     rc.errors.setSensorError(TEMP_SENSOR_INIT_ERROR);
   }else{
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
-  /*
+  
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
     rc.errors.setSensorError(IMU_INIT_ERROR);
@@ -40,7 +44,7 @@ void dataTask(void *arg){
     imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
     imu.setInitPressure();
     launchPadAltitude = imu.getAltitude();
-  }*/
+  }
 
   if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
     rc.sendLog("GPS INIT ERROR");
@@ -69,64 +73,68 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
 
       //LP26HB - pressure
-      //rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
-      //rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
+      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
       
       //MCP temp
       rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // IMU:
-      /*
       imu.readData();
       imuData = imu.getData();
       rc.dataFrame.mcb.imuData[0] = imuData.ax;
-      rc.dataFrame.mcb.imuData[0] = imuData.ay;
-      rc.dataFrame.mcb.imuData[0] = imuData.az;
-      rc.dataFrame.mcb.imuData[0] = imuData.gx;
-      rc.dataFrame.mcb.imuData[0] = imuData.gy;
-      rc.dataFrame.mcb.imuData[0] = imuData.gz;
-      rc.dataFrame.mcb.imuData[0] = imuData.mx;
-      rc.dataFrame.mcb.imuData[0] = imuData.my;
-      rc.dataFrame.mcb.imuData[0] = imuData.mz;
-      rc.dataFrame.mcb.imuData[0] = imuData.temperature;
-      rc.dataFrame.mcb.imuData[0] = imuData.pressure;
-      rc.dataFrame.mcb.imuData[0] = imuData.altitude;
-      */
+      rc.dataFrame.mcb.imuData[1] = imuData.ay;
+      rc.dataFrame.mcb.imuData[2] = imuData.az;
+      rc.dataFrame.mcb.imuData[3] = imuData.gx;
+      rc.dataFrame.mcb.imuData[4] = imuData.gy;
+      rc.dataFrame.mcb.imuData[5] = imuData.gz;
+      rc.dataFrame.mcb.imuData[6] = imuData.mx;
+      rc.dataFrame.mcb.imuData[7] = imuData.my;
+      rc.dataFrame.mcb.imuData[8] = imuData.mz;
+      rc.dataFrame.mcb.imuData[9] = imuData.temperature;
+      rc.dataFrame.mcb.imuData[10] = imuData.pressure;
+      rc.dataFrame.mcb.altitude = imuData.altitude;
+
       // Recovery:
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
       rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
       xSemaphoreGive(rc.hardware.i2c1Mutex);
 
-      //read i2c comm data
-      //rc.sendLog("Hello space!");
       //filters
 
-      //compute data
-      /* //DEBUG disable
-      if((dataFrame.upustValve.tankPressure < rc.options.tankMinPressure && dataFrame.mainValve.valveState == VALVE_OPEN) && StateMachine::getCurrentState() > COUNTDOWN){
-        //close valve
-        rc.options.mainValveRequestState = VALVE_CLOSE;
-      }*/
+      /**********************/
+      //calculation 
 
-      
-      if(StateMachine::getCurrentState() == FLIGHT && dataFrame.recovery.firstStageDone == true){
+      //change state to first stage revcovery after 1 recov deploy
+      if(StateMachine::getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
         StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
         rc.sendLog("First stage recovery");
-
-      }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && dataFrame.recovery.secondStageDone == true){
+      //change state to first stage revcovery after 2 recov deploy
+      }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && rc.dataFrame.recovery.secondStageDone == true){
         StateMachine::changeStateRequest(SECOND_STAGE_RECOVERY);
         rc.sendLog("Second stage recovery");
-      
       }
-      //Serial.print("DATA Stop: "); Serial.println(xTaskGetTickCount());
+     
+      //detect apogee
+      if(StateMachine::getCurrentState() == States::FLIGHT && rc.dataFrame.mcb.apogee == 0){
+        if(lastMaxAltitude < imuData.altitude || lastMaxAltitude == 0){
+          lastMaxAltitude = imuData.altitude;
+          apogeeConfirmationTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
+        }
 
-     /*
-     if(StateMachine::getCurrentState() == States::SECOND_STAGE_RECOVERY){
-       if(imuData.altitude < (launchPadAltitude + 50)){
-         StateMachine::changeStateRequest(States::ON_GROUND);
-       }
-     }*/
+        if((xTaskGetTickCount() * portTICK_PERIOD_MS - apogeeConfirmationTimer) > 500){
+          rc.dataFrame.mcb.apogee = lastMaxAltitude;
+          sprintf(sd, "Apoge detected! Time %d, Altitude %f", rc.missionTimer.getTime(), rc.dataFrame.mcb.apogee);
+          rc.sendLog(sd);
+        }
+      }
 
+      //detect landing
+      if(StateMachine::getCurrentState() == States::SECOND_STAGE_RECOVERY){
+        if(imuData.altitude < (launchPadAltitude + 50)){
+          StateMachine::changeStateRequest(States::ON_GROUND);
+        }
+      }
     }
 
 
