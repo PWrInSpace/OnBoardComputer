@@ -66,7 +66,7 @@ void rxHandlingTask(void *arg){
             break;
           
           case 2: 
-            if(optionValue >= 10000){
+            if(optionValue >= 10000 && optionValue < UINT32_MAX){
               rc.options.countdownTime = optionValue; 
               rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
             }else{
@@ -301,7 +301,7 @@ void rxHandlingTask(void *arg){
 
         case PAYLOAD:
           Serial.println("Payload notify"); //DEBUG
-          sleepTime = espNowDefaultPeriod[currentState];
+          sleepTime = payloadPeriod[currentState];
           
           if(esp_now_send(adressPayLoad, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
             rc.errors.setEspNowError(ESPNOW_SEND_ERROR);

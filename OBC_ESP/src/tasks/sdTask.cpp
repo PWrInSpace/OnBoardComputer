@@ -5,7 +5,7 @@ void sdTask(void *arg){
   char data[SD_FRAME_ARRAY_SIZE] = {};
   String dataPath = dataFileName;
   String logPath = logFileName;
-  uint8_t sd_i = 0;
+  uint16_t sd_i = 0;
   bool sdError = false;
 
   vTaskDelay(50 / portTICK_RATE_MS);

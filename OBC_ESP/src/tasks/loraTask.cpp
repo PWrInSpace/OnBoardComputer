@@ -34,12 +34,13 @@ void loraTask(void *arg){
 
         String rxStr = LoRa.readString();
         //Serial.print(rxStr); // DEBUG
-
-        
-        strcpy(loraRx, rxStr.c_str());
-        xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
-        
-        rc.restartDisconnectTimer(); 
+        if(rxStr.length() < (LORA_FRAME_ARRAY_SIZE/2 - 1)){
+          
+          strcpy(loraRx, rxStr.c_str());
+          xQueueSend(rc.hardware.loraRxQueue, (void*)&loraRx, 0);
+          
+          rc.restartDisconnectTimer(); 
+        }
       }
     xSemaphoreGive(rc.hardware.spiMutex); 
 

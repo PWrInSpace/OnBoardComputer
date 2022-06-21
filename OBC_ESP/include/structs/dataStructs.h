@@ -16,15 +16,16 @@ enum ValveState{
 };
 
 struct PitotData {
-  bool wakeUp : 1;
-  float staticPressure;
-  float dynamicPressure;
-  float temperature;
-  float altitude;
-  float velocity;
-  float predictedApogee;
-
-  float batteryVoltage;
+  bool wakenUp : 1; //if waken up
+  float vBat; //battery voltage
+  float statPress;
+  float dynamicPress;
+  float temp;
+  uint16_t altitude;
+  uint8_t speed;
+  bool apogee;
+  bool isRecording : 1; // if rpi says it is
+  bool data : 1; // if data is collected
 };
 
 struct MainValveData {
@@ -60,10 +61,11 @@ struct UpustValveData {
 };
 
 struct PlData {
-  bool wakeUp : 1;
-  bool isRecording : 1;
-  bool data : 1;
-  float vbat;
+    bool wakenUp : 1; //if waken up
+    bool isRecording; // if rpi says it is
+    bool data : 1; // if data is collected
+    float vBat; //battery voltage
+    bool isRpiOn;
 };
 
 struct RecoveryData {

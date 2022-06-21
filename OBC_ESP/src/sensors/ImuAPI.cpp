@@ -57,9 +57,11 @@ bool ImuAPI::setInitPressure(){
 
   for(int i = 0; i<5; ++i){
     tempPress = ps.readPressureMillibars();
+    press += tempPress;
+    /*
     measurement++;
 
-    if(abs(controlPressure -  tempPress) < 75){
+    if(abs(controlPressure -  tempPress) < 100){
       press += tempPress;
     }else{
       i--;
@@ -69,13 +71,13 @@ bool ImuAPI::setInitPressure(){
       initPressure = 1023;
         return false;
     }
-        
-    delay(10);
+    */
+    delay(25);
   }
     
   initPressure = press/5.0;
 
-  if(ps.readPressureMillibars() - abs(initPressure) > 5){
+  if(abs(ps.readPressureMillibars() - initPressure) > 50){
     initPressure = 1023; //average sea level pressure
     return false;
   }    

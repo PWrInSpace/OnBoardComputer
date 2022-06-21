@@ -1,12 +1,13 @@
 #include "../include/tasks/tasks.h"
 #include "Adafruit_MCP9808.h"
 
+
+
 void dataTask(void *arg){
-  //Sensors object
-  LPS25HB pressureSensor;
-  Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
   SFE_UBLOX_GNSS gps;
-  ImuAPI imu(&rc.hardware.i2c2);
+  //ImuAPI imu(&rc.hardware.i2c2);
+  //LPS25HB pressureSensor;
+  //Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
 
   //data handl,ing variables
   ImuData imuData;
@@ -21,7 +22,27 @@ void dataTask(void *arg){
   float launchPadAltitude = 0;
   float lastMaxAltitude = 0;
   TickType_t apogeeConfirmationTimer = 0;
+  
 
+  if (gps.begin(Serial1, 10) == false) //Connect to the u-blox module using Wire port
+  {
+    rc.sendLog("GPS INIT ERROR");
+    rc.errors.setSensorError(GPS_INIT_ERROR);
+  }
+
+  gps.setI2COutput(COM_TYPE_UBX);
+  /*
+  if(!imu.begin()){
+    rc.sendLog("IMU INIT ERROR");
+    rc.errors.setSensorError(IMU_INIT_ERROR);
+  }else{
+    imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
+    vTaskDelay(250 / portTICK_PERIOD_MS);
+    imu.setInitPressure();
+    launchPadAltitude = imu.getAltitude();
+  }
+  */
+  /*
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
   if (pressureSensor.isConnected() == false){
@@ -36,50 +57,41 @@ void dataTask(void *arg){
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
-  
-  if(!imu.begin()){
-    rc.sendLog("IMU INIT ERROR");
-    rc.errors.setSensorError(IMU_INIT_ERROR);
-  }else{
-    imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
-    imu.setInitPressure();
-    launchPadAltitude = imu.getAltitude();
-  }
-
-  if(gps.begin(rc.hardware.i2c2, GPS_ADRESS, 10, false) == false){
-    rc.sendLog("GPS INIT ERROR");
-    rc.errors.setSensorError(GPS_INIT_ERROR);
-  }
-  
-  //rc.dataFrame.mcb.watchdogResets = wt.resetCounter;
-  rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //DRUT
+  */
 
   while(1){
-
-    //data
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-    
+      
       rc.dataFrame.mcb.state = StateMachine::getCurrentState();
 
       rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
-      
-      // GPS:
+      portENTER_CRITICAL(&rc.hardware.stateLock);
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSalt = gps.getAltitude(10) / 10.0E2;
-      
+        
       rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
-
-      //LP26HB - pressure
-      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
-      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      portEXIT_CRITICAL(&rc.hardware.stateLock);
+      Serial.println("====GPS DATA====");
+      Serial.print("Lat: ");
+      Serial.println(rc.dataFrame.mcb.GPSlal);
       
-      //MCP temp
-      rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
+      Serial.print("Long: ");
+      Serial.println(rc.dataFrame.mcb.GPSlong);
+      
+      Serial.print("Alt: ");
+      Serial.println(rc.dataFrame.mcb.GPSalt);
+      
+      Serial.print("Sat: ");
+      Serial.println(rc.dataFrame.mcb.GPSsat);
+      
+      Serial.print("Valid: ");
+      Serial.println(rc.dataFrame.mcb.GPSsec);
 
       // IMU:
+      /*
       imu.readData();
       imuData = imu.getData();
       rc.dataFrame.mcb.imuData[0] = imuData.ax;
@@ -94,17 +106,23 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.imuData[9] = imuData.temperature;
       rc.dataFrame.mcb.imuData[10] = imuData.pressure;
       rc.dataFrame.mcb.altitude = imuData.altitude;
+      */
+      //LP26HB - pressure
+      //rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
+      //rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      
+      //MCP temp
+      //rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // Recovery:
+    
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
       rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
       xSemaphoreGive(rc.hardware.i2c1Mutex);
-
-      //filters
-
-      /**********************/
+      
+    /**********************/
       //calculation 
-
+      
       //change state to first stage revcovery after 1 recov deploy
       if(StateMachine::getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
         StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
@@ -135,10 +153,10 @@ void dataTask(void *arg){
           StateMachine::changeStateRequest(States::ON_GROUND);
         }
       }
+      
     }
-
-
-    //LoRa
+    
+    //LORA
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       
@@ -155,7 +173,6 @@ void dataTask(void *arg){
       }
       rc.errors.reset(ERROR_RESET_LORA);
     }
-
     //FLASH
     if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND)){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
@@ -194,8 +211,7 @@ void dataTask(void *arg){
       
       rc.errors.reset(ERROR_RESET_SD); //reset errors after save  
     }
-
-    wt.dataTaskFlag = true;
-    vTaskDelay(10/ portTICK_PERIOD_MS);  
+    
+    vTaskDelay(10/portTICK_PERIOD_MS);
   }
 }

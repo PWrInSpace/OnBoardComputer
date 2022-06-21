@@ -3,6 +3,7 @@
 void stateTask(void *arg){
   StateMachine stateMachine(rc.hardware.stateTask);
   TxDataEspNow txDataEspNow;
+  TickType_t stateChangeTimeMark = 0;
   
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
@@ -43,6 +44,7 @@ void stateTask(void *arg){
 
         case RDY_TO_LAUNCH:
           digitalWrite(CAMERA, HIGH); //turn on camera
+          
           stateMachine.changeStateConfirmation();
           break;
 
@@ -57,7 +59,7 @@ void stateTask(void *arg){
               if(rc.deactiveDisconnectTimer() == false){
                 rc.sendLog("Timer delete error");
               } //turn off disconnectTimer
-              
+
               stateMachine.changeStateConfirmation();
             }else{
               rc.errors.setLastException(MISSION_TIMER_EXCEPTION);
@@ -119,6 +121,7 @@ void stateTask(void *arg){
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
 
+
           //dataFrame.missionTimer.turnOffTimer();
           
           stateMachine.changeStateConfirmation();
@@ -161,6 +164,7 @@ void stateTask(void *arg){
           //Upust valve open
           txDataEspNow.setVal(VALVE_OPEN, 0);
           if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK) rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          
 
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
@@ -183,12 +187,23 @@ void stateTask(void *arg){
       rc.options.flashDataCurrentPeriod = flashPeriod[StateMachine::getCurrentState()];
           
       xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
-      
+      stateChangeTimeMark = xTaskGetTickCount() * portTICK_PERIOD_MS;
       //portEXIT_CRITICAL(&rc.stateLock);
     }
 
     //LOOP 
     switch(StateMachine::getCurrentState()){
+      case RDY_TO_LAUNCH:
+        if((xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) >= 90000 && 
+            (xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) <= 90200){
+
+          txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
+          if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
+        }
+
+        break;
       case COUNTDOWN:
         if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
           txDataEspNow.setVal(IGNITION_COMMAND, 1);  //IDK

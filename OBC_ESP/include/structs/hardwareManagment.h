@@ -17,13 +17,13 @@ struct HardwareManagment{
 	QueueHandle_t loraTxQueue;
 	QueueHandle_t sdQueue;
 	QueueHandle_t flashQueue;
-  QueueHandle_t espNowQueue; //best solution XD
+  QueueHandle_t espNowQueue; //best solution 
 	//mutexes
 	SemaphoreHandle_t spiMutex;
 	SemaphoreHandle_t i2c1Mutex;
 
 	//spinlock
-	//portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
+	portMUX_TYPE stateLock = portMUX_INITIALIZER_UNLOCKED;
 
 	//software timers
 	TimerHandle_t watchdogTimer;
