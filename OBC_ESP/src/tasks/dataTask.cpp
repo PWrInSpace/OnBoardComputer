@@ -155,7 +155,7 @@ void dataTask(void *arg){
       }
       */
     }
-    /*
+    
     //LORA
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
@@ -196,7 +196,7 @@ void dataTask(void *arg){
         
       
     }
-    */
+    
 
     //SD
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
@@ -212,7 +212,8 @@ void dataTask(void *arg){
       
       rc.errors.reset(ERROR_RESET_SD); //reset errors after save  
     }
-    
+
     vTaskDelay(10/portTICK_PERIOD_MS);
+ 
   }
 }

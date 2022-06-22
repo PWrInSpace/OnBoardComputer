@@ -11,7 +11,8 @@ void rxHandlingTask(void *arg){
     //Serial.println("RX handling tasks"); //DEBUG
     
     if(xQueueReceive(rc.hardware.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
-      Serial.println(loraData);
+      //Serial.println(loraData);
+      rc.restartDisconnectTimer(); 
       /*** R4A ***/
       if(strncmp(loraData, "R4A", 3) == 0){
         if (strstr(loraData, "STAT;") != NULL) {
@@ -35,9 +36,15 @@ void rxHandlingTask(void *arg){
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
-        }else if (strstr(loraData, "HOLD") != NULL){
-          if(StateMachine::changeStateRequest(States::HOLD) == false){
-            rc.sendLog("invalid HOLD request");
+        }else if (strstr(loraData, "HOLD_IN") != NULL){
+          if(StateMachine::changeStateRequest(States::HOLD) == false && StateMachine::getCurrentState() != States::HOLD){
+            rc.sendLog("invalid HOLD_IN request");
+            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+          }
+
+        }else if (strstr(loraData, "HOLD_OUT") != NULL){
+          if(StateMachine::changeStateRequest(States::HOLD) == false && StateMachine::getCurrentState() == States::HOLD){
+            rc.sendLog("invalid HOLD_OUT request");
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
@@ -49,6 +56,8 @@ void rxHandlingTask(void *arg){
       
       /*** R4O ***/
       }else if(strncmp(loraData, "R4O", 3) == 0){
+         rc.restartDisconnectTimer(); 
+        
         // Options:
         if (strstr(loraData, "OPTS;") != NULL) {
           int optionNumber;

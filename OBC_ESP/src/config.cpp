@@ -68,7 +68,7 @@ const uint8_t cameraRecovery[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO 
 uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {  
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
-  ESP_NOW_SLEEP_TIME, //ARM
+  500, //ARM
   500, //FILLING
   500, //RTL
   250, //COUNTDOWN
@@ -77,7 +77,7 @@ uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   500, //second_stage_recov
   10000, //on ground
   ESP_NOW_SLEEP_TIME, //HOLD
-  ESP_NOW_SLEEP_TIME,//ABORT
+  10000,//ABORT
 };
 
 uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {  

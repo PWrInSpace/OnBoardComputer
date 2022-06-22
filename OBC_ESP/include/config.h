@@ -41,8 +41,8 @@
 
 //OPTIONS DEFAULT VALUE (SETUP)
 #define LoRa_FREQUENCY_MHZ 927
-#define COUNTDOWN_TIME 15 * 1000
-#define IGNITION_TIME -3000
+#define COUNTDOWN_TIME 45 * 1000
+#define IGNITION_TIME -15 * 1000
 #define TANK_MIN_PRESSURE 35 //bar
 #define FLASH_WRITE false
 #define FORCE_LAUNCH true
@@ -61,6 +61,8 @@
 
 #define DATA_PERIOD 100 / portTICK_PERIOD_MS
 #define PERIOD_ARRAY_SIZE 12
+
+#define STATE_TASK_LOOP_INTERVAL 100
 
 extern const TickType_t loraPeriod[PERIOD_ARRAY_SIZE];
 extern const TickType_t sdPeriod[PERIOD_ARRAY_SIZE];
