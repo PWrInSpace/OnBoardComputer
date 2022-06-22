@@ -24,7 +24,7 @@ void dataTask(void *arg){
   TickType_t apogeeConfirmationTimer = 0;
   
 
-  if (gps.begin(Serial1, 10) == false) //Connect to the u-blox module using Wire port
+  if (gps.begin(rc.hardware.i2c2, 0x42, 10) == false) //Connect to the u-blox module using Wire port
   {
     rc.sendLog("GPS INIT ERROR");
     rc.errors.setSensorError(GPS_INIT_ERROR);
@@ -63,17 +63,17 @@ void dataTask(void *arg){
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       
-      rc.dataFrame.mcb.state = StateMachine::getCurrentState();
+      //rc.dataFrame.mcb.state = StateMachine::getCurrentState();
 
-      rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
-      portENTER_CRITICAL(&rc.hardware.stateLock);
+      //rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
+      //portENTER_CRITICAL(&rc.hardware.stateLock);
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSalt = gps.getAltitude(10) / 10.0E2;
         
       rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
-      portEXIT_CRITICAL(&rc.hardware.stateLock);
+      //portEXIT_CRITICAL(&rc.hardware.stateLock);
       Serial.println("====GPS DATA====");
       Serial.print("Lat: ");
       Serial.println(rc.dataFrame.mcb.GPSlal);
@@ -115,14 +115,14 @@ void dataTask(void *arg){
       //rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // Recovery:
-    
+      
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
       rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
       xSemaphoreGive(rc.hardware.i2c1Mutex);
       
     /**********************/
       //calculation 
-      
+      /*
       //change state to first stage revcovery after 1 recov deploy
       if(StateMachine::getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
         StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
@@ -153,9 +153,9 @@ void dataTask(void *arg){
           StateMachine::changeStateRequest(States::ON_GROUND);
         }
       }
-      
+      */
     }
-    
+    /*
     //LORA
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
@@ -196,6 +196,7 @@ void dataTask(void *arg){
         
       
     }
+    */
 
     //SD
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
