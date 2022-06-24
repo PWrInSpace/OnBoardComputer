@@ -3,7 +3,7 @@
 void stateTask(void *arg){
   StateMachine stateMachine(rc.hardware.stateTask);
   TxDataEspNow txDataEspNow;
-  TickType_t stateChangeTimeMark = 0;
+  //TickType_t stateChangeTimeMark = 0;
   TickType_t loopTimer = 0;
   
   while(1){
@@ -60,6 +60,12 @@ void stateTask(void *arg){
               if(rc.deactiveDisconnectTimer() == false){
                 rc.sendLog("Timer delete error");
               } //turn off disconnectTimer
+
+              //turn on rpi recording
+              txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
+              if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+                rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+              }
 
               stateMachine.changeStateConfirmation();
             }else{
@@ -200,7 +206,7 @@ void stateTask(void *arg){
       rc.options.flashDataCurrentPeriod = flashPeriod[StateMachine::getCurrentState()];
           
       xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
-      stateChangeTimeMark = xTaskGetTickCount() * portTICK_PERIOD_MS;
+      //stateChangeTimeMark = xTaskGetTickCount() * portTICK_PERIOD_MS;
       //portEXIT_CRITICAL(&rc.stateLock);
     }
 
@@ -210,18 +216,15 @@ void stateTask(void *arg){
       loopTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
     
       switch(StateMachine::getCurrentState()){
-        case RDY_TO_LAUNCH:
-          if((xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) >= 90000 && 
-              (xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) <= 90200){
-
-            txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
-            if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-              rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
-            }
+        case COUNTDOWN:
+          //force rpi recording
+          if(rc.dataFrame.pl.isRecording == false){
+              txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
+              if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+                rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+              }
           }
 
-          break;
-        case COUNTDOWN:
           if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
             txDataEspNow.setVal(IGNITION_COMMAND, 1);  //IDK
             //send ignition request
