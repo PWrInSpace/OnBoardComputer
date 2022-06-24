@@ -5,9 +5,9 @@
 
 void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
-  //ImuAPI imu(&rc.hardware.i2c2);
-  //LPS25HB pressureSensor;
-  //Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
+  ImuAPI imu(&rc.hardware.i2c2);
+  LPS25HB pressureSensor;
+  Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
 
   //data handl,ing variables
   ImuData imuData;
@@ -31,7 +31,7 @@ void dataTask(void *arg){
   }
 
   gps.setI2COutput(COM_TYPE_UBX);
-  /*
+  
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
     rc.errors.setSensorError(IMU_INIT_ERROR);
@@ -41,8 +41,8 @@ void dataTask(void *arg){
     imu.setInitPressure();
     launchPadAltitude = imu.getAltitude();
   }
-  */
-  /*
+  
+  
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
   if (pressureSensor.isConnected() == false){
@@ -57,15 +57,15 @@ void dataTask(void *arg){
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
-  */
+  
 
   while(1){
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       
-      //rc.dataFrame.mcb.state = StateMachine::getCurrentState();
+      rc.dataFrame.mcb.state = StateMachine::getCurrentState();
 
-      //rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
+      rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
       //portENTER_CRITICAL(&rc.hardware.stateLock);
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
@@ -91,7 +91,7 @@ void dataTask(void *arg){
       Serial.println(rc.dataFrame.mcb.GPSsec);
 
       // IMU:
-      /*
+      
       imu.readData();
       imuData = imu.getData();
       rc.dataFrame.mcb.imuData[0] = imuData.ax;
@@ -106,13 +106,13 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.imuData[9] = imuData.temperature;
       rc.dataFrame.mcb.imuData[10] = imuData.pressure;
       rc.dataFrame.mcb.altitude = imuData.altitude;
-      */
+      
       //LP26HB - pressure
-      //rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
-      //rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
+      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
       
       //MCP temp
-      //rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
+      rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // Recovery:
       
@@ -122,7 +122,7 @@ void dataTask(void *arg){
       
     /**********************/
       //calculation 
-      /*
+      
       //change state to first stage revcovery after 1 recov deploy
       if(StateMachine::getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
         StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
@@ -153,7 +153,7 @@ void dataTask(void *arg){
           StateMachine::changeStateRequest(States::ON_GROUND);
         }
       }
-      */
+      
     }
     
     //LORA

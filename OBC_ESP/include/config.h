@@ -45,7 +45,7 @@
 #define IGNITION_TIME -15 * 1000
 #define TANK_MIN_PRESSURE 35 //bar
 #define FLASH_WRITE false
-#define FORCE_LAUNCH true
+#define FORCE_LAUNCH false
 
 //PERIODS
 #define ESP_NOW_SLEEP_TIME 30 * 1000

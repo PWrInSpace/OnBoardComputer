@@ -116,12 +116,24 @@ void stateTask(void *arg){
           break;
 
         case ON_GROUND:
+        /*
           xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
           rc.recoveryStm.arm(false);
           vTaskDelay(25 / portTICK_PERIOD_MS);
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
+        */
+          //UPUST OPEN
+          txDataEspNow.setVal(VALVE_OPEN, 0);
+          if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
 
+          //MAIN OPEN
+          txDataEspNow.setVal(VALVE_OPEN, 0);
+          if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          }
 
           //dataFrame.missionTimer.turnOffTimer();
           

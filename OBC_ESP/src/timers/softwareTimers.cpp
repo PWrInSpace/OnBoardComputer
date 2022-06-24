@@ -76,10 +76,12 @@ void disconnectTimerCallback(TimerHandle_t xTimer){
 void espNowConnectionCallback(TimerHandle_t xTimer){
 
   if(rc.isConnectedFlags[TANWA] == false){
+    //rc.dataFrame.tanWa.vbat = 0;
     rc.sendLog("Tanwa not connected");
   }
 
   if(rc.isConnectedFlags[PITOT] == false){
+    //rc.dataFrame.pitot.vBat = 0;
     rc.sendLog("Pitot not connected");
   }
   
