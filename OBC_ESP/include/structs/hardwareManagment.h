@@ -12,12 +12,15 @@ struct HardwareManagment{
 	TaskHandle_t dataTask;
 	TaskHandle_t sdTask;
 	TaskHandle_t flashTask;
-	//queues
+	TaskHandle_t gpsTask;
+  
+  //queues
 	QueueHandle_t loraRxQueue;
 	QueueHandle_t loraTxQueue;
 	QueueHandle_t sdQueue;
 	QueueHandle_t flashQueue;
   QueueHandle_t espNowQueue; //best solution 
+  
 	//mutexes
 	SemaphoreHandle_t spiMutex;
 	SemaphoreHandle_t i2c1Mutex;

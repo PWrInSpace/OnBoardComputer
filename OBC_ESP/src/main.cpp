@@ -23,6 +23,9 @@ void setup() {
   //set mission timer
   rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
 
+  pinMode(CAMERA, OUTPUT);
+  digitalWrite(CAMERA, LOW);
+
   //set esp now
   if(nowInit() == false) ESP.restart();
   if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
@@ -64,6 +67,7 @@ void setup() {
   xTaskCreatePinnedToCore(dataTask,  "Data task",  45000, NULL, 5, &rc.hardware.dataTask,  APP_CPU_NUM);
   xTaskCreatePinnedToCore(sdTask,    "SD task",    30000, NULL, 1, &rc.hardware.sdTask,    APP_CPU_NUM);
   xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
+  //xTaskCreatePinnedToCore(gpsTask, "Flash task", 8192, NULL, 1, &rc.hardware.gpsTask, APP_CPU_NUM);
 
   //create Timers
   rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);

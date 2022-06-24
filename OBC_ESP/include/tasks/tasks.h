@@ -26,6 +26,7 @@ void stateTask(void *arg);
 void dataTask(void *arg);
 void sdTask(void *arg);
 void flashTask(void *arg);
+void gpsTask(void *arg);
 
 //Timers
 void watchdogTimerCallback(TimerHandle_t xTimer);

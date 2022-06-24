@@ -31,7 +31,7 @@ void dataTask(void *arg){
   }
 
   gps.setI2COutput(COM_TYPE_UBX);
-  
+  /*
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
     rc.errors.setSensorError(IMU_INIT_ERROR);
@@ -58,7 +58,7 @@ void dataTask(void *arg){
     tempsensor.wake();
   }
   
-
+  */
   while(1){
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -91,7 +91,7 @@ void dataTask(void *arg){
       Serial.println(rc.dataFrame.mcb.GPSsec);
 
       // IMU:
-      
+      /*
       imu.readData();
       imuData = imu.getData();
       rc.dataFrame.mcb.imuData[0] = imuData.ax;
@@ -119,10 +119,10 @@ void dataTask(void *arg){
       xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
       rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
       xSemaphoreGive(rc.hardware.i2c1Mutex);
-      
+      */
     /**********************/
       //calculation 
-      
+      /*
       //change state to first stage revcovery after 1 recov deploy
       if(StateMachine::getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
         StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
@@ -153,9 +153,9 @@ void dataTask(void *arg){
           StateMachine::changeStateRequest(States::ON_GROUND);
         }
       }
-      
+      */
     }
-    
+    /*
     //LORA
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
@@ -214,6 +214,6 @@ void dataTask(void *arg){
     }
 
     vTaskDelay(10/portTICK_PERIOD_MS);
- 
+    */
   }
 }
