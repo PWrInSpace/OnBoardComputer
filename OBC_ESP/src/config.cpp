@@ -75,7 +75,7 @@ uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   250, //flight
   500, //first_stage_recov
   500, //second_stage_recov
-  10000, //on ground
+  1800, //on ground
   ESP_NOW_SLEEP_TIME, //HOLD
   10000,//ABORT
 };

@@ -23,6 +23,9 @@ void setup() {
   //set mission timer
   rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
 
+  pinMode(CAMERA, OUTPUT);
+  digitalWrite(CAMERA, LOW);
+
   //set esp now
   if(nowInit() == false) ESP.restart();
   if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
