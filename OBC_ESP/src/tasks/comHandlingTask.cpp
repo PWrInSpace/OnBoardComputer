@@ -12,9 +12,10 @@ void rxHandlingTask(void *arg){
     
     if(xQueueReceive(rc.hardware.loraRxQueue, (void*)&loraData, 25) == pdTRUE){
       //Serial.println(loraData);
-      rc.restartDisconnectTimer(); 
       /*** R4A ***/
       if(strncmp(loraData, "R4A", 3) == 0){
+        rc.restartDisconnectTimer(); 
+
         if (strstr(loraData, "STAT;") != NULL) {
 
           sscanf(loraData, "R4A;STAT;%d;%d", &oldState, &newState);
@@ -56,7 +57,7 @@ void rxHandlingTask(void *arg){
       
       /*** R4O ***/
       }else if(strncmp(loraData, "R4O", 3) == 0){
-         rc.restartDisconnectTimer(); 
+        rc.restartDisconnectTimer(); 
         
         // Options:
         if (strstr(loraData, "OPTS;") != NULL) {

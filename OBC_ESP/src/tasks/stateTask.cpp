@@ -185,6 +185,8 @@ void stateTask(void *arg){
           rc.recoveryStm.setTelemetrum(false);
           xSemaphoreGive(rc.hardware.i2c1Mutex);
 
+          digitalWrite(CAMERA, LOW);
+
           stateMachine.changeStateConfirmation();
           break;
 
@@ -211,8 +213,7 @@ void stateTask(void *arg){
     
       switch(StateMachine::getCurrentState()){
         case RDY_TO_LAUNCH:
-          if((xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) >= 90000 && 
-              (xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) <= 90200){
+          if(((xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) >= 90000) && (rc.dataFrame.pl.isRecording == false)){
 
             txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
             if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
@@ -223,7 +224,7 @@ void stateTask(void *arg){
           break;
         case COUNTDOWN:
           if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
-            txDataEspNow.setVal(IGNITION_COMMAND, 1);  //IDK
+            txDataEspNow.setVal(IGNITION_COMMAND, 1);  
             //send ignition request
             if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
               rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
@@ -275,12 +276,12 @@ void stateTask(void *arg){
             xSemaphoreGive(rc.hardware.i2c1Mutex);
           }
 
-          //force main valve close until confirmation
           if(rc.dataFrame.upustValve.valveState != ValveState::Open){
-            txDataEspNow.setVal(VALVE_OPEN, 0);
+            txDataEspNow.setVal(VALVE_OPEN, 0); 
+            Serial.println("Loop odpalenia");
             if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
               rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
-            }
+            } 
           }
 
           break;
@@ -289,6 +290,25 @@ void stateTask(void *arg){
           if((xTaskGetTickCount() * portTICK_PERIOD_MS - stateChangeTimeMark) >= 30000 && digitalRead(CAMERA) == HIGH){
             digitalWrite(CAMERA, LOW);
           }
+
+          if(rc.dataFrame.mainValve.valveState != ValveState::Open){
+            txDataEspNow.setVal(VALVE_OPEN, 0); 
+            Serial.println("Loop odpalenia");
+            if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+              rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            }
+            
+          }
+
+          if(rc.dataFrame.upustValve.valveState != ValveState::Open){
+            txDataEspNow.setVal(VALVE_OPEN, 0); 
+            Serial.println("Loop odpalenia");
+            if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+              rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            }
+            
+          }
+
           break;
 
         case ABORT:
@@ -298,6 +318,15 @@ void stateTask(void *arg){
             vTaskDelay(25 / portTICK_PERIOD_MS);
             rc.recoveryStm.setTelemetrum(false);
             xSemaphoreGive(rc.hardware.i2c1Mutex);
+          }
+
+          if(rc.dataFrame.upustValve.valveState != ValveState::Open){
+            txDataEspNow.setVal(VALVE_OPEN, 0); 
+            Serial.println("Loop odpalenia");
+            if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+              rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            }
+            
           }
         default:
           break;

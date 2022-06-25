@@ -80,7 +80,7 @@ bool RocketControl::queueSend(xQueueHandle _handle, char *data){
  * @return false slaves are sleeping zzzz
  */
 bool RocketControl::allDevicesWokenUp(){
-  return (dataFrame.pitot.wakenUp && dataFrame.mainValve.wakeUp && dataFrame.upustValve.wakeUp);
+  return (dataFrame.pitot.wakenUp && dataFrame.mainValve.wakeUp && dataFrame.upustValve.wakeUp && dataFrame.blackBox.wakeUp);
 }
 
 /**
