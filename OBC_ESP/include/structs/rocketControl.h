@@ -5,7 +5,7 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <string>
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include "../include/com/RecoverySTM.h"
 #include "options.h"
 #include "hardwareManagment.h"

@@ -2,7 +2,7 @@
 #define CONFIG_HH
 
 #include "Arduino.h"
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include <stdint.h>
 #include "../include/structs/stateMachine.h"
 
