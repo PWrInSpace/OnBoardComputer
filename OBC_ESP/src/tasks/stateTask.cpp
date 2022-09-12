@@ -1,16 +1,61 @@
 #include "../include/tasks/tasks.h"
 #include "../include/components/runcam.h"
 
+static void payload_swtich_on_cb(void *arg) {
+  TxDataEspNow txDataEspNow;
+  txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
+  Serial.println("Payload recording on command");
+  if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    Serial.println("Payload recording send error");
+  }
+}
+
+static void turn_off_recording_cb(void *arg) {
+  Serial.println("Turn camera off");
+  RUNCAM_turn_off();
+}
+
+static void ignition_cb(void *arg) {
+  TxDataEspNow txDataEspNow;
+  Serial.println("***Ignition cb***");
+  // if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
+    txDataEspNow.setVal(IGNITION_COMMAND, 1);  
+        //send ignition request
+    if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      rc.sendLog("Esp send error - IGNITION");
+    }
+    rc.sendLog("IGNITION REQUEST");
+  // }
+}
 
 static struct {
   StateMachine stateMachine;
-  // TxDataEspNow txDataEspNow;
   TickType_t stateChangeTimeMark;
   TickType_t loopTimer;
+  TimerHandle_t payload_switch_on_rpi;
+  TimerHandle_t turn_off_recording;
+  TimerHandle_t ignition_request;
 }st = {
   .stateMachine = StateMachine(rc.hardware.stateTask),
   .stateChangeTimeMark = 0,
   .loopTimer = 0,
+  .payload_switch_on_rpi = xTimerCreate("Payload", 
+                                        PAYLOAD_SWITCH_ON_AFTER_STATE_TIME,
+                                        pdFALSE,
+                                        TIMER_PAYLOAD_SWITCH_ON_NUM,
+                                        payload_swtich_on_cb),
+  .turn_off_recording = xTimerCreate("Camera off",
+                                      CAMERA_TURN_OFF_TIME,
+                                      pdFALSE,
+                                      TIMER_TURN_OFF_RECORDING_NUM,
+                                      turn_off_recording_cb),
+  .ignition_request = xTimerCreate("Ignition",
+                                    rc.options.countdownTime - rc.options.ignitionTime,
+                                    pdFALSE,
+                                    TIMER_IGNITION_REQUEST_NUM,
+                                    ignition_cb),
 };
 
 static void idle_init(void) {
@@ -18,8 +63,8 @@ static void idle_init(void) {
   st.stateMachine.changeStateConfirmation();
 }
 
-static void armed_init(void) {
-  //recovery arm request
+static void recovery_arm_init(void) {
+    //recovery arm request
   xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
   rc.recoveryStm.arm(true);
   vTaskDelay(150);
@@ -43,8 +88,13 @@ static void fueling_init(void) {
   st.stateMachine.changeStateConfirmation();
 }
 
+static void armed_to_launch_init(void) {
+  // TODO:
+}
+
 static void rdy_to_launch_init(void) {
   RUNCAM_turn_on();
+  xTimerStart(st.payload_switch_on_rpi, portMAX_DELAY); //TODO: block
   st.stateMachine.changeStateConfirmation();
 }
 
@@ -56,7 +106,10 @@ static void countdown_init(void) {
       if(rc.deactiveDisconnectTimer() == false){
         rc.sendLog("Timer delete error");
       } //turn off disconnectTimer
-
+      xTimerChangePeriod(st.ignition_request, 
+        rc.options.countdownTime - rc.options.ignitionTime, 
+        portMAX_DELAY);
+      xTimerStart(st.ignition_request, portMAX_DELAY);
       st.stateMachine.changeStateConfirmation();
     }else{
       rc.errors.setLastException(MISSION_TIMER_EXCEPTION);
@@ -133,6 +186,8 @@ static void on_ground_init(void) {
     rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
   }
   st.stateMachine.changeStateConfirmation();
+
+  xTimerStart(st.turn_off_recording, portMAX_DELAY);
 }
 
 static void hold_init(void) {
@@ -288,11 +343,14 @@ static void state_init(void){
     case IDLE:
       idle_init();
       break;
-    case ARMED:
-      armed_init();
+    case RECOVERY_ARM:
+      recovery_arm_init();
       break;
     case FUELING:
       fueling_init();
+      break;
+    case ARMED_TO_LAUNCH:
+      armed_to_launch_init();
       break;
     case RDY_TO_LAUNCH:
       rdy_to_launch_init();
@@ -338,26 +396,9 @@ static void state_init(void){
 static void state_loop(void) {
   TxDataEspNow txDataEspNow;
   switch(StateMachine::getCurrentState()){
-    case RDY_TO_LAUNCH:
-      // move to timer
-      if(((xTaskGetTickCount() * portTICK_PERIOD_MS - st.stateChangeTimeMark) >= 90000) && (rc.dataFrame.pl.isRecording == false)){
-        txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
-        if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-          rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
-        }
-      }
-      break;
     case COUNTDOWN:
       // move to timer
-      if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
-        txDataEspNow.setVal(IGNITION_COMMAND, 1);  
-        //send ignition request
-        if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-          rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
-          rc.sendLog("Esp send error - IGNITION");
-        }
-        rc.sendLog("IGNITION REQUEST");
-      }
+      
       countdown_loop();
       break;
     case FLIGHT:
@@ -370,10 +411,6 @@ static void state_loop(void) {
       second_stage_recovery_loop();
       break;
     case ON_GROUND:
-      // move to timer
-      if((xTaskGetTickCount() * portTICK_PERIOD_MS - st.stateChangeTimeMark) >= 30000 && digitalRead(CAMERA) == HIGH){
-        RUNCAM_turn_off();
-      }
       on_ground_loop();
       break;
     case ABORT:

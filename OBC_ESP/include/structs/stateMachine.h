@@ -7,8 +7,9 @@
 enum States{
   INIT = 0,
   IDLE,
+  RECOVERY_ARM,
   FUELING,
-  ARMED,
+  ARMED_TO_LAUNCH,
   RDY_TO_LAUNCH,
   COUNTDOWN,
   FLIGHT,

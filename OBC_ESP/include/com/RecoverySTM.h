@@ -14,7 +14,7 @@ public:
 
   RecoverySTM(TwoWire &wirePort, uint8_t i2cAddress);
 
-  void arm(bool on) { sendCommand(on ? RECOVERY_ARM : RECOVERY_DISARM, 0); }
+  void arm(bool on) { sendCommand(on ? RECOVERY_ARM_COMMAND : RECOVERY_DISARM, 0); }
 
   void setTelemetrum(bool on) { sendCommand(on ? RECOVERY_TELEMETRUM_ON : RECOVERY_TELEMETRUM_OFF, 0); }
 
