@@ -14,9 +14,10 @@ RocketControl rc;
 
 void setup() {
   Serial.begin(115200); //DEBUG
-  
+
+  SM_init(rc.hardware.stateTask);
   Serial.print("Setup state: "); //DEBUG
-  Serial.println(StateMachine::getCurrentState()); //DEBUG
+  Serial.println(SM_getCurrentState()); //DEBUG
   //BROWNOUT DETECTOT DISABLING
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   WiFi.mode(WIFI_STA);
@@ -114,18 +115,18 @@ void setup() {
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
   
   if(wt.previousState != INIT && wt.previousState != COUNTDOWN){
-    StateMachine::changeStateRequest((States) wt.previousState);
+    SM_changeStateRequest((States) wt.previousState);
   }else{
-    StateMachine::changeStateRequest(States::IDLE);
+    SM_changeStateRequest(States::IDLE);
   }
 
   */
   //start timers
-  StateMachine::changeStateRequest(States::IDLE);
+  
+  SM_changeStateRequest(States::IDLE);
   xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
   xTimerStart(rc.hardware.espNowConnectionTimer, portMAX_DELAY);
   //xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
-  
   
   vTaskDelete(NULL); //delete main task (loop())
 }

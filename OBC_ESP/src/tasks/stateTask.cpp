@@ -31,14 +31,12 @@ static void ignition_cb(void *arg) {
 }
 
 static struct {
-  StateMachine stateMachine;
   TickType_t stateChangeTimeMark;
   TickType_t loopTimer;
   TimerHandle_t payload_switch_on_rpi;
   TimerHandle_t turn_off_recording;
   TimerHandle_t ignition_request;
 }st = {
-  .stateMachine = StateMachine(rc.hardware.stateTask),
   .stateChangeTimeMark = 0,
   .loopTimer = 0,
   .payload_switch_on_rpi = xTimerCreate("Payload", 
@@ -60,7 +58,7 @@ static struct {
 
 static void idle_init(void) {
   rc.options.dataCurrentPeriod = DATA_PERIOD;
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void recovery_arm_init(void) {
@@ -72,7 +70,7 @@ static void recovery_arm_init(void) {
   xSemaphoreGive(rc.hardware.i2c1Mutex);
   // TODO:
   //check recovery arm answer 
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void fueling_init(void) {
@@ -85,17 +83,18 @@ static void fueling_init(void) {
   if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
   } 
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void armed_to_launch_init(void) {
+  //wake up
   // TODO:
 }
 
 static void rdy_to_launch_init(void) {
   RUNCAM_turn_on();
   xTimerStart(st.payload_switch_on_rpi, portMAX_DELAY); //TODO: block
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void countdown_init(void) {
@@ -110,14 +109,14 @@ static void countdown_init(void) {
         rc.options.countdownTime - rc.options.ignitionTime, 
         portMAX_DELAY);
       xTimerStart(st.ignition_request, portMAX_DELAY);
-      st.stateMachine.changeStateConfirmation();
+      SM_changeStateConfirmation();
     }else{
       rc.errors.setLastException(MISSION_TIMER_EXCEPTION);
-      st.stateMachine.changeStateRejection();
+      SM_changeStateRejection();
     }
   }else{
     rc.errors.setLastException(WAKE_UP_EXCEPTION);
-    st.stateMachine.changeStateRejection();
+    SM_changeStateRejection();
   }
 }
 
@@ -130,7 +129,7 @@ static void flight_init(void) {
   }
   Serial.println("Ignition command");
   //set options
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void first_stage_recovery_init(void) {
@@ -146,7 +145,7 @@ static void first_stage_recovery_init(void) {
     rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
   };
 
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void second_stage_recovery_init(void) {
@@ -162,7 +161,7 @@ static void second_stage_recovery_init(void) {
     rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
   }
           
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void on_ground_init(void) {
@@ -185,7 +184,7 @@ static void on_ground_init(void) {
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
   }
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 
   xTimerStart(st.turn_off_recording, portMAX_DELAY);
 }
@@ -215,7 +214,7 @@ static void hold_init(void) {
   //  rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
   //}
   RUNCAM_turn_off();
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 
@@ -240,12 +239,12 @@ static void abort_init(void) {
 
   RUNCAM_turn_off();
 
-  st.stateMachine.changeStateConfirmation();
+  SM_changeStateConfirmation();
 }
 
 static void countdown_loop(void) {
   if(rc.missionTimer.getTime() > 0){
-    StateMachine::changeStateRequest(States::FLIGHT);
+    SM_changeStateRequest(States::FLIGHT);
     rc.sendLog("CHANGE TO FLIGHT STATE");
   }
 }
@@ -291,7 +290,6 @@ static void second_stage_recovery_loop(void) {
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
-    Serial.println("Loop odpalenia");
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
     } 
@@ -310,7 +308,6 @@ static void on_ground_loop(void) {
 
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
     txDataEspNow.setVal(VALVE_OPEN, 0); 
-    Serial.println("Loop odpalenia");
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
     }
@@ -329,17 +326,15 @@ static void abort_loop(void) {
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
-    Serial.println("Loop odpalenia");
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
     }
-    
   }
 }
 
 static void state_init(void){
   //portENTER_CRITICAL(&rc.stateLock);
-  switch(st.stateMachine.getRequestedState()){
+  switch(SM_getRequestedState()){
     case IDLE:
       idle_init();
       break;
@@ -384,9 +379,9 @@ static void state_init(void){
   }
   //Set new periods based on new state
   //TODO: FIX out of range
-  rc.options.sdDataCurrentPeriod = sdPeriod[StateMachine::getCurrentState()];
-  rc.options.loraCurrentPeriod = loraPeriod[StateMachine::getCurrentState()];
-  rc.options.flashDataCurrentPeriod = flashPeriod[StateMachine::getCurrentState()];
+  rc.options.sdDataCurrentPeriod = sdPeriod[SM_getCurrentState()];
+  rc.options.loraCurrentPeriod = loraPeriod[SM_getCurrentState()];
+  rc.options.flashDataCurrentPeriod = flashPeriod[SM_getCurrentState()];
           
   xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
   st.stateChangeTimeMark = xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -395,7 +390,7 @@ static void state_init(void){
 
 static void state_loop(void) {
   TxDataEspNow txDataEspNow;
-  switch(StateMachine::getCurrentState()){
+  switch(SM_getCurrentState()){
     case COUNTDOWN:
       // move to timer
       

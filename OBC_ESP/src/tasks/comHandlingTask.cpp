@@ -19,9 +19,9 @@ void rxHandlingTask(void *arg){
         if (strstr(loraData, "STAT;") != NULL) {
 
           sscanf(loraData, "R4A;STAT;%d;%d", &oldState, &newState);
-          if (oldState == StateMachine::getCurrentState() && newState != States::FLIGHT){
+          if (oldState == SM_getCurrentState() && newState != States::FLIGHT){
           
-            if(StateMachine::changeStateRequest((States) newState) == false){
+            if(SM_changeStateRequest((States) newState) == false){
               rc.sendLog("invalid state change request");
               rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
             }
@@ -32,19 +32,19 @@ void rxHandlingTask(void *arg){
           }
         
         }else if (strstr(loraData, "ABRT") != NULL) {
-          if(StateMachine::changeStateRequest(States::ABORT) == false){
+          if(SM_changeStateRequest(States::ABORT) == false){
             rc.sendLog("invalid ABORT request");
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
         }else if (strstr(loraData, "HOLD_IN") != NULL){
-          if(StateMachine::changeStateRequest(States::HOLD) == false && StateMachine::getCurrentState() != States::HOLD){
+          if(SM_changeStateRequest(States::HOLD) == false && SM_getCurrentState() != States::HOLD){
             rc.sendLog("invalid HOLD_IN request");
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
         }else if (strstr(loraData, "HOLD_OUT") != NULL){
-          if(StateMachine::changeStateRequest(States::HOLD) == false && StateMachine::getCurrentState() == States::HOLD){
+          if(SM_changeStateRequest(States::HOLD) == false && SM_getCurrentState() == States::HOLD){
             rc.sendLog("invalid HOLD_OUT request");
             rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
           }
@@ -185,7 +185,7 @@ void rxHandlingTask(void *arg){
 
         //Wake up
         else if (strstr(loraData, "WKUP") != NULL) {
-          States tempState = StateMachine::getCurrentState();
+          States tempState = SM_getCurrentState();
           
           while(tempState < States::COUNTDOWN){
             valvePeriod[tempState] = 500;
@@ -197,7 +197,7 @@ void rxHandlingTask(void *arg){
 
         //go off
         else if (strstr(loraData, "GOFF") != NULL){
-          States tempState = StateMachine::getCurrentState();
+          States tempState = SM_getCurrentState();
           valvePeriod[tempState] = ESP_NOW_SLEEP_TIME;
           pitotPeriod[tempState] = ESP_NOW_SLEEP_TIME;
           espNowDefaultPeriod[tempState] = ESP_NOW_SLEEP_TIME;
@@ -249,7 +249,7 @@ void rxHandlingTask(void *arg){
     if(xQueueReceive(rc.hardware.espNowQueue, (void*) &rxEspNumber, 25)){
 
       uint16_t sleepTime;
-      uint8_t currentState = StateMachine::getCurrentState();
+      uint8_t currentState = SM_getCurrentState();
       if(currentState >= PERIOD_ARRAY_SIZE){
         rc.sendLog("Out of period array size :C");
         rxEspNumber = 0xff;

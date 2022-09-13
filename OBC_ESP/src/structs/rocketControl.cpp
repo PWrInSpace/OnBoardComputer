@@ -5,7 +5,7 @@
  * 
  */
 void RocketControl::updateCurrentState(){
-  dataFrame.mcb.state = StateMachine::getCurrentState();
+  dataFrame.mcb.state = SM_getCurrentState();
 }
 
 /**

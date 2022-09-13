@@ -63,7 +63,7 @@ void dataTask(void *arg){
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       
-      rc.dataFrame.mcb.state = StateMachine::getCurrentState();
+      rc.dataFrame.mcb.state = SM_getCurrentState();
 
       rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
       //portENTER_CRITICAL(&rc.hardware.stateLock);
@@ -124,17 +124,17 @@ void dataTask(void *arg){
       //calculation 
       
       //change state to first stage revcovery after 1 recov deploy
-      if(StateMachine::getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
-        StateMachine::changeStateRequest(FIRST_STAGE_RECOVERY);
+      if(SM_getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
+        SM_changeStateRequest(FIRST_STAGE_RECOVERY);
         rc.sendLog("First stage recovery");
       //change state to first stage revcovery after 2 recov deploy
-      }else if(StateMachine::getCurrentState() == FIRST_STAGE_RECOVERY && rc.dataFrame.recovery.secondStageDone == true){
-        StateMachine::changeStateRequest(SECOND_STAGE_RECOVERY);
+      }else if(SM_getCurrentState() == FIRST_STAGE_RECOVERY && rc.dataFrame.recovery.secondStageDone == true){
+        SM_changeStateRequest(SECOND_STAGE_RECOVERY);
         rc.sendLog("Second stage recovery");
       }
      
       //detect apogee
-      if(StateMachine::getCurrentState() == States::FLIGHT && rc.dataFrame.mcb.apogee == 0){
+      if(SM_getCurrentState() == States::FLIGHT && rc.dataFrame.mcb.apogee == 0){
         if(lastMaxAltitude < imuData.altitude || lastMaxAltitude == 0){
           lastMaxAltitude = imuData.altitude;
           apogeeConfirmationTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -148,9 +148,9 @@ void dataTask(void *arg){
       }
 
       //detect landing
-      if(StateMachine::getCurrentState() == States::SECOND_STAGE_RECOVERY){
+      if(SM_getCurrentState() == States::SECOND_STAGE_RECOVERY){
         if(imuData.altitude < (launchPadAltitude + 50)){
-          StateMachine::changeStateRequest(States::ON_GROUND);
+          SM_changeStateRequest(States::ON_GROUND);
         }
       }
       
@@ -160,7 +160,7 @@ void dataTask(void *arg){
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       
-      rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
+      rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
       //Serial.print("Dlugos: ");
       //Serial.println(strlen(lora));
@@ -174,10 +174,10 @@ void dataTask(void *arg){
       rc.errors.reset(ERROR_RESET_LORA);
     }
     //FLASH
-    if((StateMachine::getCurrentState() > COUNTDOWN && StateMachine::getCurrentState() < ON_GROUND)){
+    if((SM_getCurrentState() > COUNTDOWN && SM_getCurrentState() < ON_GROUND)){
       if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-        rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
+        rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
         rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //get mission time
 
         if(rc.options.flashWrite){
@@ -202,7 +202,7 @@ void dataTask(void *arg){
     if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       
-      rc.dataFrame.mcb.state = StateMachine::getCurrentState(); //get the newest information about state
+      rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
       rc.createSDFrame(sd);
       
 
