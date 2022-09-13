@@ -2,26 +2,26 @@ name: cppcheck
 on: [push]
 
 jobs:
-  cppcheck:
-    name: cppcheck
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: cppcheck
-        uses: deep5050/cppcheck-action@main
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN}}
-          check_library: enable
-          enable: all
-          inline_suppression: enable
-          max_ctu_depth: 4
+  # cppcheck:
+  #   name: cppcheck
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: cppcheck
+  #       uses: deep5050/cppcheck-action@main
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN}}
+  #         check_library: enable
+  #         enable: all
+  #         inline_suppression: enable
+  #         max_ctu_depth: 4
 
 
-      # - name: publish report    
-      #   uses: mikeal/publish-to-github-action@master
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     BRANCH_NAME: 'main' # your branch name goes here
+  #     # - name: publish report    
+  #     #   uses: mikeal/publish-to-github-action@master
+  #     #   env:
+  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     #     BRANCH_NAME: 'main' # your branch name goes here
   build:
     runs-on: ubuntu-latest
 
@@ -45,5 +45,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
+    - name: Go to OBC_ESP folder
+      run: cd OBC_ESP
     - name: Run PlatformIO
       run: pio run 
