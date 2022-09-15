@@ -28,7 +28,7 @@
 struct RocketControl{
 	Options options;  
   HardwareManagment hardware;
-  Timer missionTimer;
+  MissionTimer missionTimer;
   Errors errors;
   DataFrame dataFrame;
   bool isConnectedFlags[CONNECTION_CHECK_DEVICE_NUMBER];
@@ -45,7 +45,7 @@ struct RocketControl{
   bool queueSend(xQueueHandle _handle, char *data);
   bool allDevicesWokenUp();
 
-  void createOptionsFrame(char *_array);
+  void createOptionsFrame(char *_array, Options options);
   void createLoRaFrame(char *_array);
   void createSDFrame(char *_array);
   

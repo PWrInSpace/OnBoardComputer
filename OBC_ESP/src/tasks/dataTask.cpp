@@ -1,8 +1,6 @@
 #include "../include/tasks/tasks.h"
 #include "Adafruit_MCP9808.h"
 
-
-
 void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
   ImuAPI imu(&rc.hardware.i2c2);
@@ -60,7 +58,7 @@ void dataTask(void *arg){
   
 
   while(1){
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= rc.options.dataCurrentPeriod){
+    if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= OPT_get_data_current_period()){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       
       rc.dataFrame.mcb.state = SM_getCurrentState();
@@ -157,13 +155,11 @@ void dataTask(void *arg){
     }
     
     //LORA
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= rc.options.loraCurrentPeriod) || ulTaskNotifyTake(pdTRUE, 0)){
+    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= OPT_get_lora_current_period()) || ulTaskNotifyTake(pdTRUE, 0)){
       loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
       
       rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
       rc.createLoRaFrame(lora);
-      //Serial.print("Dlugos: ");
-      //Serial.println(strlen(lora));
       Serial.print(lora);
       
 
@@ -175,12 +171,12 @@ void dataTask(void *arg){
     }
     //FLASH
     if((SM_getCurrentState() > COUNTDOWN && SM_getCurrentState() < ON_GROUND)){
-      if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= rc.options.flashDataCurrentPeriod){
+      if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= OPT_get_flash_write_current_period()){
         flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
         rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
         rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //get mission time
 
-        if(rc.options.flashWrite){
+        if(OPT_get_flash_write()){
           if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
             rc.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
             rc.sendLog("Flash queue is full");
@@ -199,9 +195,8 @@ void dataTask(void *arg){
     
 
     //SD
-    if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= rc.options.sdDataCurrentPeriod){
+    if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= OPT_get_sd_write_current_period()){
       sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      
       rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
       rc.createSDFrame(sd);
       

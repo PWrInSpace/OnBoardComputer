@@ -1,4 +1,5 @@
 #include "../include/tasks/tasks.h"
+#include "../include/structs/options.h"
 
 void rxHandlingTask(void *arg){
   char loraData[LORA_FRAME_ARRAY_SIZE] = {};
@@ -69,16 +70,19 @@ void rxHandlingTask(void *arg){
           switch (optionNumber) {
           case 1:
 
-            rc.options.LoRaFrequencyMHz = optionValue;
-            xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
-            LoRa.setFrequency((int)rc.options.LoRaFrequencyMHz * 1E6);
-            xSemaphoreGive(rc.hardware.spiMutex);
+            if (OPT_set_lora_freq((uint32_t)optionValue) == true) {
+              xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
+              LoRa.setFrequency((int)OPT_get_lora_freq() * 1E3);
+              xSemaphoreGive(rc.hardware.spiMutex);
+            } else {
+              rc.sendLog("Invalid lora frequency");
+              rc.errors.setLastException(INVALID_OPTION_VALUE);
+            }
             break;
           
           case 2: 
-            if(optionValue >= 10000 && optionValue < UINT32_MAX){
-              rc.options.countdownTime = optionValue; 
-              rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
+            if (OPT_set_countdown_begin_time(optionValue) == true) {
+              rc.missionTimer.setDisableValue(OPT_get_countdown_begin_time());
             }else{
               rc.sendLog("Invalid countdown time set");
               rc.errors.setLastException(INVALID_OPTION_VALUE);
@@ -86,37 +90,27 @@ void rxHandlingTask(void *arg){
             break;
           
           case 3: 
-            if(optionValue < 0 && abs(optionValue) < rc.options.countdownTime){
-              rc.options.ignitionTime = optionValue; 
-            }else{
+            if (OPT_set_ignition_time(optionValue) == false) {
               rc.sendLog("Invalid ignition time set");
               rc.errors.setLastException(INVALID_OPTION_VALUE);
             }
             break;    
           
           case 4: 
-            rc.options.tankMinPressure  = optionValue;
+            OPT_set_tank_min_pressure(optionValue);
             break;
           
           case 5: 
-            if(optionValue > 0){
-              rc.options.flashWrite = true;
-            }else{
-              rc.options.flashWrite = false;
-            }
+            OPT_set_flash_write(optionValue);
             break;
 
           case 6: 
-            if(optionValue > 0){
-              rc.options.forceLaunch = true;
-            }else{
-              rc.options.forceLaunch = false;
-            }
+            OPT_set_force_launch(optionValue);
             break;
 
           case 7: 
             if(optionValue > 5 && optionValue < 60000){
-              rc.options.dataCurrentPeriod = optionValue; break;
+              OPT_set_data_current_period(optionValue); 
             }else{
               rc.errors.setLastException(INVALID_OPTION_NUMBER);
             }
@@ -124,7 +118,7 @@ void rxHandlingTask(void *arg){
           
           case 8: 
             if(optionValue > 100 && optionValue < 60000){
-              rc.options.loraCurrentPeriod = optionValue; break;
+              OPT_set_lora_current_period(optionValue);
             }else{
               rc.errors.setLastException(INVALID_OPTION_NUMBER);
             }
@@ -132,7 +126,7 @@ void rxHandlingTask(void *arg){
 
           case 9: 
             if(optionValue > 25 && optionValue < 60000){
-              rc.options.flashDataCurrentPeriod = optionValue; break;
+              OPT_set_flash_write_current_period(optionValue);
             }else{
               rc.errors.setLastException(INVALID_OPTION_NUMBER);
             }
@@ -140,7 +134,7 @@ void rxHandlingTask(void *arg){
 
           case 10: 
             if(optionValue > 25 && optionValue < 60000){
-              rc.options.sdDataCurrentPeriod = optionValue; break;
+              OPT_set_sd_write_current_period(optionValue);
             }else{
               rc.errors.setLastException(INVALID_OPTION_NUMBER);
             }
@@ -153,7 +147,7 @@ void rxHandlingTask(void *arg){
           }
 
           //send calback with new options
-          rc.createOptionsFrame(callback);
+          rc.createOptionsFrame(callback, OPT_get_options_struct());
           xQueueSend(rc.hardware.loraTxQueue, (void*)callback, 0);
         }
 

@@ -10,7 +10,7 @@ void loraTask(void *arg){
   LoRa.setSPI(rc.hardware.mySPI);
   LoRa.setPins(LORA_CS, LORA_RS, LORA_D0);
   
-  while(LoRa.begin((int)rc.options.LoRaFrequencyMHz * 1E6) == 0){
+  while(LoRa.begin((int)OPT_get_lora_freq() * 1E3) == 0){
     Serial.println("LORA begin error!");
     xSemaphoreGive(rc.hardware.spiMutex);
     vTaskDelay(500 / portTICK_PERIOD_MS);

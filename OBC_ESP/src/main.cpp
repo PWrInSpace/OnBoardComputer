@@ -23,7 +23,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   esp_wifi_set_mac(WIFI_IF_STA, adressOBC);
   //set mission timer
-  rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
+  rc.missionTimer.setDisableValue(OPT_get_countdown_begin_time());
 
   RUNCAM_init(CAMERA);
 

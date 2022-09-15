@@ -40,24 +40,24 @@ static struct {
   .stateChangeTimeMark = 0,
   .loopTimer = 0,
   .payload_switch_on_rpi = xTimerCreate("Payload", 
-                                        PAYLOAD_SWITCH_ON_AFTER_STATE_TIME,
-                                        pdFALSE,
-                                        TIMER_PAYLOAD_SWITCH_ON_NUM,
-                                        payload_swtich_on_cb),
+    PAYLOAD_SWITCH_ON_AFTER_STATE_TIME,
+    pdFALSE,
+    TIMER_PAYLOAD_SWITCH_ON_NUM,
+    payload_swtich_on_cb),
   .turn_off_recording = xTimerCreate("Camera off",
-                                      CAMERA_TURN_OFF_TIME,
-                                      pdFALSE,
-                                      TIMER_TURN_OFF_RECORDING_NUM,
-                                      turn_off_recording_cb),
-  .ignition_request = xTimerCreate("Ignition",
-                                    rc.options.countdownTime - rc.options.ignitionTime,
-                                    pdFALSE,
-                                    TIMER_IGNITION_REQUEST_NUM,
-                                    ignition_cb),
+    CAMERA_TURN_OFF_TIME,
+    pdFALSE,
+    TIMER_TURN_OFF_RECORDING_NUM,
+    turn_off_recording_cb),
+  .ignition_request = xTimerCreate("Ignition", 
+    (OPT_get_iginition_time() - OPT_get_countdown_begin_time()) / portTICK_PERIOD_MS,
+    pdFALSE,
+    TIMER_IGNITION_REQUEST_NUM,
+    ignition_cb),
 };
 
 static void idle_init(void) {
-  rc.options.dataCurrentPeriod = DATA_PERIOD;
+  OPT_set_data_current_period(DATA_PERIOD);
   SM_changeStateConfirmation();
 }
 
@@ -98,17 +98,19 @@ static void rdy_to_launch_init(void) {
 }
 
 static void countdown_init(void) {
-  if(rc.allDevicesWokenUp() || rc.options.forceLaunch == true){
+  if(rc.allDevicesWokenUp() || OPT_get_force_launch() == true){
     //turn on mission timer
-    rc.missionTimer.startTimer(millis() + rc.options.countdownTime);
+    rc.missionTimer.startTimer(OPT_get_countdown_begin_time());
     if(rc.missionTimer.isEnable()){
       if(rc.deactiveDisconnectTimer() == false){
         rc.sendLog("Timer delete error");
       } //turn off disconnectTimer
-      xTimerChangePeriod(st.ignition_request, 
-        rc.options.countdownTime - rc.options.ignitionTime, 
-        portMAX_DELAY);
+      
+      uint32_t time_to_ignition = OPT_get_iginition_time() - OPT_get_countdown_begin_time();
+      assert(time_to_ignition > 0);
+      xTimerChangePeriod(st.ignition_request, time_to_ignition/portTICK_PERIOD_MS, portMAX_DELAY);
       xTimerStart(st.ignition_request, portMAX_DELAY);
+
       SM_changeStateConfirmation();
     }else{
       rc.errors.setLastException(MISSION_TIMER_EXCEPTION);
@@ -379,9 +381,9 @@ static void state_init(void){
   }
   //Set new periods based on new state
   //TODO: FIX out of range
-  rc.options.sdDataCurrentPeriod = sdPeriod[SM_getCurrentState()];
-  rc.options.loraCurrentPeriod = loraPeriod[SM_getCurrentState()];
-  rc.options.flashDataCurrentPeriod = flashPeriod[SM_getCurrentState()];
+  OPT_set_data_current_period(sdPeriod[SM_getCurrentState()]);
+  OPT_set_lora_current_period(loraPeriod[SM_getCurrentState()]);
+  OPT_set_flash_write_current_period(flashPeriod[SM_getCurrentState()]);
           
   xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
   st.stateChangeTimeMark = xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -391,9 +393,7 @@ static void state_init(void){
 static void state_loop(void) {
   TxDataEspNow txDataEspNow;
   switch(SM_getCurrentState()){
-    case COUNTDOWN:
-      // move to timer
-      
+    case COUNTDOWN:      
       countdown_loop();
       break;
     case FLIGHT:
@@ -424,7 +424,6 @@ void stateTask(void *arg){
       state_init();
     }
 
-    //LOOP 
     if((xTaskGetTickCount() * portTICK_PERIOD_MS - st.loopTimer) >= STATE_TASK_LOOP_INTERVAL){
       st.loopTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       state_loop();

@@ -88,21 +88,21 @@ bool RocketControl::allDevicesWokenUp(){
  * 
  * @param data data
  */
-void RocketControl::createOptionsFrame(char* data){
+void RocketControl::createOptionsFrame(char* data, Options options){
   size_t optionsSize;
 
   optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod) + 1;
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period) + 1;
 
 
   char opt[optionsSize];
 
   snprintf(opt, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period);
 
 
   strcpy(data, LORA_TX_OPTIONS_PREFIX);
@@ -286,10 +286,10 @@ void RocketControl::createSDFrame(char* data){
 
   bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.wakeUp) + 1;
 
-  optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod) + 1;
+  optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period) + 1;
 
   recoverySize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     dataFrame.recovery.isArmed, dataFrame.recovery.firstStageContinouity, dataFrame.recovery.secondStageContinouity,
@@ -354,11 +354,11 @@ void RocketControl::createSDFrame(char* data){
 
   snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.wakeUp);
 
-  snprintf(optionsFrame, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
-
+  snprintf(optionsFrame, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period);
+ 
   snprintf(recoveryFrame, recoverySize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     dataFrame.recovery.isArmed, dataFrame.recovery.firstStageContinouity, dataFrame.recovery.secondStageContinouity,
     dataFrame.recovery.separationSwitch1, dataFrame.recovery.separationSwitch2,

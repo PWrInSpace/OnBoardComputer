@@ -4,18 +4,18 @@
 #include <stdint.h>
 #include <Arduino.h>
 
-class Timer{
-  uint32_t timer;
+class  MissionTimer{
+  int64_t tzero_time;
   bool enable;
-  uint32_t disableValue;
+  int64_t disableValue;
 
   public:
-  Timer();
-  void startTimer(uint32_t _timer);
+  MissionTimer();
+  void startTimer(int64_t _timer);
   int getTime() const;
   bool isEnable() const;
   void turnOffTimer();
-  void setDisableValue(uint32_t _disableValue);
+  void setDisableValue(int64_t _disableValue);
 };
 
 
