@@ -1,5 +1,5 @@
 #include "../include/tasks/tasks.h"
-#include "../include/structs/options.h"
+#include "options.h"
 
 void rxHandlingTask(void *arg){
   char loraData[LORA_FRAME_ARRAY_SIZE] = {};

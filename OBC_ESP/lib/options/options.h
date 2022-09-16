@@ -1,6 +1,11 @@
 #ifndef OPTIONS_HH
 #define OPTIONS_HH
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+
 //options are change only in stateTasks, and in handlingTask obviously
 /*** 
  * IMPORTANT, be sure that program will not use set and get in this same time 
@@ -30,7 +35,7 @@ bool OPT_set_countdown_begin_time(int32_t time_ms);
 int32_t OPT_get_countdown_begin_time(void);
 
 bool OPT_set_ignition_time(int32_t ignition_time);
-int32_t OPT_get_iginition_time(void);
+int32_t OPT_get_ignition_time(void);
 
 bool OPT_set_tank_min_pressure(uint8_t bar);
 uint8_t OPT_get_tank_min_pressure(void);

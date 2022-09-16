@@ -50,7 +50,7 @@ static struct {
     TIMER_TURN_OFF_RECORDING_NUM,
     turn_off_recording_cb),
   .ignition_request = xTimerCreate("Ignition", 
-    (OPT_get_iginition_time() - OPT_get_countdown_begin_time()) / portTICK_PERIOD_MS,
+    (OPT_get_ignition_time() - OPT_get_countdown_begin_time()) / portTICK_PERIOD_MS,
     pdFALSE,
     TIMER_IGNITION_REQUEST_NUM,
     ignition_cb),
@@ -106,7 +106,7 @@ static void countdown_init(void) {
         rc.sendLog("Timer delete error");
       } //turn off disconnectTimer
       
-      uint32_t time_to_ignition = OPT_get_iginition_time() - OPT_get_countdown_begin_time();
+      uint32_t time_to_ignition = OPT_get_ignition_time() - OPT_get_countdown_begin_time();
       assert(time_to_ignition > 0);
       xTimerChangePeriod(st.ignition_request, time_to_ignition/portTICK_PERIOD_MS, portMAX_DELAY);
       xTimerStart(st.ignition_request, portMAX_DELAY);

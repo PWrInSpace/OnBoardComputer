@@ -4,7 +4,7 @@
 #include "Arduino.h"
 #include "freertos/FreeRTOS.h"
 #include <stdint.h>
-#include "../include/structs/stateMachine.h"
+// #include "../include/structs/stateMachine.h"
 
 #define SD_FRAME_ARRAY_SIZE     512
 #define LORA_FRAME_ARRAY_SIZE   512

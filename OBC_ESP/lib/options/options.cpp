@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "../include/config.h"
-#include "../include/structs/options.h"
+#include "config.h"
+#include "options.h"
 #include "esp_log.h" 
 
 #define ABS(x) ((x > 0) ? x : -x)
@@ -57,7 +57,7 @@ bool OPT_set_countdown_begin_time(int32_t time_ms) {
 }
 
 int32_t OPT_get_countdown_begin_time(void) {
-    return false;
+    return opt.countdown_begin_time;
 }
 
 #define MAX_IGNIITION_TIME -500
@@ -68,7 +68,7 @@ bool OPT_set_ignition_time(int32_t ignition_time) {
 
     assert(MAX_COUTDOWN_TIME < 0);
     assert(ignition_time < 0);
-    if (ignition_time > MAX_IGNIITION_TIME) {
+    if (ignition_time > MAX_IGNIITION_TIME || ignition_time <= opt.countdown_begin_time) {
         return false;
     }
 
@@ -76,7 +76,7 @@ bool OPT_set_ignition_time(int32_t ignition_time) {
     return true;
 }
 
-int32_t OPT_get_iginition_time(void) {
+int32_t OPT_get_ignition_time(void) {
     return opt.ignition_time;
 }
 
@@ -107,8 +107,13 @@ bool OPT_get_force_launch(void) {
     return opt.force_launch;
 }
 
+#define MIN_PERIOD 75
+
 bool OPT_set_data_current_period(TickType_t data_period) {
-    opt.sd_write_current_period = data_period;
+    if (data_period < MIN_PERIOD) {
+        return false;
+    }
+    opt.data_current_period = data_period;
     return true;
 }
 
@@ -117,6 +122,9 @@ TickType_t OPT_get_data_current_period(void) {
 }
 
 bool OPT_set_lora_current_period(TickType_t lora_period) {
+    if (lora_period < MIN_PERIOD) {
+        return false;
+    }
     opt.lora_current_period = lora_period;
     return true;
 }
@@ -126,6 +134,9 @@ TickType_t OPT_get_lora_current_period(void) {
 }
 
 bool OPT_set_flash_write_current_period(TickType_t flash_period) {
+    if (flash_period < MIN_PERIOD) {
+        return false;
+    }
     opt.flash_write_current_period = flash_period;
     return true;
 }
@@ -135,6 +146,10 @@ TickType_t OPT_get_flash_write_current_period(void) {
 }
 
 bool OPT_set_sd_write_current_period(TickType_t sd_write_period) {
+    if (sd_write_period < MIN_PERIOD)  {
+        return false;
+    }
+
     opt.sd_write_current_period = sd_write_period;
     return true;
 }
