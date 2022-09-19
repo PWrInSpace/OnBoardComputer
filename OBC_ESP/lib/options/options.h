@@ -25,6 +25,7 @@ struct Options{
     TickType_t sd_write_current_period;
 };
 
+bool OPT_init(void);
 //  MUTEX ??????
 Options OPT_get_options_struct(void);
 
@@ -57,5 +58,7 @@ TickType_t OPT_get_flash_write_current_period(void);
 
 bool OPT_set_sd_write_current_period(TickType_t sd_write_period);
 TickType_t OPT_get_sd_write_current_period(void);
+
+bool OPT_create_lora_frame(char *buffer, size_t size);
 
 #endif

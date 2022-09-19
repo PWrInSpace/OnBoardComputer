@@ -25,14 +25,14 @@ void dataTask(void *arg){
   if (gps.begin(rc.hardware.i2c2, 0x42, 10) == false) //Connect to the u-blox module using Wire port
   {
     rc.sendLog("GPS INIT ERROR");
-    rc.errors.setSensorError(GPS_INIT_ERROR);
+    ERR_set_sensors_error(GPS_INIT_ERROR);
   }
 
   gps.setI2COutput(COM_TYPE_UBX);
   
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
-    rc.errors.setSensorError(IMU_INIT_ERROR);
+    ERR_set_sensors_error(IMU_INIT_ERROR);
   }else{
     imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
     vTaskDelay(250 / portTICK_PERIOD_MS);
@@ -45,12 +45,12 @@ void dataTask(void *arg){
 
   if (pressureSensor.isConnected() == false){
     rc.sendLog("PRESSURE SENSOR ERROR");
-    rc.errors.setSensorError(PRESSURE_SENSOR_INIT_ERROR);
+    ERR_set_sensors_error(PRESSURE_SENSOR_INIT_ERROR);
   }
 
   if (tempsensor.begin(0x18, &rc.hardware.i2c2) == false) {
     rc.sendLog("TEMP SENSOR INIT ERROR");
-    rc.errors.setSensorError(TEMP_SENSOR_INIT_ERROR);
+    ERR_set_sensors_error(TEMP_SENSOR_INIT_ERROR);
   }else{
     tempsensor.setResolution(1);
     tempsensor.wake();
@@ -164,10 +164,10 @@ void dataTask(void *arg){
       
 
       if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){
-        rc.errors.setRTOSError(RTOS_LORA_QUEUE_ADD_ERROR);
+        ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
         rc.sendLog("LoRa quque is full");
       }
-      rc.errors.reset(ERROR_RESET_LORA);
+      ERR_reset(ERROR_RESET_LORA);
     }
     //FLASH
     if((SM_getCurrentState() > COUNTDOWN && SM_getCurrentState() < ON_GROUND)){
@@ -178,14 +178,14 @@ void dataTask(void *arg){
 
         if(OPT_get_flash_write()){
           if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
-            rc.errors.setRTOSError(RTOS_FLASH_QUEUE_ADD_ERROR);
+            ERR_set_rtos_error(RTOS_FLASH_QUEUE_ADD_ERROR);
             rc.sendLog("Flash queue is full");
           }
         }
         Serial.print("Data frame sizeof: ");
         Serial.println(sizeof(DataFrame));
         if(esp_now_send(adressBlackBox, (uint8_t*) &rc.dataFrame, sizeof(DataFrame)) != ESP_OK){
-          rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+          ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           rc.sendLog("Black box send error");
         }
       }
@@ -202,10 +202,10 @@ void dataTask(void *arg){
       
 
       if(xQueueSend(rc.hardware.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
-        rc.errors.setRTOSError(RTOS_SD_QUEUE_ADD_ERROR);
+        ERR_set_rtos_error(RTOS_SD_QUEUE_ADD_ERROR);
       }  
       
-      rc.errors.reset(ERROR_RESET_SD); //reset errors after save  
+      ERR_reset(ERROR_RESET_SD); //reset errors after save  
     }
 
     vTaskDelay(10/portTICK_PERIOD_MS);

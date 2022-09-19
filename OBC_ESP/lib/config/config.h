@@ -68,7 +68,7 @@
 #define SD_LONG_PERIOD          500
 #define IDLE_PERIOD             10 * 1000
 
-#define DATA_PERIOD             100 / portTICK_PERIOD_MS
+#define DATA_PERIOD             100
 #define PERIOD_ARRAY_SIZE       12
 
 #define STATE_TASK_LOOP_INTERVAL 100

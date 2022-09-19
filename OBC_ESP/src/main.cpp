@@ -16,6 +16,9 @@ void setup() {
   Serial.begin(115200); //DEBUG
 
   SM_init(rc.hardware.stateTask);
+  if (ERR_init() == false) {
+    ESP.restart();
+  }
   Serial.print("Setup state: "); //DEBUG
   Serial.println(SM_getCurrentState()); //DEBUG
   //BROWNOUT DETECTOT DISABLING
@@ -29,15 +32,12 @@ void setup() {
 
   //set esp now
   if(nowInit() == false) ESP.restart();
-  if(nowAddPeer(adressPitot, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressMValve, 0) == false){
-    rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-    Serial.println("MVal add error");
-  } 
-  if(nowAddPeer(adressUpust, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressBlackBox, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressTanWa, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
-  if(nowAddPeer(adressPayLoad, 0) == false) rc.errors.setEspNowError(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressPitot, 0) == false) ERR_set_esp_now_error(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressMValve, 0) == false) ERR_set_esp_now_error(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressUpust, 0) == false) ERR_set_esp_now_error(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressBlackBox, 0) == false) ERR_set_esp_now_error(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressTanWa, 0) == false) ERR_set_esp_now_error(ESPNOW_ADD_PEER_ERROR);
+  if(nowAddPeer(adressPayLoad, 0) == false) ERR_set_esp_now_error(ESPNOW_ADD_PEER_ERROR);
 
 
   //init all components

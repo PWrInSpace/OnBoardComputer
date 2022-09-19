@@ -35,7 +35,7 @@ bool nowAddPeer(const uint8_t* address, uint8_t channel) {
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
   if (status != ESP_NOW_SEND_SUCCESS){
-    rc.errors.setEspNowError(ESPNOW_DELIVERY_ERROR);
+    ERR_set_esp_now_error(ESPNOW_DELIVERY_ERROR);
   }
 }
 
@@ -78,7 +78,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   }
 
   else if(adressCompare(mac, adressPayLoad)) {
-    memcpy(&rc.dataFrame.pl, (PlData*) incomingData, sizeof(rc.dataFrame.pl));
+    memcpy(&rc.dataFrame.payload, (PayloadData*) incomingData, sizeof(rc.dataFrame.payload));
     adressToQueue = PAYLOAD;
   }
 

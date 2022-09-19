@@ -100,7 +100,7 @@ void espNowConnectionCallback(TimerHandle_t xTimer){
   }
   
   if(rc.isConnectedFlags[PAYLOAD] == false){
-    rc.dataFrame.pl.wakenUp = 0;
+    rc.dataFrame.payload.wakenUp = 0;
     rc.sendLog("Payload not connected");
   }
 

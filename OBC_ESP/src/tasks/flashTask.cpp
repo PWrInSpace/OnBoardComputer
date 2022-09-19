@@ -22,7 +22,7 @@ void flashTask(void *arg){
 
         xQueueReceive(rc.hardware.flashQueue, &frame, portMAX_DELAY);
         if(!file.write((uint8_t*) &frame, sizeof(frame))){
-          rc.errors.setFlashError(FLASH_WRITE_ERROR);
+          ERR_set_flash_error(FLASH_WRITE_ERROR);
         }
       }
 

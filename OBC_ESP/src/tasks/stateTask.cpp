@@ -6,7 +6,7 @@ static void payload_swtich_on_cb(void *arg) {
   txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
   Serial.println("Payload recording on command");
   if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     Serial.println("Payload recording send error");
   }
 }
@@ -23,7 +23,7 @@ static void ignition_cb(void *arg) {
     txDataEspNow.setVal(IGNITION_COMMAND, 1);  
         //send ignition request
     if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
       rc.sendLog("Esp send error - IGNITION");
     }
     rc.sendLog("IGNITION REQUEST");
@@ -78,10 +78,10 @@ static void fueling_init(void) {
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(VALVE_CLOSE, 0);
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
   if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   } 
   SM_changeStateConfirmation();
 }
@@ -113,11 +113,11 @@ static void countdown_init(void) {
 
       SM_changeStateConfirmation();
     }else{
-      rc.errors.setLastException(MISSION_TIMER_EXCEPTION);
+      ERR_set_last_exception(MISSION_TIMER_EXCEPTION);
       SM_changeStateRejection();
     }
   }else{
-    rc.errors.setLastException(WAKE_UP_EXCEPTION);
+    ERR_set_last_exception(WAKE_UP_EXCEPTION);
     SM_changeStateRejection();
   }
 }
@@ -127,7 +127,7 @@ static void flight_init(void) {
   txDataEspNow.setVal(VALVE_OPEN, 0); 
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     Serial.println("Ignition error");
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
   Serial.println("Ignition command");
   //set options
@@ -144,7 +144,7 @@ static void first_stage_recovery_init(void) {
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(VALVE_CLOSE, 0); 
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   };
 
   SM_changeStateConfirmation();
@@ -160,7 +160,7 @@ static void second_stage_recovery_init(void) {
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(VALVE_OPEN, 0);
   if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
           
   SM_changeStateConfirmation();
@@ -178,13 +178,13 @@ static void on_ground_init(void) {
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(VALVE_OPEN, 0);
   if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
 
   //MAIN OPEN
   txDataEspNow.setVal(VALVE_OPEN, 0);
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
   SM_changeStateConfirmation();
 
@@ -205,15 +205,15 @@ static void hold_init(void) {
   txDataEspNow.setVal(VALVE_CLOSE, 0);
   //Main valve
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
   //Upust valve
   if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   }
   //TanWa
   //if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-  //  rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+  //  ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   //}
   RUNCAM_turn_off();
   SM_changeStateConfirmation();
@@ -230,7 +230,7 @@ static void abort_init(void) {
   //Upust valve open
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(VALVE_OPEN, 0);
-  if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK) rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+  if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK) ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           
 
   xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
@@ -258,7 +258,7 @@ static void flight_loop(void) {
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     Serial.println("Main valve open loop");
     if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
     //vTaskDelay(25 / portTICK_PERIOD_MS);
   }
@@ -277,7 +277,7 @@ static void first_stage_recovery_loop(void) {
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_CLOSE, 0); 
     if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
   }
 }
@@ -293,7 +293,7 @@ static void second_stage_recovery_loop(void) {
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     } 
   }
 }
@@ -304,14 +304,14 @@ static void on_ground_loop(void) {
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     Serial.println("Loop odpalenia");
     if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     } 
   }
 
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
   }
 }
@@ -329,7 +329,7 @@ static void abort_loop(void) {
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
   }
 }

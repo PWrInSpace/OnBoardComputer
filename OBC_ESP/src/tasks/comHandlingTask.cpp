@@ -24,36 +24,36 @@ void rxHandlingTask(void *arg){
           
             if(SM_changeStateRequest((States) newState) == false){
               rc.sendLog("invalid state change request");
-              rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+              ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
             }
 
           }else{
             rc.sendLog("invalid state change command");
-            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+            ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
           }
         
         }else if (strstr(loraData, "ABRT") != NULL) {
           if(SM_changeStateRequest(States::ABORT) == false){
             rc.sendLog("invalid ABORT request");
-            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+            ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
         }else if (strstr(loraData, "HOLD_IN") != NULL){
           if(SM_changeStateRequest(States::HOLD) == false && SM_getCurrentState() != States::HOLD){
             rc.sendLog("invalid HOLD_IN request");
-            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+            ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
         }else if (strstr(loraData, "HOLD_OUT") != NULL){
           if(SM_changeStateRequest(States::HOLD) == false && SM_getCurrentState() == States::HOLD){
             rc.sendLog("invalid HOLD_OUT request");
-            rc.errors.setLastException(INVALID_STATE_CHANGE_EXCEPTION);
+            ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
           }
 
         }else{
           strcat(loraData, " - INVALID COMMAND");
           rc.sendLog(loraData);
-          rc.errors.setLastException(INVALID_PREFIX_EXCEPTION);
+          ERR_set_last_exception(INVALID_PREFIX_EXCEPTION);
         }
       
       /*** R4O ***/
@@ -76,7 +76,7 @@ void rxHandlingTask(void *arg){
               xSemaphoreGive(rc.hardware.spiMutex);
             } else {
               rc.sendLog("Invalid lora frequency");
-              rc.errors.setLastException(INVALID_OPTION_VALUE);
+              ERR_set_last_exception(INVALID_OPTION_VALUE);
             }
             break;
           
@@ -85,14 +85,14 @@ void rxHandlingTask(void *arg){
               rc.missionTimer.setDisableValue(OPT_get_countdown_begin_time());
             }else{
               rc.sendLog("Invalid countdown time set");
-              rc.errors.setLastException(INVALID_OPTION_VALUE);
+              ERR_set_last_exception(INVALID_OPTION_VALUE);
             }
             break;
           
           case 3: 
             if (OPT_set_ignition_time(optionValue) == false) {
               rc.sendLog("Invalid ignition time set");
-              rc.errors.setLastException(INVALID_OPTION_VALUE);
+              ERR_set_last_exception(INVALID_OPTION_VALUE);
             }
             break;    
           
@@ -112,7 +112,7 @@ void rxHandlingTask(void *arg){
             if(optionValue > 5 && optionValue < 60000){
               OPT_set_data_current_period(optionValue); 
             }else{
-              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+              ERR_set_last_exception(INVALID_OPTION_NUMBER);
             }
             break;
           
@@ -120,7 +120,7 @@ void rxHandlingTask(void *arg){
             if(optionValue > 100 && optionValue < 60000){
               OPT_set_lora_current_period(optionValue);
             }else{
-              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+              ERR_set_last_exception(INVALID_OPTION_NUMBER);
             }
             break;
 
@@ -128,7 +128,7 @@ void rxHandlingTask(void *arg){
             if(optionValue > 25 && optionValue < 60000){
               OPT_set_flash_write_current_period(optionValue);
             }else{
-              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+              ERR_set_last_exception(INVALID_OPTION_NUMBER);
             }
             break;
 
@@ -136,17 +136,18 @@ void rxHandlingTask(void *arg){
             if(optionValue > 25 && optionValue < 60000){
               OPT_set_sd_write_current_period(optionValue);
             }else{
-              rc.errors.setLastException(INVALID_OPTION_NUMBER);
+              ERR_set_last_exception(INVALID_OPTION_NUMBER);
             }
             break;
 
           default:
             rc.sendLog("Invalid option NUMBER");
-            rc.errors.setLastException(INVALID_OPTION_NUMBER);
+            ERR_set_last_exception(INVALID_OPTION_NUMBER);
             break;
           }
 
           //send calback with new options
+          // OPT_create_lora_frame(callback, sizeof(callback)); //TODO: change to this
           rc.createOptionsFrame(callback, OPT_get_options_struct());
           xQueueSend(rc.hardware.loraTxQueue, (void*)callback, 0);
         }
@@ -162,7 +163,7 @@ void rxHandlingTask(void *arg){
           
           
           if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
         }
 
@@ -173,7 +174,7 @@ void rxHandlingTask(void *arg){
           sscanf(loraData, "R4O;UVAL;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
           
           if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
         }
 
@@ -213,7 +214,7 @@ void rxHandlingTask(void *arg){
           sscanf(loraData, "R4O;TANWA;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
           
           if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
         }
 
@@ -231,12 +232,12 @@ void rxHandlingTask(void *arg){
         else{
           strcat(loraData, " - INVALID COMMAND");
           rc.sendLog(loraData);
-          rc.errors.setLastException(INVALID_PREFIX_EXCEPTION);
+          ERR_set_last_exception(INVALID_PREFIX_EXCEPTION);
         }
       }else{
         strcat(loraData, " - INVALID PREFIX");
         rc.sendLog(loraData);
-        rc.errors.setLastException(INVALID_PREFIX_EXCEPTION);
+        ERR_set_last_exception(INVALID_PREFIX_EXCEPTION);
       }
     }
 
@@ -266,7 +267,7 @@ void rxHandlingTask(void *arg){
           sleepTime = pitotPeriod[currentState];
           
           if(esp_now_send(adressPitot, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
             rc.isConnectedFlags[PITOT] = false;
           }
           
@@ -277,7 +278,7 @@ void rxHandlingTask(void *arg){
           sleepTime = valvePeriod[currentState];
           
           if(esp_now_send(adressMValve, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
             rc.isConnectedFlags[MAIN_VALVE] = false;
           }
           
@@ -288,7 +289,7 @@ void rxHandlingTask(void *arg){
           sleepTime = valvePeriod[currentState];
           
           if(esp_now_send(adressUpust, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
           
           break;
@@ -298,7 +299,7 @@ void rxHandlingTask(void *arg){
           sleepTime = espNowDefaultPeriod[currentState];
 
           if(esp_now_send(adressBlackBox, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
 
           break;
@@ -308,7 +309,7 @@ void rxHandlingTask(void *arg){
           sleepTime = payloadPeriod[currentState];
           
           if(esp_now_send(adressPayLoad, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
 
           break;
@@ -318,7 +319,7 @@ void rxHandlingTask(void *arg){
           sleepTime = espNowDefaultPeriod[currentState];
           
           if(esp_now_send(adressACS, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
 
           break;
@@ -327,7 +328,7 @@ void rxHandlingTask(void *arg){
           sleepTime = espNowDefaultPeriod[currentState];
           
           if(esp_now_send(cameraACS, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
          
           break;
@@ -337,7 +338,7 @@ void rxHandlingTask(void *arg){
           sleepTime = espNowDefaultPeriod[currentState];
           
           if(esp_now_send(cameraPitot, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
 
           break;
@@ -346,7 +347,7 @@ void rxHandlingTask(void *arg){
           sleepTime = espNowDefaultPeriod[currentState];
           
           if(esp_now_send(cameraRecovery, (uint8_t*) &sleepTime, sizeof(sleepTime)) != ESP_OK){
-            rc.errors.setEspNowError(ESPNOW_SEND_ERROR);
+            ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
           }
 
           break;

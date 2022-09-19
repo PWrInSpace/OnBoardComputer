@@ -156,13 +156,13 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.tanWa.armButton, dataFrame.tanWa.abortButton);//19
   
   sprintf(plFrame, "%d;%d;%0.1f;",
-    dataFrame.pl.isRecording,
-    dataFrame.pl.isRpiOn, dataFrame.pl.vBat);
+    dataFrame.payload.isRecording,
+    dataFrame.payload.isRpiOn, dataFrame.payload.vBat);
 
   // Slaves waken up (from top of the rocket):
   memset(byteData, 0, 4);
   byteData[0] |= (dataFrame.pitot.wakenUp      << 0);
-  byteData[0] |= (dataFrame.pl.wakenUp         << 1);
+  byteData[0] |= (dataFrame.payload.wakenUp         << 1);
   byteData[0] |= (dataFrame.blackBox.wakeUp   << 2);
   byteData[0] |= (dataFrame.upustValve.wakeUp << 3);
   byteData[0] |= (dataFrame.mainValve.wakeUp  << 4);
@@ -261,7 +261,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
     dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
     dataFrame.pitot.speed, dataFrame.pitot.apogee, dataFrame.pitot.isRecording, 
-    dataFrame.pitot.data) + 1; //8
+    dataFrame.pitot.data_collected) + 1; //8
   
   mvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%0.2f;",
     dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
@@ -281,8 +281,8 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
   
   plSize = snprintf(NULL, 0, "%f;%d;%d;%d;%d;",
-    dataFrame.pl.vBat, dataFrame.pl.wakenUp, dataFrame.pl.isRecording,
-    dataFrame.pl.data, dataFrame.pl.isRpiOn) + 1;
+    dataFrame.payload.vBat, dataFrame.payload.wakenUp, dataFrame.payload.isRecording,
+    dataFrame.payload.data, dataFrame.payload.isRpiOn) + 1;
 
   bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.wakeUp) + 1;
 
@@ -329,7 +329,7 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
     dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
     dataFrame.pitot.speed, dataFrame.pitot.apogee, dataFrame.pitot.isRecording, 
-    dataFrame.pitot.data);//8
+    dataFrame.pitot.data_collected);//8
 
   snprintf(mvFrame, mvSize, "%d;%0.2f;%d;%0.2f;%0.2f;",
     dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
@@ -349,8 +349,8 @@ void RocketControl::createSDFrame(char* data){
     dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating); //19
 
   snprintf(plFrame, plSize, "%f;%d;%d;%d;%d;",
-    dataFrame.pl.vBat, dataFrame.pl.wakenUp, dataFrame.pl.isRecording,
-    dataFrame.pl.data, dataFrame.pl.isRpiOn);
+    dataFrame.payload.vBat, dataFrame.payload.wakenUp, dataFrame.payload.isRecording,
+    dataFrame.payload.data, dataFrame.payload.isRpiOn);
 
   snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.wakeUp);
 

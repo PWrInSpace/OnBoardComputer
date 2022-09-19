@@ -13,7 +13,7 @@ void sdTask(void *arg){
   xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
 
   while(!mySD.init()){
-    rc.errors.setSDError(SD_INIT_ERROR);
+    ERR_set_sd_error(SD_INIT_ERROR);
     Serial.println("SD INIT ERROR!"); //DEBUG
     
     xSemaphoreGive(rc.hardware.spiMutex);
@@ -39,18 +39,18 @@ void sdTask(void *arg){
       
         if(strncmp(data, "LOG", 3) == 0){
           if(!mySD.write(logPath, data)){
-            rc.errors.setSDError(SD_WRITE_ERROR);
+            ERR_set_sd_error(SD_WRITE_ERROR);
             sdError = true;
           }else{
-            rc.errors.setSDError(SD_NO_ERROR);
+            ERR_set_sd_error(SD_NO_ERROR);
             sdError = false;
           }
         }else{
           if(!mySD.write(dataPath, data)){
-            rc.errors.setSDError(SD_WRITE_ERROR);
+            ERR_set_sd_error(SD_WRITE_ERROR);
             sdError = true;
           }else{
-            rc.errors.setSDError(SD_NO_ERROR);
+            ERR_set_sd_error(SD_NO_ERROR);
             sdError = false;
           }
         }  

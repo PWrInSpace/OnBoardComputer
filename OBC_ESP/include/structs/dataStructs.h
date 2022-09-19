@@ -16,8 +16,8 @@ enum ValveState{
 };
 
 struct PitotData {
-  bool wakenUp : 1; //if waken up
-  float vBat; //battery voltage
+  bool wakenUp : 1;
+  float vBat;
   float statPress;
   float dynamicPress;
   float temp;
@@ -25,7 +25,7 @@ struct PitotData {
   uint8_t speed;
   bool apogee;
   bool isRecording : 1; // if rpi says it is
-  bool data : 1; // if data is collected
+  bool data_collected : 1; // if data is collected
 };
 
 struct MainValveData {
@@ -60,7 +60,7 @@ struct UpustValveData {
   float batteryVoltage;
 };
 
-struct PlData {
+struct PayloadData {
     bool wakenUp : 1; //if waken up
     bool isRecording; // if rpi says it is
     bool data : 1; // if data is collected
@@ -116,11 +116,24 @@ struct DataFrame {
   UpustValveData  upustValve;
   RecoveryData    recovery;
   SlaveData       blackBox;
-  PlData          pl;
+  PayloadData     payload;
   MCB mcb;
   uint32_t missionTimer; //DRUT
-
-  DataFrame() = default;
 };
+
+bool DF_init(void);
+bool DF_set_pitot_data(PitotData pitot);
+bool DF_set_main_valve_data(MainValveData main_valve);
+bool DF_set_tanwa_data(TanWaData tanwa);
+bool DF_set_upust_valve_data(UpustValveData upust_valve);
+bool DF_set_recovery_data(RecoveryData recovery);
+bool DF_set_blackbox_data(SlaveData blackbox);
+bool DF_set_payload_data(PayloadData payload);
+// bool DF_set_imu_data(ImuData imu_data);
+// bool DF_set_gps_data();
+bool DF_set_mission_timer(uint32_t mission_time);
+
+bool DF_create_lora_frame(char *buffer, size_t size);
+bool DF_create_sd_frame(char *buffer, size_t size);
 
 #endif
