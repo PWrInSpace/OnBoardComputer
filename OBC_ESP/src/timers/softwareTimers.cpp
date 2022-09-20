@@ -1,6 +1,6 @@
 #include "../include/timers/watchdog.h"
 #include "../include/structs/rocketControl.h"
-#include "../include/structs/dataStructs.h"
+#include "data_structs.h"
 #include "../include/structs/stateMachine.h"
 
 extern WatchdogTimer wt;

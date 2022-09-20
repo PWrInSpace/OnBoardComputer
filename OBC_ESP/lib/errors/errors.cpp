@@ -172,7 +172,7 @@ bool ERR_create_lora_frame(char *buffer, size_t size) {
 
   size_t wrote_data_size;
   wrote_data_size = snprintf(buffer, size, "%d;%d;%d;", byte_data[0], byte_data[1], byte_data[2]) + 1;
-  assert(wrote_data_size <= size);
+  assert(wrote_data_size < size);
   return true;
 }
 
@@ -192,7 +192,7 @@ bool ERR_create_sd_frame(char *buffer, size_t size) {
   wrote_data_size = snprintf(buffer, size, "%d;%d;%d;%d;%d;%d;%d;%d;",
     se.errors.sd, se.errors.flash, se.errors.rtos, se.errors.espnow,
     se.errors.watchdog, se.errors.sensors, se.errors.exceptions, se.errors.recovery) + 1;
-  assert(wrote_data_size <= size);
+  assert(wrote_data_size < size);
   return true;
 }
 

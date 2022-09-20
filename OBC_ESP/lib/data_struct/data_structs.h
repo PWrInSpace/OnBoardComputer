@@ -1,8 +1,8 @@
 #ifndef DATA_STRUCTS_HH
 #define DATA_STRUCTS_HH
 
+#include <stdio.h>
 #include <cstdint>
-#include "stateMachine.h"
 
 /**   RX    **/
 
@@ -91,13 +91,13 @@ struct SlaveData {
 };
 
 struct MCB{
-  float imuData[11];
   float batteryVoltage;
   float GPSlal;
   float GPSlong;
   float GPSalt;
   uint8_t GPSsat;
   uint8_t GPSsec;
+  float imuData[11];
   float temp_mcp;
   float temp_lp25;
   float pressure;
@@ -122,18 +122,30 @@ struct DataFrame {
 };
 
 bool DF_init(void);
-bool DF_set_pitot_data(PitotData pitot);
-bool DF_set_main_valve_data(MainValveData main_valve);
-bool DF_set_tanwa_data(TanWaData tanwa);
-bool DF_set_upust_valve_data(UpustValveData upust_valve);
-bool DF_set_recovery_data(RecoveryData recovery);
-bool DF_set_blackbox_data(SlaveData blackbox);
-bool DF_set_payload_data(PayloadData payload);
-// bool DF_set_imu_data(ImuData imu_data);
-// bool DF_set_gps_data();
-bool DF_set_mission_timer(uint32_t mission_time);
+void DF_set_mcb_data(MCB *data);
+void DF_set_pitot_data(PitotData *pitot);
+void DF_set_main_valve_data(MainValveData *main_valve);
+void DF_set_tanwa_data(TanWaData *tanwa);
+void DF_set_upust_valve_data(UpustValveData *upust_valve);
+void DF_set_recovery_data(RecoveryData *recovery);
+void DF_set_blackbox_data(SlaveData *blackbox);
+void DF_set_payload_data(PayloadData *payload);
+// void DF_set_imu_data(ImuData imu_data);
+// void DF_set_gps_data();
+void DF_set_mission_timer(uint32_t mission_time);
+void DF_create_lora_frame(char *buffer, size_t size);
+void DF_create_sd_frame(char *buffer, size_t size);
 
-bool DF_create_lora_frame(char *buffer, size_t size);
-bool DF_create_sd_frame(char *buffer, size_t size);
+void DF_create_lora_frame(char* buffer, size_t size);
+void DF_create_sd_frame(char* buffer, size_t size);
 
+// THREAD UNSAFE FUNCTIONS
+bool DF_create_mcb_frame(char *buffer, size_t size);
+bool DF_create_pitot_frame(char *buffer, size_t size);
+bool DF_create_main_valve_frame(char *buffer, size_t size);
+bool DF_create_tanwa_frame(char *buffer, size_t size);
+bool DF_create_upust_valve_frame(char *buffer, size_t size);
+bool DF_create_recovery_frame(char *buffer, size_t size);
+bool DF_create_blackbox_frame(char *buffer, size_t size);
+bool DF_create_payload_frame(char *buffer, size_t size);
 #endif

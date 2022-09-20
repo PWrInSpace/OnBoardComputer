@@ -1,6 +1,6 @@
 #include "../include/timers/watchdog.h"
+#include "../lib/data_struct/data_structs.h"
 #include "../include/structs/rocketControl.h"
-#include "../include/structs/dataStructs.h"
 #include "../include/tasks/tasks.h"
 #include "../include/com/now.h"
 #include "soc/soc.h"
@@ -70,14 +70,30 @@ void setup() {
   xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
 
   //create Timers
-  rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", disconnectDelay, pdFALSE, NULL, disconnectTimerCallback);
+  rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", 
+                                              disconnectDelay, 
+                                              pdFALSE, 
+                                              NULL, 
+                                              disconnectTimerCallback);
 
-  rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", watchdogDelay, pdTRUE, NULL, watchdogTimerCallback);
+  rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", 
+                                            watchdogDelay, 
+                                            pdTRUE, 
+                                            NULL, 
+                                            watchdogTimerCallback);
 
-  rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer", espNowConnectionCheckPeriod, pdTRUE, NULL, espNowConnectionCallback);
+  rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer", 
+                                                    espNowConnectionCheckPeriod, 
+                                                    pdTRUE, 
+                                                    NULL, 
+                                                    espNowConnectionCallback);
   
   //check created elements
-  if(rc.hardware.loraRxQueue == NULL || rc.hardware.loraTxQueue == NULL || rc.hardware.sdQueue == NULL || rc.hardware.flashQueue == NULL || rc.hardware.espNowQueue == NULL){
+  if (rc.hardware.loraRxQueue == NULL || 
+      rc.hardware.loraTxQueue == NULL || 
+      rc.hardware.sdQueue == NULL || 
+      rc.hardware.flashQueue == NULL || 
+      rc.hardware.espNowQueue == NULL){
     //error handling
     Serial.println("Queue create error!"); //DEBUG
     ESP.restart();
@@ -95,7 +111,10 @@ void setup() {
     ESP.restart();  
   }
 
-  if(rc.hardware.stateTask == NULL || rc.hardware.dataTask == NULL || rc.hardware.sdTask == NULL || rc.hardware.flashTask == NULL){
+  if (rc.hardware.stateTask == NULL ||
+      rc.hardware.dataTask == NULL || 
+      rc.hardware.sdTask == NULL || 
+      rc.hardware.flashTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
     ESP.restart();  

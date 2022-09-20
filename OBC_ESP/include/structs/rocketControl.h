@@ -9,7 +9,7 @@
 #include "../include/com/RecoverySTM.h"
 #include "options.h"
 #include "hardwareManagment.h"
-#include "dataStructs.h"
+#include "data_structs.h"
 #include "config.h"
 #include "pinout.h"
 #include "../include/timers/missionTimer.h"

@@ -272,14 +272,7 @@ bool OPT_create_lora_frame(char *buffer, size_t size) {
     xSemaphoreTake(opt.options_mutex, portMAX_DELAY);
     options = opt.options;
     xSemaphoreGive(opt.options_mutex);
-
-    size_t wrote_data_size;
-    wrote_data_size = snprintf(buffer, size, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-        options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
-        options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
-        options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period) + 1;
-    assert(wrote_data_size <= size);
-
+    
     snprintf(buffer, size, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
         options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
         options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,

@@ -6,7 +6,7 @@
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
 #include "../include/structs/rocketControl.h"
-#include "../include/structs/dataStructs.h"
+#include "data_structs.h"
 #include "../include/timers/watchdog.h"
 #include "../include/com/now.h"
 #include "pinout.h"

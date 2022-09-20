@@ -5,6 +5,7 @@
 void setUp(void) {
     options_setup();
     errors_setup();
+    data_structs_setup();
 }
 
 void tearDown(void) {
@@ -16,6 +17,7 @@ void setup() {
     UNITY_BEGIN();
     run_options_tests();
     run_errors_tests();
+    run_data_structs_tests();
     UNITY_END();
 }
 
