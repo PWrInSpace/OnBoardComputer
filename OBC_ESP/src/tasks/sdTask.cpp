@@ -18,7 +18,7 @@ void sdTask(void *arg){
     
     xSemaphoreGive(rc.hardware.spiMutex);
     
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
 
     xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
   }

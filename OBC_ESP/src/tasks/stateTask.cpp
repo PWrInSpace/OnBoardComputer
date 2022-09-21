@@ -37,24 +37,28 @@ static struct {
   TimerHandle_t turn_off_recording;
   TimerHandle_t ignition_request;
 }st = {
-  .stateChangeTimeMark = 0,
-  .loopTimer = 0,
-  .payload_switch_on_rpi = xTimerCreate("Payload", 
+  
+};
+
+static void state_machine_init(void) {
+  st.stateChangeTimeMark = 0;
+  st.loopTimer = 0;
+  st.payload_switch_on_rpi = xTimerCreate("Payload", 
     PAYLOAD_SWITCH_ON_AFTER_STATE_TIME,
     pdFALSE,
     TIMER_PAYLOAD_SWITCH_ON_NUM,
-    payload_swtich_on_cb),
-  .turn_off_recording = xTimerCreate("Camera off",
+    payload_swtich_on_cb);
+  st.turn_off_recording = xTimerCreate("Camera off",
     CAMERA_TURN_OFF_TIME,
     pdFALSE,
     TIMER_TURN_OFF_RECORDING_NUM,
-    turn_off_recording_cb),
-  .ignition_request = xTimerCreate("Ignition", 
+    turn_off_recording_cb);
+  st.ignition_request = xTimerCreate("Ignition", 
     (OPT_get_ignition_time() - OPT_get_countdown_begin_time()) / portTICK_PERIOD_MS,
     pdFALSE,
     TIMER_IGNITION_REQUEST_NUM,
-    ignition_cb),
-};
+    ignition_cb);
+}
 
 static void idle_init(void) {
   OPT_set_data_current_period(DATA_PERIOD);
@@ -418,6 +422,7 @@ static void state_loop(void) {
 
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
+  state_machine_init();
   
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
