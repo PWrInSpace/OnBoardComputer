@@ -8,19 +8,22 @@
 #include <esp_wifi.h>
 #include "../include/sensors/imuAPI.h"
 #include "../include/components/runcam.h"
+#include "../include/pysd/gen_pysd.h"
 
 WatchdogTimer wt;
 RocketControl rc;
 
 void setup() {
   Serial.begin(115200); //DEBUG
-
+  Serial.print("Header file size: ");
+  Serial.println(pysd_get_header_size());
   SM_init(rc.hardware.stateTask);
   if (ERR_init() == false) {
     ESP.restart();
   }
   Serial.print("Setup state: "); //DEBUG
-  Serial.println(SM_getCurrentState()); //DEBUG
+  while(1) {}
+  // Serial.println(SM_getCurrentState()); //DEBUG
   //BROWNOUT DETECTOT DISABLING
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   WiFi.mode(WIFI_STA);
