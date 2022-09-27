@@ -23,6 +23,8 @@ typedef struct {
   float batteryVoltage;
 } pysd_MainValveData;
 
+
+
 typedef struct {
   uint8_t tanWaState;
   bool tankHeating : 1;

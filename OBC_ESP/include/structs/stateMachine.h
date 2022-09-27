@@ -36,7 +36,7 @@ enum States{
 //   static States getCurrentState();
 // };
 
-bool SM_init(xTaskHandle _stateTask);
+bool SM_init(xTaskHandle* _stateTask);
 States SM_getCurrentState(void);
 States SM_getRequestedState(void);
 bool SM_changeStateRequest(States _newState);

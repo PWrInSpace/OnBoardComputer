@@ -17,13 +17,16 @@ void setup() {
   Serial.begin(115200); //DEBUG
   Serial.print("Header file size: ");
   Serial.println(pysd_get_header_size());
-  SM_init(rc.hardware.stateTask);
+  Serial.print("SD frame size: ");
+  pysdmain_DataFrame test;
+  Serial.println(pysd_get_sd_frame_size(test));
+  SM_init(&rc.hardware.stateTask);
+  OPT_init();
   if (ERR_init() == false) {
     ESP.restart();
   }
   Serial.print("Setup state: "); //DEBUG
-  while(1) {}
-  // Serial.println(SM_getCurrentState()); //DEBUG
+  Serial.println(SM_getCurrentState()); //DEBUG
   //BROWNOUT DETECTOT DISABLING
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   WiFi.mode(WIFI_STA);

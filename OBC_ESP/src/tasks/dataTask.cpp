@@ -20,7 +20,7 @@ void dataTask(void *arg){
   float launchPadAltitude = 0;
   float lastMaxAltitude = 0;
   TickType_t apogeeConfirmationTimer = 0;
-  
+
 
   if (gps.begin(rc.hardware.i2c2, 0x42, 10) == false) //Connect to the u-blox module using Wire port
   {
@@ -29,7 +29,7 @@ void dataTask(void *arg){
   }
 
   gps.setI2COutput(COM_TYPE_UBX);
-  
+
   if(!imu.begin()){
     rc.sendLog("IMU INIT ERROR");
     ERR_set_sensors_error(IMU_INIT_ERROR);
@@ -39,8 +39,8 @@ void dataTask(void *arg){
     imu.setInitPressure();
     launchPadAltitude = imu.getAltitude();
   }
-  
-  
+
+
   pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
   if (pressureSensor.isConnected() == false){
@@ -55,12 +55,12 @@ void dataTask(void *arg){
     tempsensor.setResolution(1);
     tempsensor.wake();
   }
-  
+
 
   while(1){
     if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= OPT_get_data_current_period()){
       dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      
+
       rc.dataFrame.mcb.state = SM_getCurrentState();
 
       rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
@@ -68,28 +68,27 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
       rc.dataFrame.mcb.GPSalt = gps.getAltitude(10) / 10.0E2;
-        
+
       rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
       //portEXIT_CRITICAL(&rc.hardware.stateLock);
       Serial.println("====GPS DATA====");
       Serial.print("Lat: ");
       Serial.println(rc.dataFrame.mcb.GPSlal);
-      
+
       Serial.print("Long: ");
       Serial.println(rc.dataFrame.mcb.GPSlong);
-      
+
       Serial.print("Alt: ");
       Serial.println(rc.dataFrame.mcb.GPSalt);
-      
+
       Serial.print("Sat: ");
       Serial.println(rc.dataFrame.mcb.GPSsat);
-      
+
       Serial.print("Valid: ");
       Serial.println(rc.dataFrame.mcb.GPSsec);
 
       // IMU:
-      
       imu.readData();
       imuData = imu.getData();
       rc.dataFrame.mcb.imuData[0] = imuData.ax;

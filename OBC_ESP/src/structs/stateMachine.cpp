@@ -6,12 +6,12 @@
 static struct {
   States currentState;
   States requestState;
-  xTaskHandle stateTask;
+  xTaskHandle* stateTask;
   States holdedState; //keep holded state default is States::HOLD
   xSemaphoreHandle stateMutex;
 }sm;
 
-bool SM_init(xTaskHandle _stateTask){
+bool SM_init(xTaskHandle* _stateTask){
   sm.stateTask = _stateTask;
   sm.currentState = States::INIT;
   sm.requestState = States::NO_CHANGE;
@@ -27,10 +27,11 @@ bool SM_init(xTaskHandle _stateTask){
 
 States SM_getCurrentState(){
   States currentState;
+  assert(sm.stateMutex != NULL);
   xSemaphoreTake(sm.stateMutex, portMAX_DELAY);
   currentState = sm.currentState;
   xSemaphoreGive(sm.stateMutex);
-  
+
   return currentState;
 }
 
@@ -100,7 +101,7 @@ bool SM_changeStateRequest(States _newState){
     SM_setRequestState(_newState);
   }
 
-  xTaskNotifyGive(sm.stateTask);
+  xTaskNotifyGive(*sm.stateTask);
   return true;
 }
 
