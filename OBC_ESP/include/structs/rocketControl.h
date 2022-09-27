@@ -25,8 +25,17 @@
 
 #define CONNECTION_CHECK_DEVICE_NUMBER 6
 
+enum ValveState{
+  Close = 0,
+  Open = 1,
+  IDK = 2 ,
+  Vent = 3,
+  AttemptToOpen = 4,
+  AttemptToClose = 5
+};
+
 struct RocketControl{
-	Options options;  
+	Options options;
   HardwareManagment hardware;
   MissionTimer missionTimer;
   Errors errors;
@@ -48,7 +57,6 @@ struct RocketControl{
   void createOptionsFrame(char *_array, Options options);
   void createLoRaFrame(char *_array);
   void createSDFrame(char *_array);
-  
 };
 
 #endif

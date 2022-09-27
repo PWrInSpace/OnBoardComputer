@@ -138,8 +138,8 @@ void RocketControl::createLoRaFrame(char* data){
   //MCB
   sprintf(mcbFrame, "%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
     dataFrame.mcb.state, missionTimer.getTime()/1000, getDisconnectRemainingTime()/1000,
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.GPSlal, dataFrame.mcb.GPSlong, dataFrame.mcb.GPSsat, 
-    dataFrame.mcb.GPSsec, (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
+    dataFrame.mcb.batteryVoltage, dataFrame.mcb.latitude, dataFrame.mcb.longitude, dataFrame.mcb.satellites, 
+    dataFrame.mcb.is_time_valid, (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
 
   sprintf(pitotFrame, "%0.1f;%d;%d;",
     dataFrame.pitot.vBat, dataFrame.pitot.altitude, (int)dataFrame.pitot.speed); //8
@@ -250,8 +250,8 @@ void RocketControl::createSDFrame(char* data){
 
   mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
-    dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
+    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
+    dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
     dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
     dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
     dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
@@ -318,8 +318,8 @@ void RocketControl::createSDFrame(char* data){
   //MCB
   snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
     dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
-    dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
+    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
+    dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
     dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
      dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
     dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],

@@ -8,7 +8,7 @@
 #include <esp_wifi.h>
 #include "../include/sensors/imuAPI.h"
 #include "../include/components/runcam.h"
-#include "../include/pysd/gen_pysd.h"
+#include "../lib/pysd/gen_pysd.h"
 
 WatchdogTimer wt;
 RocketControl rc;

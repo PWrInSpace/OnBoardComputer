@@ -13,8 +13,10 @@ typedef struct {
   uint8_t speed;
   bool apogee;
   bool isRecording : 1; // if rpi says it is
-  bool data : 1; // if data is collected
+  bool data_collected : 1; // if data is collected
 } pysd_PitotData;
+
+typedef pysd_PitotData PitotData;
 
 typedef struct {
   bool wakeUp : 1;
@@ -23,7 +25,7 @@ typedef struct {
   float batteryVoltage;
 } pysd_MainValveData;
 
-
+typedef pysd_MainValveData MainValveData;
 
 typedef struct {
   uint8_t tanWaState;
@@ -40,6 +42,8 @@ typedef struct {
   float thermocouple[3];
 } pysd_TanWaData;
 
+typedef pysd_TanWaData TanWaData;
+
 typedef struct {
   bool wakeUp : 1;
   uint8_t valveState : 2;
@@ -48,13 +52,17 @@ typedef struct {
   float batteryVoltage;
 } pysd_UpustValveData;
 
+typedef pysd_UpustValveData UpustValveData;
+
 typedef struct {
     bool wakenUp : 1; //if waken up
     bool isRecording; // if rpi says it is
     bool data : 1; // if data is collected
     float vBat; //battery voltage
     bool isRpiOn;
-} pysd_PlData;
+} pysd_PayloadData;
+
+typedef pysd_PayloadData PayloadData;
 
 typedef struct {
   bool isArmed : 1;
@@ -73,19 +81,28 @@ typedef struct {
   bool isTeleActive :1;
 } pysd_RecoveryData;
 
+// typedef pysd_RecoveryData RecoveryData;
+
+typedef union {
+  RecoveryData data;
+  uint8_t raw[sizeof(pysd_RecoveryData)];
+} RecoveryData;
+
 typedef struct {
   bool wakeUp : 1;
   float batteryVoltage;
 } pysd_SlaveData;
 
+typedef pysd_SlaveData SlaveData;
+
 typedef struct {
   float imuData[11];
   float batteryVoltage;
-  float GPSlal;
-  float GPSlong;
-  float GPSalt;
-  uint8_t GPSsat;
-  uint8_t GPSsec;
+  float latitude;
+  float longitude;
+  float altitude;
+  uint8_t satellites;
+  bool is_time_valid;
   float temp_mcp;
   float temp_lp25;
   float pressure;
@@ -97,16 +114,23 @@ typedef struct {
   float apogee;
 } pysd_MCB;
 
+typedef pysd_MCB MCB;
+
 typedef struct{
+  uint8_t state;
+  uint32_t uptime;
+  uint32_t missionTimer; //DRUT
+  uint8_t connection_status;
+  pysd_MCB mcb;
   pysd_PitotData pitot;
   pysd_MainValveData mainValve;
   pysd_TanWaData tanWa;
   pysd_UpustValveData upustValve;
   pysd_RecoveryData recovery;
   pysd_SlaveData blackBox;
-  pysd_PlData pl;
-  pysd_MCB mcb;
-  uint32_t missionTimer; //DRUT
+  pysd_PayloadData payload;
 } pysdmain_DataFrame;
+
+typedef pysdmain_DataFrame DataFrame;
 
 #endif

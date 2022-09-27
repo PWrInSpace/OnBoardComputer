@@ -13,6 +13,8 @@ static struct {
     uint32_t        mission_timer; //DRUT
     SemaphoreHandle_t mutex;
     uint8_t connection_status;
+    uint8_t current_state;
+    uint32_t uptime;
 }data;
 
 bool DF_init(void) {
@@ -25,7 +27,7 @@ bool DF_init(void) {
     memset(&data.payload, 0, sizeof(data.payload));
     memset(&data.mcb, 0, sizeof(data.mcb));
     memset(&data.mission_timer, 0, sizeof(data.mission_timer));
-    
+
     data.mutex = NULL;
     data.mutex = xSemaphoreCreateMutex();
     assert(data.mutex != NULL);
@@ -34,6 +36,33 @@ bool DF_init(void) {
     }
 
     return true;
+}
+
+void DF_set_connection_status(uint8_t connection_status) {
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    data.connection_status = connection_status;
+    xSemaphoreGive(data.mutex);
+}
+
+void DF_update_data_on_action(uint8_t state, uint32_t uptime) {
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    data.current_state = state;
+    data.uptime = uptime;
+    xSemaphoreGive(data.mutex);
+}
+
+void DF_fill_pysd_struct(pysdmain_DataFrame* frame) {
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    frame->pitot = data.pitot;
+    frame->mainValve = data.main_valve;
+    frame->tanWa = data.tanwa;
+    frame->upustValve = data.upust_valve;
+    frame->recovery = data.recovery.data.data;
+    frame->blackBox = data.black_box;
+    frame->payload = data.payload;
+    frame->mcb = data.mcb;
+    frame->missionTimer = data.mission_timer;
+    xSemaphoreGive(data.mutex);
 }
 
 void DF_set_mcb_data(MCB *mcb) {
@@ -86,7 +115,7 @@ void DF_set_blackbox_data(SlaveData *black_box) {
 }
 
 void DF_set_payload_data(PayloadData *payload) {
-    assert(payload != NULL); 
+    assert(payload != NULL);
     xSemaphoreTake(data.mutex, portMAX_DELAY);
     memcpy(&data.payload, payload, sizeof(*payload));
     xSemaphoreGive(data.mutex);
@@ -111,8 +140,8 @@ void DF_create_lora_frame(char* buffer, size_t size) {
 
     //MCB
     snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
-        mcb.state, mcb.batteryVoltage, mcb.GPSlal, mcb.GPSlong, mcb.GPSsat, 
-        mcb.GPSsec, (int)mcb.altitude, mcb.temp_mcp); //11
+        mcb.state, mcb.batteryVoltage, mcb.latitude, mcb.longitude, mcb.altitude, 
+        mcb.satellites, mcb.is_time_valid, mcb.temp_mcp); //11
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
@@ -175,21 +204,21 @@ void DF_create_lora_frame(char* buffer, size_t size) {
 
     //recovery first byte
     memset(byte_data, 0, 4);
-    byte_data[0] |= (recovery.isArmed                << 6);
-    byte_data[0] |= (recovery.firstStageContinouity  << 5);
-    byte_data[0] |= (recovery.secondStageContinouity << 4);
-    byte_data[0] |= (recovery.separationSwitch1      << 3);
-    byte_data[0] |= (recovery.separationSwitch2      << 2);
-    byte_data[0] |= (recovery.telemetrumFirstStage   << 1);
+    byte_data[0] |= (recovery.data.isArmed                << 6);
+    byte_data[0] |= (recovery.data.firstStageContinouity  << 5);
+    byte_data[0] |= (recovery.data.secondStageContinouity << 4);
+    byte_data[0] |= (recovery.data.separationSwitch1      << 3);
+    byte_data[0] |= (recovery.data.separationSwitch2      << 2);
+    byte_data[0] |= (recovery.data.telemetrumFirstStage   << 1);
   
     //recovery second byte  
-    byte_data[1] |= (recovery.altimaxFirstStage    << 5);
-    byte_data[1] |= (recovery.altimaxSecondStage   << 4);
-    byte_data[1] |= (recovery.apogemixFirstStage   << 3);
-    byte_data[1] |= (recovery.apogemixSecondStage  << 2);
-    byte_data[1] |= (recovery.firstStageDone       << 1);
-    byte_data[1] |= (recovery.secondStageDone      << 0);
-    byte_data[0] |= (recovery.telemetrumSecondStage  << 0);
+    byte_data[1] |= (recovery.data.altimaxFirstStage    << 5);
+    byte_data[1] |= (recovery.data.altimaxSecondStage   << 4);
+    byte_data[1] |= (recovery.data.apogemixFirstStage   << 3);
+    byte_data[1] |= (recovery.data.apogemixSecondStage  << 2);
+    byte_data[1] |= (recovery.data.firstStageDone       << 1);
+    byte_data[1] |= (recovery.data.secondStageDone      << 0);
+    byte_data[0] |= (recovery.data.telemetrumSecondStage  << 0);
 
     snprintf(data_buffer, sizeof(data_buffer), "%d;%d;", byte_data[0], byte_data[1]);
     strcat(buffer, data_buffer);
@@ -246,8 +275,8 @@ bool DF_create_mcb_frame(char *buffer, size_t size) {
 
     size_t wrote_data_size;
     wrote_data_size = snprintf(buffer, size, "%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-        data.mcb.state, data.mcb.batteryVoltage, data.mcb.watchdogResets, 
-        data.mcb.GPSlal, data.mcb.GPSlong, data.mcb.GPSalt, data.mcb.GPSsat, data.mcb.GPSsec,
+        data.mcb.state, data.mcb.batteryVoltage, data.mcb.watchdogResets,
+        data.mcb.latitude, data.mcb.longitude, data.mcb.altitude, data.mcb.satellites, data.mcb.is_time_valid,
         data.mcb.temp_lp25, data.mcb.pressure, data.mcb.altitude, data.mcb.velocity,
         data.mcb.imuData[0], data.mcb.imuData[1], data.mcb.imuData[2], data.mcb.imuData[3],
         data.mcb.imuData[4], data.mcb.imuData[5], data.mcb.imuData[6], data.mcb.imuData[7],
@@ -332,13 +361,13 @@ bool DF_create_recovery_frame(char *buffer, size_t size) {
 
     size_t wrote_data_size;
     snprintf(buffer, size, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-        data.recovery.isArmed, data.recovery.firstStageContinouity, data.recovery.secondStageContinouity,
-        data.recovery.separationSwitch1, data.recovery.separationSwitch2,
-        data.recovery.telemetrumFirstStage, data.recovery.telemetrumSecondStage,
-        data.recovery.altimaxFirstStage, data.recovery.altimaxSecondStage,
-        data.recovery.apogemixFirstStage, data.recovery.apogemixSecondStage,
-        data.recovery.firstStageDone, data.recovery.secondStageDone,
-        data.recovery.isTeleActive);
+        data.recovery.data.isArmed, data.recovery.data.firstStageContinouity, data.recovery.data.secondStageContinouity,
+        data.recovery.data.separationSwitch1, data.recovery.data.separationSwitch2,
+        data.recovery.data.telemetrumFirstStage, data.recovery.data.telemetrumSecondStage,
+        data.recovery.data.altimaxFirstStage, data.recovery.data.altimaxSecondStage,
+        data.recovery.data.apogemixFirstStage, data.recovery.data.apogemixSecondStage,
+        data.recovery.data.firstStageDone, data.recovery.data.secondStageDone,
+        data.recovery.data.isTeleActive);
     assert(wrote_data_size < size);
     return true;
 }

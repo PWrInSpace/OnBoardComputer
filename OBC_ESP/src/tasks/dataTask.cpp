@@ -1,213 +1,345 @@
 #include "../include/tasks/tasks.h"
 #include "Adafruit_MCP9808.h"
+#include "esp_log.h"
+
+#define TAG "DT"
+
+static struct {
+  MCB mcb_data;
+  RecoveryData recovery;
+  char sd_buffer[SD_FRAME_ARRAY_SIZE];
+  char lora_buffer[LORA_FRAME_ARRAY_SIZE];
+
+  expire_timer_t data_update_timer;
+  expire_timer_t lora_timer;
+  expire_timer_t flash_timer;
+  expire_timer_t sd_timer;
+
+  float apogee;
+  float launchpad_altitude;
+  float last_max_altitude;
+  TickType_t apogeeConfirmationTimer;
+}glob;
+
+static void init_globals(void) {
+  memset(&glob.mcb_data, 0, sizeof(glob.mcb_data));
+  memset(glob.sd_buffer, 0 ,sizeof(glob.sd_buffer));
+  memset(glob.lora_buffer, 0, sizeof(glob.lora_buffer));
+
+  ET_init(&glob.data_update_timer);
+  ET_init(&glob.lora_timer);
+  ET_init(&glob.flash_timer);
+  ET_init(&glob.sd_timer);
+  glob.apogee = 0;
+  glob.launchpad_altitude = 0;
+  glob.last_max_altitude = 0;
+  glob.apogeeConfirmationTimer = 0;
+
+  ET_start(&glob.data_update_timer, 0);
+  ET_start(&glob.lora_timer, 0);
+  ET_start(&glob.flash_timer, 0);
+  ET_start(&glob.sd_timer, 0);
+}
+
+static void block_task_and_print(char* text) {
+  while(1) {
+    Serial.print("Task blocked: ");
+    Serial.println(__FILENAME__);
+    Serial.println(text);
+  }
+}
+
+static void get_current_state(void) {
+  glob.mcb_data.state = SM_getCurrentState();
+}
+
+static void read_battery_voltage(void) {
+  glob.mcb_data.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY_PIN) * 43.0/10.0 + 0.5;
+}
+
+static bool gps_init(SFE_UBLOX_GNSS & gnss) {
+  if (gnss.begin(rc.hardware.i2c2, 0x42, 1000) == false) {
+    rc.sendLog("GPS INIT ERROR");
+    ERR_set_sensors_error(GPS_INIT_ERROR);
+    return false;
+  }
+
+  gnss.setI2COutput(COM_TYPE_UBX);
+
+  return true;
+}
+
+static void gps_read_data(SFE_UBLOX_GNSS &gnss) {
+  glob.mcb_data.latitude = gnss.getLatitude(10) / 10.0E6;
+  glob.mcb_data.longitude = gnss.getLongitude(10) / 10.0E6;
+  glob.mcb_data.altitude = gnss.getAltitude(10) / 10.0E2;
+  glob.mcb_data.satellites = gnss.getSIV(10);
+  glob.mcb_data.is_time_valid = gnss.getTimeValid(10);
+
+  ESP_LOGI(TAG, "===GPS DATA===");
+  ESP_LOGI(TAG, "Lat: ");
+  ESP_LOGI(TAG, glob.mcb_data.latitude);
+  ESP_LOGI(TAG, "Long: ");
+  ESP_LOGI(TAG, glob.mcb_data.longitude);
+  ESP_LOGI(TAG, "Alt: ");
+  ESP_LOGI(TAG, glob.mcb_data.altitude);
+  ESP_LOGI(TAG, "Sat: ");
+  ESP_LOGI(TAG, glob.mcb_data.satellites);
+  ESP_LOGI(TAG, "Valid: ");
+  ESP_LOGI(TAG, glob.mcb_data.is_time_valid);
+}
+
+static bool imu_init(ImuAPI &imu) {
+  if(!imu.begin() ){
+    rc.sendLog("IMU INIT ERROR");
+    ERR_set_sensors_error(IMU_INIT_ERROR);
+    return false;
+  }
+
+  imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
+  vTaskDelay(250 / portTICK_PERIOD_MS);
+  imu.setInitPressure();
+  glob.launchpad_altitude = imu.getAltitude();
+}
+
+static void imu_read_data(ImuAPI &imu) {
+  imu.readData();
+  ImuData imu_data = imu.getData();
+  
+  asdasd;
+}
+
+static bool pressure_sensor_init(LPS25HB &sensor) {
+  sensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
+
+  if (sensor.isConnected() == false){
+    rc.sendLog("PRESSURE SENSOR ERROR");
+    ERR_set_sensors_error(PRESSURE_SENSOR_INIT_ERROR);
+    return false;
+  }
+
+  return true;
+}
+
+static void pressure_sensor_read(LPS25HB &sensor) {
+  glob.mcb_data.pressure = sensor.getPressure_hPa();
+  glob.mcb_data.temp_lp25 = sensor.getTemperature_degC();
+}
+
+
+static bool temperature_sensor_init(Adafruit_MCP9808 &sensor) {
+  if (sensor.begin(0x18, &rc.hardware.i2c2) == false) {
+    rc.sendLog("TEMP SENSOR INIT ERROR");
+    ERR_set_sensors_error(TEMP_SENSOR_INIT_ERROR);
+    return false;
+  }
+
+  sensor.setResolution(1);
+  sensor.wake();
+  return true;
+}
+static void temperature_sensor_read(Adafruit_MCP9808 &sensor) {
+  glob.mcb_data.temp_mcp = sensor.readTempC();
+}
+
+static void read_recovery_data(void) {
+  xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
+  rc.recoveryStm.getRecoveryData(glob.recovery.raw);
+  xSemaphoreGive(rc.hardware.i2c1Mutex);
+}
+
+static void check_first_stage_recovery_deploy(void) {
+  if(glob.mcb_data.state == FLIGHT && glob.recovery.data.firstStageDone == true){
+    SM_changeStateRequest(FIRST_STAGE_RECOVERY);
+    rc.sendLog("First stage recovery");
+  }
+}
+
+static void check_second_stage_recovery_deploy(void) {
+  if (glob.mcb_data.state == FIRST_STAGE_RECOVERY && glob.recovery.data.secondStageDone == true) {
+    SM_changeStateRequest(SECOND_STAGE_RECOVERY);
+    rc.sendLog("Second stage recovery");
+  }
+}
+
+static void apogee_detection(void) {
+  if (glob.apogee != 0) {
+    return;
+  }
+
+  if (glob.mcb_data.state == States::FLIGHT){
+    if(glob.last_max_altitude < glob.mcb_data.altitude){
+      glob.last_max_altitude = glob.mcb_data.altitude;
+    } else {
+      glob.apogeeConfirmationTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
+    }
+
+    if((xTaskGetTickCount() * portTICK_PERIOD_MS - glob.apogeeConfirmationTimer) > 500){
+      glob.apogee = glob.last_max_altitude;
+      sprintf(glob.sd_buffer, "Apoge detected! Time %d, Altitude %f", rc.missionTimer.getTime(), rc.dataFrame.mcb.apogee);
+      rc.sendLog(glob.sd_buffer);
+    }
+  }
+}
+
+static void landing_detection(void) {
+  if (glob.mcb_data.state != States::SECOND_STAGE_RECOVERY) {
+    return;
+  }
+
+  if (glob.mcb_data.altitude < (glob.launchpad_altitude + 100)) {
+        SM_changeStateRequest(States::ON_GROUND);
+  }
+}
+
+static void fill_lora_data_buffer(void) {
+  char temp[200] = {0};
+  memcpy(glob.sd_buffer, LORA_TX_DATA_PREFIX, sizeof(LORA_TX_DATA_PREFIX));
+
+  DF_create_lora_frame(temp, sizeof(temp));
+  strcat(glob.sd_buffer, temp);
+  memset(temp, 0, sizeof(temp));
+
+  OPT_create_lora_frame(temp, sizeof(temp));
+  strcat(glob.sd_buffer, temp);
+  memset(temp, 0, sizeof(temp));
+
+  ERR_create_lora_frame(temp, sizeof(temp));
+  strcat(glob.sd_buffer, temp);
+  memset(temp, 0, sizeof(temp));
+}
+
+static void clear_lora_buffer(void) {
+  memset(&glob.lora_buffer, 0, sizeof(glob.lora_buffer));
+}
+
+static void send_data_via_lora(void) {
+  fill_lora_data_buffer();
+
+  if(xQueueSend(rc.hardware.loraTxQueue, (void*)&glob.lora_buffer, 0) != pdTRUE){
+    ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
+    rc.sendLog("LoRa quque is full");
+  }
+
+  ERR_reset(ERROR_RESET_LORA);
+  clear_lora_buffer();
+}
+
+// static void create_data_struct(void) {
+
+// }
+
+static void send_data_to_black_box(void) {
+  if(glob.mcb_data.state < COUNTDOWN || glob.mcb_data.state > SECOND_STAGE_RECOVERY) {
+    return;
+  }
+
+  if(esp_now_send(adressBlackBox, (uint8_t*) &rc.dataFrame, sizeof(DataFrame)) != ESP_OK){
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    rc.sendLog("Black box send error");
+  }
+}
+
+static void write_data_to_flash(void) {
+  if(glob.mcb_data.state < COUNTDOWN || glob.mcb_data.state > SECOND_STAGE_RECOVERY) {
+    return;
+  }
+
+
+  if (OPT_get_flash_write() == false) {
+    return;
+  }
+
+  if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
+    ERR_set_rtos_error(RTOS_FLASH_QUEUE_ADD_ERROR);
+    rc.sendLog("Flash queue is full");
+  }
+}
+
+static void write_data_to_sd(void) {
+  pysdmain_DataFrame sd_data;
+  DF_fill_pysd_struct(&sd_data);
+
+  if (pysd_create_sd_frame(glob.sd_buffer, sizeof(glob.sd_buffer), sd_data) == false) {
+    Serial.println("SD frame buffor is too smool");
+    return;
+  }
+
+  if (xQueueSend(rc.hardware.sdQueue, (void*)&sd_data, 0) != pdTRUE) { //data to SD
+    ERR_set_rtos_error(RTOS_SD_QUEUE_ADD_ERROR);
+    return;
+  }
+  ERR_reset(ERROR_RESET_SD); //reset errors after save
+}
+
 
 void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
   ImuAPI imu(&rc.hardware.i2c2);
   LPS25HB pressureSensor;
-  Adafruit_MCP9808 tempsensor = Adafruit_MCP9808(); 
+  Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
 
-  //data handl,ing variables
-  ImuData imuData;
-  TickType_t dataUpdateTimer = 0;
-  TickType_t loraTimer = 0;
-  TickType_t flashTimer = 0;
-  TickType_t sdTimer = 0;
-  char sd[SD_FRAME_ARRAY_SIZE] = {};
-  char lora[LORA_FRAME_ARRAY_SIZE] = {};
+  init_globals();
 
-  //variables for calculations
-  float launchPadAltitude = 0;
-  float lastMaxAltitude = 0;
-  TickType_t apogeeConfirmationTimer = 0;
-
-
-  if (gps.begin(rc.hardware.i2c2, 0x42, 10) == false) //Connect to the u-blox module using Wire port
-  {
-    rc.sendLog("GPS INIT ERROR");
-    ERR_set_sensors_error(GPS_INIT_ERROR);
+  if (gps_init(gps) == false) {
+    block_task_and_print("GPS ERROR");
   }
 
-  gps.setI2COutput(COM_TYPE_UBX);
-
-  if(!imu.begin()){
-    rc.sendLog("IMU INIT ERROR");
-    ERR_set_sensors_error(IMU_INIT_ERROR);
-  }else{
-    imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
-    vTaskDelay(250 / portTICK_PERIOD_MS);
-    imu.setInitPressure();
-    launchPadAltitude = imu.getAltitude();
+  if (imu_init(imu) == false) {
+    ESP_LOGW(TAG, "IMU init fail");
   }
 
-
-  pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
-
-  if (pressureSensor.isConnected() == false){
-    rc.sendLog("PRESSURE SENSOR ERROR");
-    ERR_set_sensors_error(PRESSURE_SENSOR_INIT_ERROR);
+  if (pressure_sensor_init(pressureSensor) == false) {
+    ESP_LOGW(TAG, "Pressure sensor init fail");
   }
 
-  if (tempsensor.begin(0x18, &rc.hardware.i2c2) == false) {
-    rc.sendLog("TEMP SENSOR INIT ERROR");
-    ERR_set_sensors_error(TEMP_SENSOR_INIT_ERROR);
-  }else{
-    tempsensor.setResolution(1);
-    tempsensor.wake();
+  if (temperature_sensor_init(tempsensor) == false) {
+    ESP_LOGW(TAG, "Tempreature sensor init fail");
   }
 
+  while(1) {
+    if (ET_is_expired(&glob.data_update_timer)) {
+      ET_start(&glob.data_update_timer, OPT_get_data_current_period());
 
-  while(1){
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS) - dataUpdateTimer) >= OPT_get_data_current_period()){
-      dataUpdateTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
+      get_current_state();
+      read_battery_voltage();
+      gps_read_data(gps);
+      imu_read_data(imu);
+      pressure_sensor_read(pressureSensor);
+      temperature_sensor_init(tempsensor);
+      read_recovery_data();
+      // DF_update_data_on_action(SM_getCurrentState(), millis(), rc.missionTimer.getTime());
 
-      rc.dataFrame.mcb.state = SM_getCurrentState();
+      //calculations
+      check_first_stage_recovery_deploy();
+      check_second_stage_recovery_deploy();
+      apogee_detection();
 
-      rc.dataFrame.mcb.batteryVoltage = 2.93/3635.0 * analogRead(BATTERY) * 43.0/10.0 + 0.5;
-      //portENTER_CRITICAL(&rc.hardware.stateLock);
-      rc.dataFrame.mcb.GPSlal = gps.getLatitude(10) / 10.0E6;
-      rc.dataFrame.mcb.GPSlong = gps.getLongitude(10) / 10.0E6;
-      rc.dataFrame.mcb.GPSalt = gps.getAltitude(10) / 10.0E2;
-
-      rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
-      rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
-      //portEXIT_CRITICAL(&rc.hardware.stateLock);
-      Serial.println("====GPS DATA====");
-      Serial.print("Lat: ");
-      Serial.println(rc.dataFrame.mcb.GPSlal);
-
-      Serial.print("Long: ");
-      Serial.println(rc.dataFrame.mcb.GPSlong);
-
-      Serial.print("Alt: ");
-      Serial.println(rc.dataFrame.mcb.GPSalt);
-
-      Serial.print("Sat: ");
-      Serial.println(rc.dataFrame.mcb.GPSsat);
-
-      Serial.print("Valid: ");
-      Serial.println(rc.dataFrame.mcb.GPSsec);
-
-      // IMU:
-      imu.readData();
-      imuData = imu.getData();
-      rc.dataFrame.mcb.imuData[0] = imuData.ax;
-      rc.dataFrame.mcb.imuData[1] = imuData.ay;
-      rc.dataFrame.mcb.imuData[2] = imuData.az;
-      rc.dataFrame.mcb.imuData[3] = imuData.gx;
-      rc.dataFrame.mcb.imuData[4] = imuData.gy;
-      rc.dataFrame.mcb.imuData[5] = imuData.gz;
-      rc.dataFrame.mcb.imuData[6] = imuData.mx;
-      rc.dataFrame.mcb.imuData[7] = imuData.my;
-      rc.dataFrame.mcb.imuData[8] = imuData.mz;
-      rc.dataFrame.mcb.imuData[9] = imuData.temperature;
-      rc.dataFrame.mcb.imuData[10] = imuData.pressure;
-      rc.dataFrame.mcb.altitude = imuData.altitude;
-      
-      //LP26HB - pressure
-      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
-      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
-      
-      //MCP temp
-      rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
-
-      // Recovery:
-      
-      xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
-      rc.recoveryStm.getRecoveryData((uint8_t*) &rc.dataFrame.recovery);
-      xSemaphoreGive(rc.hardware.i2c1Mutex);
-      
-    /**********************/
-      //calculation 
-      
-      //change state to first stage revcovery after 1 recov deploy
-      if(SM_getCurrentState() == FLIGHT && rc.dataFrame.recovery.firstStageDone == true){
-        SM_changeStateRequest(FIRST_STAGE_RECOVERY);
-        rc.sendLog("First stage recovery");
-      //change state to first stage revcovery after 2 recov deploy
-      }else if(SM_getCurrentState() == FIRST_STAGE_RECOVERY && rc.dataFrame.recovery.secondStageDone == true){
-        SM_changeStateRequest(SECOND_STAGE_RECOVERY);
-        rc.sendLog("Second stage recovery");
-      }
-     
-      //detect apogee
-      if(SM_getCurrentState() == States::FLIGHT && rc.dataFrame.mcb.apogee == 0){
-        if(lastMaxAltitude < imuData.altitude || lastMaxAltitude == 0){
-          lastMaxAltitude = imuData.altitude;
-          apogeeConfirmationTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-        }
-
-        if((xTaskGetTickCount() * portTICK_PERIOD_MS - apogeeConfirmationTimer) > 500){
-          rc.dataFrame.mcb.apogee = lastMaxAltitude;
-          sprintf(sd, "Apoge detected! Time %d, Altitude %f", rc.missionTimer.getTime(), rc.dataFrame.mcb.apogee);
-          rc.sendLog(sd);
-        }
-      }
-
-      //detect landing
-      if(SM_getCurrentState() == States::SECOND_STAGE_RECOVERY){
-        if(imuData.altitude < (launchPadAltitude + 50)){
-          SM_changeStateRequest(States::ON_GROUND);
-        }
-      }
-      
+      DF_set_mcb_data(&glob.mcb_data);
+      DF_set_recovery_data((RecoveryData*) &glob.recovery.data);
+      DF_set_recovery_data(&glob.recovery.data);
     }
-    
+
     //LORA
-    if(((xTaskGetTickCount() * portTICK_PERIOD_MS - loraTimer) >= OPT_get_lora_current_period()) || ulTaskNotifyTake(pdTRUE, 0)){
-      loraTimer = xTaskGetTickCount() * portTICK_PERIOD_MS; //reset timer
-      
-      rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
-      rc.createLoRaFrame(lora);
-      Serial.print(lora);
-      
+    if(ET_is_expired(&glob.lora_timer) || ulTaskNotifyTake(pdTRUE, 0)){
+      ET_start(&glob.lora_timer, OPT_get_lora_current_period());
 
-      if(xQueueSend(rc.hardware.loraTxQueue, (void*)&lora, 0) != pdTRUE){
-        ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
-        rc.sendLog("LoRa quque is full");
-      }
-      ERR_reset(ERROR_RESET_LORA);
     }
-    //FLASH
-    if((SM_getCurrentState() > COUNTDOWN && SM_getCurrentState() < ON_GROUND)){
-      if((xTaskGetTickCount() * portTICK_RATE_MS - flashTimer) >= OPT_get_flash_write_current_period()){
-        flashTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-        rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
-        rc.dataFrame.missionTimer = rc.missionTimer.getTime(); //get mission time
 
-        if(OPT_get_flash_write()){
-          if(xQueueSend(rc.hardware.flashQueue, (void*)&rc.dataFrame, 0) != pdTRUE){
-            ERR_set_rtos_error(RTOS_FLASH_QUEUE_ADD_ERROR);
-            rc.sendLog("Flash queue is full");
-          }
-        }
-        Serial.print("Data frame sizeof: ");
-        Serial.println(sizeof(DataFrame));
-        if(esp_now_send(adressBlackBox, (uint8_t*) &rc.dataFrame, sizeof(DataFrame)) != ESP_OK){
-          ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-          rc.sendLog("Black box send error");
-        }
-      }
-        
-      
+    if(ET_is_expired(&glob.flash_timer)){
+      ET_start(&glob.flash_timer, OPT_get_flash_write_current_period());
+      write_data_to_flash();
+      send_data_to_black_box();
     }
-    
+
 
     //SD
-    if((xTaskGetTickCount() * portTICK_RATE_MS - sdTimer) >= OPT_get_sd_write_current_period()){
-      sdTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
-      rc.dataFrame.mcb.state = SM_getCurrentState(); //get the newest information about state
-      rc.createSDFrame(sd);
-      
+    if(ET_is_expired(&glob.sd_timer)){
+      ET_start(&glob.sd_timer, OPT_get_sd_write_current_period());
 
-      if(xQueueSend(rc.hardware.sdQueue, (void*)&sd, 0) != pdTRUE){ //data to SD
-        ERR_set_rtos_error(RTOS_SD_QUEUE_ADD_ERROR);
-      }  
-      
-      ERR_reset(ERROR_RESET_SD); //reset errors after save  
+
     }
 
     vTaskDelay(10/portTICK_PERIOD_MS);
- 
   }
 }
