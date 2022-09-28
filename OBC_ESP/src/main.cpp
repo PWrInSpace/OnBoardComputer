@@ -19,7 +19,7 @@ void setup() {
   //BROWNOUT DETECTOT DISABLING
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
   WiFi.mode(WIFI_STA);
-  esp_wifi_set_mac(ESP_IF_WIFI_STA, adressOBC);
+  esp_wifi_set_mac(WIFI_IF_STA, adressOBC);
   //set mission timer
   rc.missionTimer.setDisableValue(rc.options.countdownTime * -1);
 

@@ -2,7 +2,7 @@
 #define CONFIG_HH
 
 #include "Arduino.h"
-#include "FreeRTOS.h"
+#include "freertos/FreeRTOS.h"
 #include <stdint.h>
 #include "../include/structs/stateMachine.h"
 
@@ -40,7 +40,7 @@
 
 
 //OPTIONS DEFAULT VALUE (SETUP)
-#define LoRa_FREQUENCY_MHZ 927
+#define LoRa_FREQUENCY_MHZ 868
 #define COUNTDOWN_TIME 45 * 1000
 #define IGNITION_TIME -15 * 1000
 #define TANK_MIN_PRESSURE 35 //bar
