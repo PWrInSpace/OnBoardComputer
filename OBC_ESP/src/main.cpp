@@ -20,6 +20,7 @@ void setup() {
   Serial.print("SD frame size: ");
   pysdmain_DataFrame test;
   Serial.println(pysd_get_sd_frame_size(test));
+  ET_init(NULL);
   SM_init(&rc.hardware.stateTask);
   OPT_init();
   if (ERR_init() == false) {

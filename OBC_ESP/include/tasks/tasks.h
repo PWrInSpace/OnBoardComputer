@@ -5,6 +5,7 @@
 #include <LoRa.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
+#include "../include/timers/expire_timer.h"
 #include "../include/structs/rocketControl.h"
 #include "data_structs.h"
 #include "../include/timers/watchdog.h"
@@ -14,7 +15,6 @@
 #include "../include/structs/stateMachine.h"
 #include "SparkFun_LPS25HB_Arduino_Library.h"
 #include "../sensors/imuAPI.h"
-#include "expired_timer.h"
 
 extern RocketControl rc;
 extern WatchdogTimer wt;

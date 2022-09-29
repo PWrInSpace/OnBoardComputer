@@ -1,6 +1,7 @@
-#ifndef EXPIRE_TIMER_H
-#define EXPIRE_TIMER_H
+#ifndef EXPIRE_TIMER_HH
+#define EXPIRE_TIMER_HH
 
+#include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -13,8 +14,8 @@ typedef struct {
 } expire_timer_t;
 
 void ET_init(expire_timer_t *timer);
-
 void ET_start(expire_timer_t *timer, miliseocnds duration);
 bool ET_is_expired(expire_timer_t *timer);
 void ET_restart(expire_timer_t *timer);
+
 #endif

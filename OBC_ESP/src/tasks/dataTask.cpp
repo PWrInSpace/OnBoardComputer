@@ -1,7 +1,7 @@
 #include "../include/tasks/tasks.h"
 #include "Adafruit_MCP9808.h"
 #include "esp_log.h"
-
+#include "../include/timers/expire_timer.h"
 #define TAG "DT"
 
 static struct {
@@ -100,13 +100,14 @@ static bool imu_init(ImuAPI &imu) {
   vTaskDelay(250 / portTICK_PERIOD_MS);
   imu.setInitPressure();
   glob.launchpad_altitude = imu.getAltitude();
+  return true;
 }
 
 static void imu_read_data(ImuAPI &imu) {
   imu.readData();
   ImuData imu_data = imu.getData();
   
-  asdasd;
+  // asdasd;
 }
 
 static bool pressure_sensor_init(LPS25HB &sensor) {
@@ -317,7 +318,6 @@ void dataTask(void *arg){
 
       DF_set_mcb_data(&glob.mcb_data);
       DF_set_recovery_data((RecoveryData*) &glob.recovery.data);
-      DF_set_recovery_data(&glob.recovery.data);
     }
 
     //LORA

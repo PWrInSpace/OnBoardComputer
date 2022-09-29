@@ -84,7 +84,7 @@ typedef struct {
 // typedef pysd_RecoveryData RecoveryData;
 
 typedef union {
-  RecoveryData data;
+  pysd_RecoveryData data;
   uint8_t raw[sizeof(pysd_RecoveryData)];
 } RecoveryData;
 
@@ -100,7 +100,7 @@ typedef struct {
   float batteryVoltage;
   float latitude;
   float longitude;
-  float altitude;
+  float gps_altitude;
   uint8_t satellites;
   bool is_time_valid;
   float temp_mcp;

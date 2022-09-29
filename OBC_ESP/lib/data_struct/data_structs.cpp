@@ -57,7 +57,7 @@ void DF_fill_pysd_struct(pysdmain_DataFrame* frame) {
     frame->mainValve = data.main_valve;
     frame->tanWa = data.tanwa;
     frame->upustValve = data.upust_valve;
-    frame->recovery = data.recovery.data.data;
+    frame->recovery = data.recovery.data;
     frame->blackBox = data.black_box;
     frame->payload = data.payload;
     frame->mcb = data.mcb;
