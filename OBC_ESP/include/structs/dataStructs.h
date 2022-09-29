@@ -21,11 +21,9 @@ struct PitotData {
   float statPress;
   float dynamicPress;
   float temp;
-  uint16_t altitude;
-  uint8_t speed;
-  bool apogee;
-  bool isRecording : 1; // if rpi says it is
-  bool data : 1; // if data is collected
+  float altitude;
+  float speed;
+  float estimated_apogee;
 };
 
 struct MainValveData {

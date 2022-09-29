@@ -32,31 +32,31 @@ void dataTask(void *arg){
 
   gps.setI2COutput(COM_TYPE_UBX);
   
-  if(!imu.begin()){
-    rc.sendLog("IMU INIT ERROR");
-    rc.errors.setSensorError(IMU_INIT_ERROR);
-  }else{
-    imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
-    vTaskDelay(250 / portTICK_PERIOD_MS);
-    imu.setInitPressure();
-    launchPadAltitude = imu.getAltitude();
-  }
+  // if(!imu.begin()){
+  //   rc.sendLog("IMU INIT ERROR");
+  //   rc.errors.setSensorError(IMU_INIT_ERROR);
+  // }else{
+  //   imu.setReg(A_16g, G_2000dps, B_200Hz, M_4g);
+  //   vTaskDelay(250 / portTICK_PERIOD_MS);
+  //   imu.setInitPressure();
+  //   launchPadAltitude = imu.getAltitude();
+  // }
   
   
-  pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
+  // pressureSensor.begin(rc.hardware.i2c2, PRESSURE_SENSOR_ADRESS);
 
-  if (pressureSensor.isConnected() == false){
-    rc.sendLog("PRESSURE SENSOR ERROR");
-    rc.errors.setSensorError(PRESSURE_SENSOR_INIT_ERROR);
-  }
+  // if (pressureSensor.isConnected() == false){
+  //   rc.sendLog("PRESSURE SENSOR ERROR");
+  //   rc.errors.setSensorError(PRESSURE_SENSOR_INIT_ERROR);
+  // }
 
-  if (tempsensor.begin(0x18, &rc.hardware.i2c2) == false) {
-    rc.sendLog("TEMP SENSOR INIT ERROR");
-    rc.errors.setSensorError(TEMP_SENSOR_INIT_ERROR);
-  }else{
-    tempsensor.setResolution(1);
-    tempsensor.wake();
-  }
+  // if (tempsensor.begin(0x18, &rc.hardware.i2c2) == false) {
+  //   rc.sendLog("TEMP SENSOR INIT ERROR");
+  //   rc.errors.setSensorError(TEMP_SENSOR_INIT_ERROR);
+  // }else{
+  //   tempsensor.setResolution(1);
+  //   tempsensor.wake();
+  // }
   
 
   while(1){
@@ -74,45 +74,45 @@ void dataTask(void *arg){
       rc.dataFrame.mcb.GPSsat = gps.getSIV(10);
       rc.dataFrame.mcb.GPSsec = gps.getTimeValid(10);
       //portEXIT_CRITICAL(&rc.hardware.stateLock);
-      Serial.println("====GPS DATA====");
-      Serial.print("Lat: ");
-      Serial.println(rc.dataFrame.mcb.GPSlal);
+      // Serial.println("====GPS DATA====");
+      // Serial.print("Lat: ");
+      // Serial.println(rc.dataFrame.mcb.GPSlal);
       
-      Serial.print("Long: ");
-      Serial.println(rc.dataFrame.mcb.GPSlong);
+      // Serial.print("Long: ");
+      // Serial.println(rc.dataFrame.mcb.GPSlong);
       
-      Serial.print("Alt: ");
-      Serial.println(rc.dataFrame.mcb.GPSalt);
+      // Serial.print("Alt: ");
+      // Serial.println(rc.dataFrame.mcb.GPSalt);
       
-      Serial.print("Sat: ");
-      Serial.println(rc.dataFrame.mcb.GPSsat);
+      // Serial.print("Sat: ");
+      // Serial.println(rc.dataFrame.mcb.GPSsat);
       
-      Serial.print("Valid: ");
-      Serial.println(rc.dataFrame.mcb.GPSsec);
+      // Serial.print("Valid: ");
+      // Serial.println(rc.dataFrame.mcb.GPSsec);
 
       // IMU:
       
-      imu.readData();
-      imuData = imu.getData();
-      rc.dataFrame.mcb.imuData[0] = imuData.ax;
-      rc.dataFrame.mcb.imuData[1] = imuData.ay;
-      rc.dataFrame.mcb.imuData[2] = imuData.az;
-      rc.dataFrame.mcb.imuData[3] = imuData.gx;
-      rc.dataFrame.mcb.imuData[4] = imuData.gy;
-      rc.dataFrame.mcb.imuData[5] = imuData.gz;
-      rc.dataFrame.mcb.imuData[6] = imuData.mx;
-      rc.dataFrame.mcb.imuData[7] = imuData.my;
-      rc.dataFrame.mcb.imuData[8] = imuData.mz;
-      rc.dataFrame.mcb.imuData[9] = imuData.temperature;
-      rc.dataFrame.mcb.imuData[10] = imuData.pressure;
-      rc.dataFrame.mcb.altitude = imuData.altitude;
+      // imu.readData();
+      // imuData = imu.getData();
+      // rc.dataFrame.mcb.imuData[0] = imuData.ax;
+      // rc.dataFrame.mcb.imuData[1] = imuData.ay;
+      // rc.dataFrame.mcb.imuData[2] = imuData.az;
+      // rc.dataFrame.mcb.imuData[3] = imuData.gx;
+      // rc.dataFrame.mcb.imuData[4] = imuData.gy;
+      // rc.dataFrame.mcb.imuData[5] = imuData.gz;
+      // rc.dataFrame.mcb.imuData[6] = imuData.mx;
+      // rc.dataFrame.mcb.imuData[7] = imuData.my;
+      // rc.dataFrame.mcb.imuData[8] = imuData.mz;
+      // rc.dataFrame.mcb.imuData[9] = imuData.temperature;
+      // rc.dataFrame.mcb.imuData[10] = imuData.pressure;
+      // rc.dataFrame.mcb.altitude = imuData.altitude;
       
       //LP26HB - pressure
-      rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
-      rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
+      // rc.dataFrame.mcb.pressure = pressureSensor.getPressure_hPa();
+      // rc.dataFrame.mcb.temp_lp25 = pressureSensor.getTemperature_degC();
       
-      //MCP temp
-      rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
+      // //MCP temp
+      // rc.dataFrame.mcb.temp_mcp = tempsensor.readTempC();
 
       // Recovery:
       

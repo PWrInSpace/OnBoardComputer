@@ -33,7 +33,7 @@ void loraTask(void *arg){
       if (LoRa.available()) {
 
         String rxStr = LoRa.readString();
-        Serial.print(rxStr); // DEBUG
+        Serial.println(rxStr.c_str()); // DEBUG
         if(rxStr.length() < (LORA_FRAME_ARRAY_SIZE/2 - 1)){
           
           strcpy(loraRx, rxStr.c_str());
