@@ -77,29 +77,29 @@ void setup() {
   xTaskCreatePinnedToCore(flashTask, "Flash task", 8192, NULL, 1, &rc.hardware.flashTask, APP_CPU_NUM);
 
   //create Timers
-  rc.hardware.disconnectTimer = xTimerCreate("disconnect timer", 
-                                              disconnectDelay, 
-                                              pdFALSE, 
-                                              NULL, 
+  rc.hardware.disconnectTimer = xTimerCreate("disconnect timer",
+                                              disconnectDelay,
+                                              pdFALSE,
+                                              NULL,
                                               disconnectTimerCallback);
 
-  rc.hardware.watchdogTimer = xTimerCreate("watchdog timer", 
-                                            watchdogDelay, 
-                                            pdTRUE, 
-                                            NULL, 
+  rc.hardware.watchdogTimer = xTimerCreate("watchdog timer",
+                                            watchdogDelay,
+                                            pdTRUE,
+                                            NULL,
                                             watchdogTimerCallback);
 
-  rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer", 
-                                                    espNowConnectionCheckPeriod, 
-                                                    pdTRUE, 
-                                                    NULL, 
+  rc.hardware.espNowConnectionTimer = xTimerCreate("espnow timer",
+                                                    espNowConnectionCheckPeriod,
+                                                    pdTRUE,
+                                                    NULL,
                                                     espNowConnectionCallback);
-  
+
   //check created elements
-  if (rc.hardware.loraRxQueue == NULL || 
-      rc.hardware.loraTxQueue == NULL || 
-      rc.hardware.sdQueue == NULL || 
-      rc.hardware.flashQueue == NULL || 
+  if (rc.hardware.loraRxQueue == NULL ||
+      rc.hardware.loraTxQueue == NULL ||
+      rc.hardware.sdQueue == NULL ||
+      rc.hardware.flashQueue == NULL ||
       rc.hardware.espNowQueue == NULL){
     //error handling
     Serial.println("Queue create error!"); //DEBUG
@@ -115,31 +115,30 @@ void setup() {
   if(rc.hardware.loraTask == NULL || rc.hardware.rxHandlingTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
-    ESP.restart();  
+    ESP.restart();
   }
 
   if (rc.hardware.stateTask == NULL ||
-      rc.hardware.dataTask == NULL || 
-      rc.hardware.sdTask == NULL || 
+      rc.hardware.dataTask == NULL ||
+      rc.hardware.sdTask == NULL ||
       rc.hardware.flashTask == NULL){
     //error handling
     Serial.println("ProCPU task create error!"); //DEBUG
-    ESP.restart();  
+    ESP.restart();
   }
 
   if(rc.hardware.watchdogTimer == NULL || rc.hardware.disconnectTimer == NULL){
     //error handling
     Serial.println("timer create error!"); //DEBUG
     ESP.restart();
-  }  
-  
+  }
+
   //watchdogtimer
   /*
   wt.begin();
   wt.EEPROMread();
   Serial.println(wt.previousState); //DEBUG
   Serial.println((uint8_t) wt.resetCounter); //DEBUG
-  
   if(wt.previousState != INIT && wt.previousState != COUNTDOWN){
     SM_changeStateRequest((States) wt.previousState);
   }else{
@@ -148,12 +147,10 @@ void setup() {
 
   */
   //start timers
-  
   SM_changeStateRequest(States::IDLE);
   xTimerStart(rc.hardware.disconnectTimer, portMAX_DELAY);
   xTimerStart(rc.hardware.espNowConnectionTimer, portMAX_DELAY);
   //xTimerStart(rc.hardware.watchdogTimer, portMAX_DELAY);
-  
   vTaskDelete(NULL); //delete main task (loop())
 }
 
