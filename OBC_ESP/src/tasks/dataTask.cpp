@@ -46,6 +46,7 @@ static void block_task_and_print(char* text) {
     Serial.print("Task blocked: ");
     Serial.println(__FILENAME__);
     Serial.println(text);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
   }
 }
 
@@ -58,7 +59,7 @@ static void read_battery_voltage(void) {
 }
 
 static bool gps_init(SFE_UBLOX_GNSS & gnss) {
-  if (gnss.begin(rc.hardware.i2c2, 0x42, 1000) == false) {
+  if (gnss.begin(rc.hardware.i2c2, 0x42, 1100) == false) {
     rc.sendLog("GPS INIT ERROR");
     ERR_set_sensors_error(GPS_INIT_ERROR);
     return false;
@@ -72,21 +73,9 @@ static bool gps_init(SFE_UBLOX_GNSS & gnss) {
 static void gps_read_data(SFE_UBLOX_GNSS &gnss) {
   glob.mcb_data.latitude = gnss.getLatitude(10) / 10.0E6;
   glob.mcb_data.longitude = gnss.getLongitude(10) / 10.0E6;
-  glob.mcb_data.altitude = gnss.getAltitude(10) / 10.0E2;
+  glob.mcb_data.gps_altitude = gnss.getAltitude(10) / 10.0E2;
   glob.mcb_data.satellites = gnss.getSIV(10);
   glob.mcb_data.is_time_valid = gnss.getTimeValid(10);
-
-  ESP_LOGI(TAG, "===GPS DATA===");
-  ESP_LOGI(TAG, "Lat: ");
-  ESP_LOGI(TAG, glob.mcb_data.latitude);
-  ESP_LOGI(TAG, "Long: ");
-  ESP_LOGI(TAG, glob.mcb_data.longitude);
-  ESP_LOGI(TAG, "Alt: ");
-  ESP_LOGI(TAG, glob.mcb_data.altitude);
-  ESP_LOGI(TAG, "Sat: ");
-  ESP_LOGI(TAG, glob.mcb_data.satellites);
-  ESP_LOGI(TAG, "Valid: ");
-  ESP_LOGI(TAG, glob.mcb_data.is_time_valid);
 }
 
 static bool imu_init(ImuAPI &imu) {
@@ -260,19 +249,31 @@ static void write_data_to_flash(void) {
 static void write_data_to_sd(void) {
   pysdmain_DataFrame sd_data;
   DF_fill_pysd_struct(&sd_data);
-
-  if (pysd_create_sd_frame(glob.sd_buffer, sizeof(glob.sd_buffer), sd_data) == false) {
+  Serial.println(sd_data.mcb.uptime);
+  Serial.println(sd_data.mcb.mission_timer);
+  if (pysd_create_sd_frame(glob.sd_buffer, sizeof(glob.sd_buffer), sd_data, false) == 0) {
     Serial.println("SD frame buffor is too smool");
     return;
   }
-
-  if (xQueueSend(rc.hardware.sdQueue, (void*)&sd_data, 0) != pdTRUE) { //data to SD
+  if (xQueueSend(rc.hardware.sdQueue, (void*)glob.sd_buffer, 0) != pdTRUE) { //data to SD
     ERR_set_rtos_error(RTOS_SD_QUEUE_ADD_ERROR);
     return;
   }
   ERR_reset(ERROR_RESET_SD); //reset errors after save
 }
 
+
+static void update_current_state(uint8_t state) {
+  glob.mcb_data.state = state;
+}
+
+static void update_mcb_uptime(uint32_t uptime) {
+  glob.mcb_data.uptime = uptime;
+}
+
+static void update_mcb_mission_timer(int32_t timer) {
+  glob.mcb_data.mission_timer = timer;
+}
 
 void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
@@ -286,17 +287,17 @@ void dataTask(void *arg){
     block_task_and_print("GPS ERROR");
   }
 
-  if (imu_init(imu) == false) {
-    ESP_LOGW(TAG, "IMU init fail");
-  }
+  // if (imu_init(imu) == false) {
+  //   ESP_LOGW(TAG, "IMU init fail");
+  // }
 
-  if (pressure_sensor_init(pressureSensor) == false) {
-    ESP_LOGW(TAG, "Pressure sensor init fail");
-  }
+  // if (pressure_sensor_init(pressureSensor) == false) {
+  //   ESP_LOGW(TAG, "Pressure sensor init fail");
+  // }
 
-  if (temperature_sensor_init(tempsensor) == false) {
-    ESP_LOGW(TAG, "Tempreature sensor init fail");
-  }
+  // if (temperature_sensor_init(tempsensor) == false) {
+  //   ESP_LOGW(TAG, "Tempreature sensor init fail");
+  // }
 
   while(1) {
     if (ET_is_expired(&glob.data_update_timer)) {
@@ -305,11 +306,13 @@ void dataTask(void *arg){
       get_current_state();
       read_battery_voltage();
       gps_read_data(gps);
-      imu_read_data(imu);
-      pressure_sensor_read(pressureSensor);
-      temperature_sensor_init(tempsensor);
-      read_recovery_data();
-      // DF_update_data_on_action(SM_getCurrentState(), millis(), rc.missionTimer.getTime());
+      // imu_read_data(imu);
+      // pressure_sensor_read(pressureSensor);
+      // temperature_sensor_read(tempsensor);
+      // read_recovery_data();
+      update_current_state(SM_getCurrentState());
+      update_mcb_uptime(millis());
+      update_mcb_mission_timer(rc.missionTimer.getTime());
 
       //calculations
       check_first_stage_recovery_deploy();
@@ -336,8 +339,7 @@ void dataTask(void *arg){
     //SD
     if(ET_is_expired(&glob.sd_timer)){
       ET_start(&glob.sd_timer, OPT_get_sd_write_current_period());
-
-
+      write_data_to_sd();
     }
 
     vTaskDelay(10/portTICK_PERIOD_MS);

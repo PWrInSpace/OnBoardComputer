@@ -96,6 +96,10 @@ typedef struct {
 typedef pysd_SlaveData SlaveData;
 
 typedef struct {
+  uint8_t state;
+  uint32_t uptime;
+  int32_t mission_timer;
+  uint8_t connection_status;
   float imuData[11];
   float batteryVoltage;
   float latitude;
@@ -109,7 +113,6 @@ typedef struct {
   float altitude;
   float velocity;
   uint8_t watchdogResets;
-  uint8_t state;
   bool ignition : 1;
   float apogee;
 } pysd_MCB;
@@ -117,10 +120,6 @@ typedef struct {
 typedef pysd_MCB MCB;
 
 typedef struct{
-  uint8_t state;
-  uint32_t uptime;
-  uint32_t missionTimer; //DRUT
-  uint8_t connection_status;
   pysd_MCB mcb;
   pysd_PitotData pitot;
   pysd_MainValveData mainValve;

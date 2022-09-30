@@ -10,11 +10,7 @@ static struct {
     SlaveData       black_box;
     PayloadData     payload;
     MCB             mcb;
-    uint32_t        mission_timer; //DRUT
     SemaphoreHandle_t mutex;
-    uint8_t connection_status;
-    uint8_t current_state;
-    uint32_t uptime;
 }data;
 
 bool DF_init(void) {
@@ -26,7 +22,6 @@ bool DF_init(void) {
     memset(&data.black_box, 0, sizeof(data.black_box));
     memset(&data.payload, 0, sizeof(data.payload));
     memset(&data.mcb, 0, sizeof(data.mcb));
-    memset(&data.mission_timer, 0, sizeof(data.mission_timer));
 
     data.mutex = NULL;
     data.mutex = xSemaphoreCreateMutex();
@@ -40,14 +35,15 @@ bool DF_init(void) {
 
 void DF_set_connection_status(uint8_t connection_status) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    data.connection_status = connection_status;
+    data.mcb.connection_status = connection_status;
     xSemaphoreGive(data.mutex);
 }
 
-void DF_update_data_on_action(uint8_t state, uint32_t uptime) {
+void DF_update_data_on_action(uint8_t state, uint32_t uptime, int32_t mission_timer) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    data.current_state = state;
-    data.uptime = uptime;
+    data.mcb.state = state;
+    data.mcb.uptime = uptime;
+    data.mcb.mission_timer = mission_timer;
     xSemaphoreGive(data.mutex);
 }
 
@@ -61,7 +57,6 @@ void DF_fill_pysd_struct(pysdmain_DataFrame* frame) {
     frame->blackBox = data.black_box;
     frame->payload = data.payload;
     frame->mcb = data.mcb;
-    frame->missionTimer = data.mission_timer;
     xSemaphoreGive(data.mutex);
 }
 
@@ -135,12 +130,11 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     SlaveData       black_box = data.black_box;
     PayloadData     payload = data.payload;
     MCB             mcb = data.mcb;
-    uint8_t connection_status = data.connection_status;
     xSemaphoreGive(data.mutex);
 
     //MCB
     snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
-        mcb.state, mcb.batteryVoltage, mcb.latitude, mcb.longitude, mcb.altitude, 
+        mcb.state, mcb.batteryVoltage, mcb.latitude, mcb.longitude, mcb.altitude,
         mcb.satellites, mcb.is_time_valid, mcb.temp_mcp); //11
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));

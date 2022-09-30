@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include <cstdint>
-#include "gen_pysd.h"
+#include "pysd_data_structs.h"
 
 typedef struct {
     float latitude;
@@ -21,7 +21,7 @@ typedef struct {
 typedef float mcp9808_data_t;
 
 bool DF_init(void);
-void DF_update_data_on_action(uint8_t state, uint32_t uptime, uint32_t mission_timer);
+void DF_update_data_on_action(uint8_t state, uint32_t uptime, int32_t mission_timer);
 void DF_set_connection_status(uint8_t connection_status);
 void DF_fill_pysd_struct(pysdmain_DataFrame* frame);
 void DF_set_mcb_data(MCB *data);

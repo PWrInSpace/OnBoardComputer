@@ -43,7 +43,7 @@ static struct {
 static void state_machine_init(void) {
   st.stateChangeTimeMark = 0;
   st.loopTimer = 0;
-  st.payload_switch_on_rpi = xTimerCreate("Payload", 
+  st.payload_switch_on_rpi = xTimerCreate("Payload",
     PAYLOAD_SWITCH_ON_AFTER_STATE_TIME,
     pdFALSE,
     TIMER_PAYLOAD_SWITCH_ON_NUM,
@@ -53,7 +53,7 @@ static void state_machine_init(void) {
     pdFALSE,
     TIMER_TURN_OFF_RECORDING_NUM,
     turn_off_recording_cb);
-  st.ignition_request = xTimerCreate("Ignition", 
+  st.ignition_request = xTimerCreate("Ignition",
     (OPT_get_ignition_time() - OPT_get_countdown_begin_time()) / portTICK_PERIOD_MS,
     pdFALSE,
     TIMER_IGNITION_REQUEST_NUM,
@@ -61,6 +61,7 @@ static void state_machine_init(void) {
 }
 
 static void idle_init(void) {
+  Serial.println("INITIALIZE IDLE STATE");
   OPT_set_data_current_period(DATA_PERIOD);
   SM_changeStateConfirmation();
 }
@@ -86,7 +87,7 @@ static void fueling_init(void) {
   }
   if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-  } 
+  }
   SM_changeStateConfirmation();
 }
 
@@ -109,7 +110,7 @@ static void countdown_init(void) {
       if(rc.deactiveDisconnectTimer() == false){
         rc.sendLog("Timer delete error");
       } //turn off disconnectTimer
-      
+
       uint32_t time_to_ignition = OPT_get_ignition_time() - OPT_get_countdown_begin_time();
       assert(time_to_ignition > 0);
       xTimerChangePeriod(st.ignition_request, time_to_ignition/portTICK_PERIOD_MS, portMAX_DELAY);
@@ -385,7 +386,7 @@ static void state_init(void){
   }
   //Set new periods based on new state
   //TODO: FIX out of range
-  OPT_set_data_current_period(sdPeriod[SM_getCurrentState()]);
+  OPT_set_sd_write_current_period(sdPeriod[SM_getCurrentState()]);
   OPT_set_lora_current_period(loraPeriod[SM_getCurrentState()]);
   OPT_set_flash_write_current_period(flashPeriod[SM_getCurrentState()]);
           
@@ -397,7 +398,7 @@ static void state_init(void){
 static void state_loop(void) {
   TxDataEspNow txDataEspNow;
   switch(SM_getCurrentState()){
-    case COUNTDOWN:      
+    case COUNTDOWN:
       countdown_loop();
       break;
     case FLIGHT:
@@ -423,9 +424,10 @@ static void state_loop(void) {
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
   state_machine_init();
-  
+
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
+      Serial.println("Task notification");
       state_init();
     }
 
@@ -433,7 +435,6 @@ void stateTask(void *arg){
       st.loopTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       state_loop();
     }
-
     wt.stateTaskFlag = true;
     vTaskDelay(10 / portTICK_PERIOD_MS); //DEBUG TIME
   }

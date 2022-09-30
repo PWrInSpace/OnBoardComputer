@@ -14,6 +14,7 @@
 #include "../include/components/SDcard.h"
 #include "../include/structs/stateMachine.h"
 #include "SparkFun_LPS25HB_Arduino_Library.h"
+#include "../include/pysd/gen_pysd.h"
 #include "../sensors/imuAPI.h"
 
 extern RocketControl rc;

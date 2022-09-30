@@ -1,5 +1,11 @@
 #include "../include/tasks/tasks.h"
 
+static void write_header_to_sd(SDCard &sd, String path) {
+  char buffer[2000];
+  pysd_create_header(buffer, sizeof(buffer), true);
+  sd.write(path, buffer);
+}
+
 void sdTask(void *arg){
   SDCard mySD(rc.hardware.mySPI, SD_CS);
   char data[SD_FRAME_ARRAY_SIZE] = {};
@@ -15,9 +21,9 @@ void sdTask(void *arg){
   while(!mySD.init()){
     ERR_set_sd_error(SD_INIT_ERROR);
     Serial.println("SD INIT ERROR!"); //DEBUG
-    
+
     xSemaphoreGive(rc.hardware.spiMutex);
-    
+
     vTaskDelay(10000 / portTICK_PERIOD_MS);
 
     xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
@@ -29,14 +35,15 @@ void sdTask(void *arg){
   dataPath = dataPath + String(sd_i) + ".txt";
   logPath = logPath + String(sd_i) + ".txt";
 
+  write_header_to_sd(mySD, dataPath);
+
   xSemaphoreGive(rc.hardware.spiMutex);
 
   while(1){
-    
+
     if(xQueueReceive(rc.hardware.sdQueue, (void*)&data, 0) == pdTRUE){
-      
       xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
-      
+
         if(strncmp(data, "LOG", 3) == 0){
           if(!mySD.write(logPath, data)){
             ERR_set_sd_error(SD_WRITE_ERROR);
@@ -53,10 +60,10 @@ void sdTask(void *arg){
             ERR_set_sd_error(SD_NO_ERROR);
             sdError = false;
           }
-        }  
+        }
 
       xSemaphoreGive(rc.hardware.spiMutex);
-    } 
+    }
     //FIX temporary
     if(sdError){
       vTaskDelay(1000 / portTICK_PERIOD_MS);

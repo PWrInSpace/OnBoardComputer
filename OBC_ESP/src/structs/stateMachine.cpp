@@ -6,12 +6,12 @@
 static struct {
   States currentState;
   States requestState;
-  xTaskHandle* stateTask;
+  TaskHandle_t * stateTask;
   States holdedState; //keep holded state default is States::HOLD
   xSemaphoreHandle stateMutex;
 }sm;
 
-bool SM_init(xTaskHandle* _stateTask){
+bool SM_init(TaskHandle_t *_stateTask){
   sm.stateTask = _stateTask;
   sm.currentState = States::INIT;
   sm.requestState = States::NO_CHANGE;
@@ -40,7 +40,7 @@ States SM_getRequestedState(void) {
   xSemaphoreTake(sm.stateMutex, portMAX_DELAY);
   requested = sm.requestState;
   xSemaphoreGive(sm.stateMutex);
-  
+
   return requested;
 }
 
@@ -59,8 +59,9 @@ static void SM_setRequestState(States requested) {
 //notify that changing state event occure
 bool SM_changeStateRequest(States _newState){
   States currentState;
+  assert(sm.stateTask != NULL);
   if(sm.stateTask == NULL){
-    return false;
+      return false;
   }
 
   currentState = SM_getCurrentState();
@@ -70,12 +71,12 @@ bool SM_changeStateRequest(States _newState){
   }
 
   //ABORT CASAE
-  if(currentState == States::ABORT){ 
+  if(currentState == States::ABORT){
     return false;
   }
 
   //Flight case, prevent rocket block in flight
-  if((currentState > States::FLIGHT && currentState < States::HOLD) && 
+  if((currentState > States::FLIGHT && currentState < States::HOLD) &&
       (_newState == States::ABORT || _newState == States::HOLD)){
     return false;
   }
@@ -84,7 +85,7 @@ bool SM_changeStateRequest(States _newState){
   if((_newState - 1) != currentState && (_newState != States::ABORT && _newState != States::HOLD)){
     return false;
   }
-  
+
   if(currentState == States::HOLD){ //current state is hold
     if(_newState == States::ABORT){ //abort in hold case
       SM_setRequestState(_newState);
@@ -111,6 +112,8 @@ void SM_changeStateConfirmation(void){
   requested = SM_getRequestedState();
   if(requested != States::NO_CHANGE){
     SM_setCurrentState(requested);
+    Serial.print("STATE CHANGE TO: ");
+    Serial.println(requested);
   }
 
   SM_setRequestState(States::NO_CHANGE);
