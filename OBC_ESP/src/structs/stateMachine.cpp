@@ -82,7 +82,7 @@ bool SM_changeStateRequest(States _newState){
   }
 
   //check new state correctness
-  if((_newState - 1) != currentState && (_newState != States::ABORT && _newState != States::HOLD)){
+  if(((_newState - 1) != currentState) && (_newState != States::ABORT && _newState != States::HOLD)){
     return false;
   }
 
@@ -104,6 +104,11 @@ bool SM_changeStateRequest(States _newState){
 
   xTaskNotifyGive(*sm.stateTask);
   return true;
+}
+
+void SM_forceStateChange(States new_state) {
+  SM_setRequestState(new_state);
+  xTaskNotifyGive(*sm.stateTask);
 }
 
 //Use only in stateTask

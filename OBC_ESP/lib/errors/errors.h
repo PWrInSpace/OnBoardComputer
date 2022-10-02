@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <Arduino.h> //DEBUG
+#include "pysd_data_structs.h"
 //loop error
 enum SDError{ //GIT
   SD_NO_ERROR = 0,
@@ -84,6 +85,7 @@ struct Errors{
 };
 
 bool ERR_init(void);
+void ERR_fill_pysd_struct(pysdmain_DataFrame *data);
 void ERR_set_sd_error(SDError error);
 void ERR_set_flash_error(FlashError error);
 void ERR_set_rtos_error(RTOSError error);

@@ -119,6 +119,12 @@ bool OPT_set_ignition_time(int32_t ignition_time) {
     return true;
 }
 
+void OPT_fill_pysd_struct(pysdmain_DataFrame *data) {
+    xSemaphoreTake(opt.options_mutex, portMAX_DELAY);
+    data->options = opt.options;
+    xSemaphoreGive(opt.options_mutex);
+}
+
 int32_t OPT_get_ignition_time(void) {
     int32_t ignition_time;
     xSemaphoreTake(opt.options_mutex, portMAX_DELAY);

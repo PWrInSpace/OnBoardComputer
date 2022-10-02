@@ -1,6 +1,7 @@
 #include "data_structs.h"
 #include <Arduino.h>
 
+
 static struct {
     PitotData       pitot;
     MainValveData   main_valve;
@@ -134,8 +135,8 @@ void DF_create_lora_frame(char* buffer, size_t size) {
 
     //MCB
     snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
-        mcb.state, mcb.batteryVoltage, mcb.latitude, mcb.longitude, mcb.altitude,
-        mcb.satellites, mcb.is_time_valid, mcb.temp_mcp); //11
+        mcb.state, mcb.batteryVoltage, mcb.gps.latitude, mcb.gps.longitude, mcb.gps.gps_altitude,
+        mcb.gps.satellites, mcb.gps.is_time_valid, mcb.temp_mcp); //11
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
@@ -267,15 +268,15 @@ bool DF_create_mcb_frame(char *buffer, size_t size) {
         return false;
     }
 
-    size_t wrote_data_size;
-    wrote_data_size = snprintf(buffer, size, "%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-        data.mcb.state, data.mcb.batteryVoltage, data.mcb.watchdogResets,
-        data.mcb.latitude, data.mcb.longitude, data.mcb.altitude, data.mcb.satellites, data.mcb.is_time_valid,
-        data.mcb.temp_lp25, data.mcb.pressure, data.mcb.altitude, data.mcb.velocity,
-        data.mcb.imuData[0], data.mcb.imuData[1], data.mcb.imuData[2], data.mcb.imuData[3],
-        data.mcb.imuData[4], data.mcb.imuData[5], data.mcb.imuData[6], data.mcb.imuData[7],
-        data.mcb.imuData[8], data.mcb.imuData[9], data.mcb.imuData[10], data.mcb.apogee);
-    assert(wrote_data_size < size);
+    // size_t wrote_data_size;
+    // wrote_data_size = snprintf(buffer, size, "%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+    //     data.mcb.state, data.mcb.batteryVoltage, data.mcb.watchdogResets,
+    //     data.mcb.latitude, data.mcb.longitude, data.mcb.altitude, data.mcb.satellites, data.mcb.is_time_valid,
+    //     data.mcb.temp_lp25, data.mcb.pressure, data.mcb.altitude, data.mcb.velocity,
+    //     data.mcb.imu.[0], data.mcb.imu.[1], data.mcb.imu.[2], data.mcb.imu.[3],
+    //     data.mcb.imu.[4], data.mcb.imu.[5], data.mcb.imu.[6], data.mcb.imu.[7],
+    //     data.mcb.imu.[8], data.mcb.imu.[9], data.mcb.imu.[10], data.mcb.apogee);
+    // assert(wrote_data_size < size);
     return true;
 }
 

@@ -42,4 +42,5 @@ States SM_getRequestedState(void);
 bool SM_changeStateRequest(States _newState);
 void SM_changeStateConfirmation(void);
 void SM_changeStateRejection(void);
+void SM_forceStateChange(States new_state);
 #endif

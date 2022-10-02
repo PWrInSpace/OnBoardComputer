@@ -1,9 +1,10 @@
 #include "config.h"
-
+#include "../include/structs/stateMachine.h"
 
 const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {  
   1000 / portTICK_PERIOD_MS, //INIT                  0
   1000 / portTICK_PERIOD_MS, //IDLE                  1
+  1000 / portTICK_PERIOD_MS, //IDLE
   1000 / portTICK_PERIOD_MS, //ARM                   2
   1000 / portTICK_PERIOD_MS,  //FILLING               3
   2000 / portTICK_PERIOD_MS,  //RTL                   4
@@ -19,6 +20,7 @@ const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {
 const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {  
   10000 / portTICK_PERIOD_MS, //INIT
   10000 / portTICK_PERIOD_MS, //IDLE
+  10000 / portTICK_PERIOD_MS, //IDLE
   10000 / portTICK_PERIOD_MS, //ARM
   1000 / portTICK_PERIOD_MS,  //FILLING
   2000 / portTICK_PERIOD_MS, //RTL
@@ -33,6 +35,7 @@ const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {
 
 const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {  
   10000 / portTICK_PERIOD_MS , //INIT
+  10000 / portTICK_PERIOD_MS, //IDLE
   10000 / portTICK_PERIOD_MS, //IDLE
   10000 / portTICK_PERIOD_MS, //ARM
   1000 / portTICK_PERIOD_MS, //FILLING
@@ -64,12 +67,22 @@ const uint8_t cameraPitot[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO 
 const uint8_t cameraRecovery[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 
 
+typedef struct {
+  States state;
+  uint16_t period;
+} period;
+
+static struct {
+  period dupa[12];
+}test;
+
 //ESP NOW PERIODS
 uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {  
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
   500, //ARM
   500, //FILLING
+  500,
   500, //RTL
   250, //COUNTDOWN
   250, //flight
@@ -84,6 +97,7 @@ uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
+  ESP_NOW_SLEEP_TIME, 
   ESP_NOW_SLEEP_TIME, //FILLING
   ESP_NOW_SLEEP_TIME, //RTL
   500, //COUNTDOWN
@@ -99,6 +113,7 @@ uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
 uint16_t espNowDefaultPeriod[PERIOD_ARRAY_SIZE] = {  
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
+  ESP_NOW_SLEEP_TIME, 
   ESP_NOW_SLEEP_TIME, //ARM
   ESP_NOW_SLEEP_TIME, //FILLING
   ESP_NOW_SLEEP_TIME, //RTL
@@ -115,6 +130,7 @@ uint16_t payloadPeriod[PERIOD_ARRAY_SIZE]{
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
+  ESP_NOW_SLEEP_TIME, //FILLING
   ESP_NOW_SLEEP_TIME, //FILLING
   2000, //RTL
   2000, //COUNTDOWN

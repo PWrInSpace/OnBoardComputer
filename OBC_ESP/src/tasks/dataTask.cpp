@@ -71,11 +71,11 @@ static bool gps_init(SFE_UBLOX_GNSS & gnss) {
 }
 
 static void gps_read_data(SFE_UBLOX_GNSS &gnss) {
-  glob.mcb_data.latitude = gnss.getLatitude(10) / 10.0E6;
-  glob.mcb_data.longitude = gnss.getLongitude(10) / 10.0E6;
-  glob.mcb_data.gps_altitude = gnss.getAltitude(10) / 10.0E2;
-  glob.mcb_data.satellites = gnss.getSIV(10);
-  glob.mcb_data.is_time_valid = gnss.getTimeValid(10);
+  glob.mcb_data.gps.latitude = gnss.getLatitude(10) / 10.0E6;
+  glob.mcb_data.gps.longitude = gnss.getLongitude(10) / 10.0E6;
+  glob.mcb_data.gps.gps_altitude = gnss.getAltitude(10) / 10.0E2;
+  glob.mcb_data.gps.satellites = gnss.getSIV(10);
+  glob.mcb_data.gps.is_time_valid = gnss.getTimeValid(10);
 }
 
 static bool imu_init(ImuAPI &imu) {
@@ -95,8 +95,18 @@ static bool imu_init(ImuAPI &imu) {
 static void imu_read_data(ImuAPI &imu) {
   imu.readData();
   ImuData imu_data = imu.getData();
-  
-  // asdasd;
+  glob.mcb_data.imu.ax = imu_data.ax;
+  glob.mcb_data.imu.ay = imu_data.ay;
+  glob.mcb_data.imu.az = imu_data.az;
+  glob.mcb_data.imu.gx = imu_data.gx;
+  glob.mcb_data.imu.gy = imu_data.gy;
+  glob.mcb_data.imu.gz = imu_data.gz;
+  glob.mcb_data.imu.mx = imu_data.mx;
+  glob.mcb_data.imu.my = imu_data.my;
+  glob.mcb_data.imu.mz = imu_data.mz;
+  glob.mcb_data.imu.temperature = imu_data.temperature;
+  glob.mcb_data.imu.pressure = imu_data.pressure;
+  glob.mcb_data.imu.altitude = imu_data.altitude;
 }
 
 static bool pressure_sensor_init(LPS25HB &sensor) {
@@ -184,18 +194,19 @@ static void landing_detection(void) {
 
 static void fill_lora_data_buffer(void) {
   char temp[200] = {0};
-  memcpy(glob.sd_buffer, LORA_TX_DATA_PREFIX, sizeof(LORA_TX_DATA_PREFIX));
+  memset(glob.lora_buffer, 0, sizeof(glob.lora_buffer));
+  memcpy(glob.lora_buffer, LORA_TX_DATA_PREFIX, sizeof(LORA_TX_DATA_PREFIX));
 
   DF_create_lora_frame(temp, sizeof(temp));
-  strcat(glob.sd_buffer, temp);
+  strcat(glob.lora_buffer, temp);
   memset(temp, 0, sizeof(temp));
 
   OPT_create_lora_frame(temp, sizeof(temp));
-  strcat(glob.sd_buffer, temp);
+  strcat(glob.lora_buffer, temp);
   memset(temp, 0, sizeof(temp));
 
   ERR_create_lora_frame(temp, sizeof(temp));
-  strcat(glob.sd_buffer, temp);
+  strcat(glob.lora_buffer, temp);
   memset(temp, 0, sizeof(temp));
 }
 
@@ -205,7 +216,7 @@ static void clear_lora_buffer(void) {
 
 static void send_data_via_lora(void) {
   fill_lora_data_buffer();
-
+  Serial.println(glob.lora_buffer);
   if(xQueueSend(rc.hardware.loraTxQueue, (void*)&glob.lora_buffer, 0) != pdTRUE){
     ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
     rc.sendLog("LoRa quque is full");
@@ -214,10 +225,6 @@ static void send_data_via_lora(void) {
   ERR_reset(ERROR_RESET_LORA);
   clear_lora_buffer();
 }
-
-// static void create_data_struct(void) {
-
-// }
 
 static void send_data_to_black_box(void) {
   if(glob.mcb_data.state < COUNTDOWN || glob.mcb_data.state > SECOND_STAGE_RECOVERY) {
@@ -249,16 +256,19 @@ static void write_data_to_flash(void) {
 static void write_data_to_sd(void) {
   pysdmain_DataFrame sd_data;
   DF_fill_pysd_struct(&sd_data);
-  Serial.println(sd_data.mcb.uptime);
-  Serial.println(sd_data.mcb.mission_timer);
+  OPT_fill_pysd_struct(&sd_data);
+  ERR_fill_pysd_struct(&sd_data);
+
   if (pysd_create_sd_frame(glob.sd_buffer, sizeof(glob.sd_buffer), sd_data, false) == 0) {
     Serial.println("SD frame buffor is too smool");
     return;
   }
+
   if (xQueueSend(rc.hardware.sdQueue, (void*)glob.sd_buffer, 0) != pdTRUE) { //data to SD
     ERR_set_rtos_error(RTOS_SD_QUEUE_ADD_ERROR);
     return;
   }
+
   ERR_reset(ERROR_RESET_SD); //reset errors after save
 }
 
@@ -326,7 +336,8 @@ void dataTask(void *arg){
     //LORA
     if(ET_is_expired(&glob.lora_timer) || ulTaskNotifyTake(pdTRUE, 0)){
       ET_start(&glob.lora_timer, OPT_get_lora_current_period());
-
+      //TODO: frame create
+      send_data_via_lora();
     }
 
     if(ET_is_expired(&glob.flash_timer)){
@@ -335,8 +346,6 @@ void dataTask(void *arg){
       send_data_to_black_box();
     }
 
-
-    //SD
     if(ET_is_expired(&glob.sd_timer)){
       ET_start(&glob.sd_timer, OPT_get_sd_write_current_period());
       write_data_to_sd();

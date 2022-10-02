@@ -21,6 +21,19 @@ static struct {
   .errors_mutex = NULL,
 };
 
+void ERR_fill_pysd_struct(pysdmain_DataFrame *data) {
+  xSemaphoreTake(se.errors_mutex, portMAX_DELAY);
+  data->errors.sd = se.errors.sd;
+  data->errors.flash = se.errors.flash;
+  data->errors.rtos = se.errors.rtos;
+  data->errors.espnow = se.errors.espnow;
+  data->errors.watchdog = se.errors.watchdog;
+  data->errors.sensors = se.errors.sensors;
+  data->errors.exceptions = se.errors.exceptions;
+  data->errors.recovery = se.errors.recovery;
+  xSemaphoreGive(se.errors_mutex);
+}
+
 bool ERR_init(void) {
   memset(&se.errors, 0, sizeof(se.errors));
   se.errors_mutex = xSemaphoreCreateMutex();

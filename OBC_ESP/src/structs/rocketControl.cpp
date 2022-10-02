@@ -138,8 +138,9 @@ void RocketControl::createLoRaFrame(char* data){
   //MCB
   sprintf(mcbFrame, "%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
     dataFrame.mcb.state, missionTimer.getTime()/1000, getDisconnectRemainingTime()/1000,
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.latitude, dataFrame.mcb.longitude, dataFrame.mcb.satellites, 
-    dataFrame.mcb.is_time_valid, (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
+    dataFrame.mcb.batteryVoltage, dataFrame.mcb.gps.latitude, dataFrame.mcb.gps.longitude,
+    dataFrame.mcb.gps.satellites, dataFrame.mcb.gps.is_time_valid,
+    (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
 
   sprintf(pitotFrame, "%0.1f;%d;%d;",
     dataFrame.pitot.vBat, dataFrame.pitot.altitude, (int)dataFrame.pitot.speed); //8
@@ -248,14 +249,14 @@ void RocketControl::createLoRaFrame(char* data){
 void RocketControl::createSDFrame(char* data){
   size_t mcbSize, pitotSize, mvSize, uvSize, tanwaSize, bbSize, plSize, optionsSize, recoverySize, errorsSize;
 
-  mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-    dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
-    dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
-    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
-    dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
-    dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
-    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.apogee);
+  // mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+  //   dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
+  //   dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
+  //   dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
+  //   dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
+  //   dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
+  //   dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
+  //   dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.apogee);
 
   pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;%d;%d;",
     dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
@@ -315,15 +316,15 @@ void RocketControl::createSDFrame(char* data){
   char errorsFrame[errorsSize] = {};
 
 
-  //MCB
-  snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-    dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
-    dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
-    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
-     dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
-    dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
-    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
+  // //MCB
+  // snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+  //   dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
+  //   dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
+  //   dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
+  //   dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
+  //    dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
+  //   dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
+  //   dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
 
   snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;%d;%d;",
     dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 

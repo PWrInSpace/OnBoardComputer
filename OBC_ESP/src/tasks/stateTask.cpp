@@ -314,7 +314,7 @@ static void on_ground_loop(void) {
   }
 
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
-    txDataEspNow.setVal(VALVE_OPEN, 0); 
+    txDataEspNow.setVal(VALVE_OPEN, 0);
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
@@ -332,7 +332,7 @@ static void abort_loop(void) {
 
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
     TxDataEspNow txDataEspNow;
-    txDataEspNow.setVal(VALVE_OPEN, 0); 
+    txDataEspNow.setVal(VALVE_OPEN, 0);
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
@@ -371,14 +371,13 @@ static void state_init(void){
       break;
     case ON_GROUND:
       on_ground_init();
-      break;  
+      break;
     case HOLD:
       hold_init();
       break;
     case ABORT:
       abort_init();
       break;
-    
     default:
       rc.sendLog("Unknown state event");
       ESP.restart();

@@ -5,29 +5,18 @@
 #include <stdbool.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include "pysd_data_structs.h"
 
 //options are change only in stateTasks, and in handlingTask obviously
 /*** 
  * IMPORTANT, be sure that program will not use set and get in this same time 
  * otherwise mutex is necessery
  * ***/
-struct Options{
-	uint32_t lora_freq_khz;
-    int32_t countdown_begin_time;
-	int32_t ignition_time; //ignition time
-    uint8_t tank_min_pressure; //bar
-	bool flash_write : 1;
-	bool force_launch : 1;
-
-    TickType_t data_current_period;
-    TickType_t lora_current_period;
-    TickType_t flash_write_current_period;
-    TickType_t sd_write_current_period;
-};
 
 bool OPT_init(void);
 //  MUTEX ??????
 Options OPT_get_options_struct(void);
+void OPT_fill_pysd_struct(pysdmain_DataFrame *data);
 
 bool OPT_set_lora_freq(uint32_t lora_freq_khz);
 uint32_t OPT_get_lora_freq(void);

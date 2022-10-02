@@ -7,7 +7,7 @@
 // #include "../include/structs/stateMachine.h"
 
 #define SD_FRAME_ARRAY_SIZE     512
-#define LORA_FRAME_ARRAY_SIZE   512
+#define LORA_FRAME_ARRAY_SIZE   256
 #define LORA_TX_DATA_PREFIX     "R4D;"
 #define LORA_TX_OPTIONS_PREFIX  "R4C;"
 
@@ -69,7 +69,7 @@
 #define IDLE_PERIOD             10 * 1000
 
 #define DATA_PERIOD             100
-#define PERIOD_ARRAY_SIZE       12
+#define PERIOD_ARRAY_SIZE       13
 
 #define STATE_TASK_LOOP_INTERVAL 100
 
@@ -96,16 +96,29 @@ extern const uint8_t cameraRecovery[];
 
 
 //ESP NOW NOTIFICATION 
-#define TANWA           0
-#define PITOT           1
-#define MAIN_VALVE      2
-#define UPUST_VALVE     3
-#define BLACK_BOX       4
-#define PAYLOAD         5
-#define ACS             6
-#define CAMERA_ACS      7
-#define CAMERA_PITOT    8
-#define CAMERA_RECOVERY 9
+// #define TANWA           0
+// #define PITOT           1
+// #define MAIN_VALVE      2
+// #define UPUST_VALVE     3
+// #define BLACK_BOX       4
+// #define PAYLOAD         5
+// #define ACS             6
+// #define CAMERA_ACS      7
+// #define CAMERA_PITOT    8
+// #define CAMERA_RECOVERY 9
+
+typedef enum{
+    TANWA = 0,
+    PITOT,
+    MAIN_VALVE,
+    UPUST_VALVE,
+    BLACK_BOX,
+    PAYLOAD,
+    ACS,
+    CAMERA_ACS,
+    CAMERA_PITOT,
+    CAMERA_RECOVERY,
+}EspNowDevice;
 
 #define ESP_NOW_SLEEP_TIME 30 * 1000
 
