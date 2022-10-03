@@ -13,6 +13,10 @@ void ET_start(expire_timer_t *timer, miliseocnds duration) {
     assert(timer != NULL);
     timer->duration_time = duration;
     timer->start_time = pdTICKS_TO_MS(xTaskGetTickCount());
+    Serial.println("set new time");
+    Serial.print(timer->duration_time);
+    Serial.print("\n");
+    Serial.println(timer->start_time);
 }
 
 bool ET_is_expired(expire_timer_t *timer) {

@@ -185,7 +185,7 @@ bool OPT_get_force_launch(void) {
 
 #define MIN_PERIOD 75
 
-bool OPT_set_data_current_period(TickType_t data_period) {
+bool OPT_set_data_current_period(uint32_t data_period) {
     Serial.print("setting data period");
     Serial.println(data_period);
     if (data_period < MIN_PERIOD) {
@@ -199,15 +199,15 @@ bool OPT_set_data_current_period(TickType_t data_period) {
 }
 
 
-TickType_t OPT_get_data_current_period(void) {
-    TickType_t data_current_period;
+uint32_t OPT_get_data_current_period(void) {
+    uint32_t data_current_period;
     xSemaphoreTake(opt.options_mutex, portMAX_DELAY);
     data_current_period = opt.options.data_current_period;
     xSemaphoreGive(opt.options_mutex);
     return data_current_period;
 }
 
-bool OPT_set_lora_current_period(TickType_t lora_period) {
+bool OPT_set_lora_current_period(uint32_t lora_period) {
     if (lora_period < MIN_PERIOD) {
         return false;
     }
@@ -218,8 +218,8 @@ bool OPT_set_lora_current_period(TickType_t lora_period) {
     return true;
 }
 
-TickType_t OPT_get_lora_current_period(void) {
-    TickType_t lora_current_period;
+uint32_t OPT_get_lora_current_period(void) {
+    uint32_t lora_current_period;
     xSemaphoreTake(opt.options_mutex, portMAX_DELAY);
     lora_current_period = opt.options.lora_current_period;
     xSemaphoreGive(opt.options_mutex);
@@ -227,7 +227,7 @@ TickType_t OPT_get_lora_current_period(void) {
     return lora_current_period;
 }
 
-bool OPT_set_flash_write_current_period(TickType_t flash_period) {
+bool OPT_set_flash_write_current_period(uint32_t flash_period) {
     if (flash_period < MIN_PERIOD) {
         return false;
     }
@@ -238,8 +238,8 @@ bool OPT_set_flash_write_current_period(TickType_t flash_period) {
     return true;
 }
 
-TickType_t OPT_get_flash_write_current_period(void) {
-    TickType_t flash_write_current_period;
+uint32_t OPT_get_flash_write_current_period(void) {
+    uint32_t flash_write_current_period;
 
     xSemaphoreTake(opt.options_mutex, portMAX_DELAY);
     flash_write_current_period = opt.options.flash_write_current_period;
@@ -248,7 +248,7 @@ TickType_t OPT_get_flash_write_current_period(void) {
     return flash_write_current_period;
 }
 
-bool OPT_set_sd_write_current_period(TickType_t sd_write_period) {
+bool OPT_set_sd_write_current_period(uint32_t sd_write_period) {
     if (sd_write_period < MIN_PERIOD)  {
         return false;
     }
@@ -259,8 +259,8 @@ bool OPT_set_sd_write_current_period(TickType_t sd_write_period) {
     return true;
 }
 
-TickType_t OPT_get_sd_write_current_period(void) {
-    TickType_t sd_write_current_period;
+uint32_t OPT_get_sd_write_current_period(void) {
+    uint32_t sd_write_current_period;
     xSemaphoreTake(opt.options_mutex, portMAX_DELAY);
     sd_write_current_period = opt.options.sd_write_current_period;
     xSemaphoreGive(opt.options_mutex);
