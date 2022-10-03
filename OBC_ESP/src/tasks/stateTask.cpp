@@ -20,7 +20,7 @@ static void ignition_cb(void *arg) {
   TxDataEspNow txDataEspNow;
   Serial.println("***Ignition cb***");
   // if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
-    txDataEspNow.setVal(IGNITION_COMMAND, 1);  
+    txDataEspNow.setVal(IGNITION_COMMAND, 1);
         //send ignition request
     if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
@@ -36,9 +36,7 @@ static struct {
   TimerHandle_t payload_switch_on_rpi;
   TimerHandle_t turn_off_recording;
   TimerHandle_t ignition_request;
-}st = {
-  
-};
+}st;
 
 static void state_machine_init(void) {
   st.stateChangeTimeMark = 0;

@@ -201,13 +201,11 @@ static void fill_lora_data_buffer(void) {
   strcat(glob.lora_buffer, temp);
   memset(temp, 0, sizeof(temp));
 
-  OPT_create_lora_frame(temp, sizeof(temp));
-  strcat(glob.lora_buffer, temp);
-  memset(temp, 0, sizeof(temp));
-
   ERR_create_lora_frame(temp, sizeof(temp));
   strcat(glob.lora_buffer, temp);
   memset(temp, 0, sizeof(temp));
+
+  // strcat(glob.lora_buffer, "\n");
 }
 
 static void clear_lora_buffer(void) {
@@ -285,6 +283,10 @@ static void update_mcb_mission_timer(int32_t timer) {
   glob.mcb_data.mission_timer = timer;
 }
 
+static void update_disconnect_remaining_time(uint32_t time) {
+  glob.mcb_data.disconnect_remaining_time = time;
+}
+
 void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
   ImuAPI imu(&rc.hardware.i2c2);
@@ -305,9 +307,9 @@ void dataTask(void *arg){
   //   ESP_LOGW(TAG, "Pressure sensor init fail");
   // }
 
-  // if (temperature_sensor_init(tempsensor) == false) {
-  //   ESP_LOGW(TAG, "Tempreature sensor init fail");
-  // }
+  if (temperature_sensor_init(tempsensor) == false) {
+    ESP_LOGW(TAG, "Tempreature sensor init fail");
+  }
 
   while(1) {
     if (ET_is_expired(&glob.data_update_timer)) {
@@ -318,11 +320,12 @@ void dataTask(void *arg){
       gps_read_data(gps);
       // imu_read_data(imu);
       // pressure_sensor_read(pressureSensor);
-      // temperature_sensor_read(tempsensor);
+      temperature_sensor_read(tempsensor);
       // read_recovery_data();
       update_current_state(SM_getCurrentState());
       update_mcb_uptime(millis());
       update_mcb_mission_timer(rc.missionTimer.getTime());
+      update_disconnect_remaining_time(rc.getDisconnectRemainingTime());
 
       //calculations
       check_first_stage_recovery_deploy();
@@ -336,7 +339,6 @@ void dataTask(void *arg){
     //LORA
     if(ET_is_expired(&glob.lora_timer) || ulTaskNotifyTake(pdTRUE, 0)){
       ET_start(&glob.lora_timer, OPT_get_lora_current_period());
-      //TODO: frame create
       send_data_via_lora();
     }
 

@@ -121,7 +121,7 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     assert(buffer != NULL);
     assert(size != 0);
     char byte_data[4] = {};
-    char data_buffer[100] = {};
+    char data_buffer[150] = {};
     xSemaphoreTake(data.mutex, portMAX_DELAY);
     PitotData       pitot = data.pitot;
     MainValveData   main_valve = data.main_valve;
@@ -132,11 +132,11 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     PayloadData     payload = data.payload;
     MCB             mcb = data.mcb;
     xSemaphoreGive(data.mutex);
-
     //MCB
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
-        mcb.state, mcb.batteryVoltage, mcb.gps.latitude, mcb.gps.longitude, mcb.gps.gps_altitude,
-        mcb.gps.satellites, mcb.gps.is_time_valid, mcb.temp_mcp); //11
+    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f",
+        mcb.state, mcb.uptime, mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
+        mcb.batteryVoltage, mcb.gps.latitude, mcb.gps.longitude, mcb.gps.satellites,
+        mcb.gps.is_time_valid, (int)mcb.gps.gps_altitude, mcb.temp_mcp); //11
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
@@ -163,8 +163,7 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     memset(data_buffer, 0 , sizeof(data_buffer));
 
     snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%0.1f;",
-      payload.isRecording,
-      payload.isRpiOn, payload.vBat);
+      payload.isRecording, payload.isRpiOn, payload.vBat);
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
@@ -179,15 +178,14 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     snprintf(data_buffer, sizeof(data_buffer), "%d;", byte_data[0]);
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
-    
-    
+
     memset(byte_data, 0, 4);
     // Valve states:
     byte_data[0] |= (main_valve.valveState  << 0);
     byte_data[0] |= (upust_valve.valveState << 2);
     byte_data[0] |= (tanwa.motorState[0]   << 4);
 
-    byte_data[1] |= (tanwa.motorState[1]   << 0);  
+    byte_data[1] |= (tanwa.motorState[1]   << 0);
     byte_data[1] |= (tanwa.motorState[2]   << 3);
 
     byte_data[2] |= (tanwa.motorState[3]   << 0);

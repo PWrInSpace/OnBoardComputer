@@ -123,6 +123,7 @@ typedef struct {
     uint8_t state;
     uint32_t uptime;
     int32_t mission_timer;
+    uint32_t disconnect_remaining_time;
     uint8_t connection_status;
     float batteryVoltage;
     pysd_imu_data imu;

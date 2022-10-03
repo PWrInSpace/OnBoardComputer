@@ -164,7 +164,7 @@ bool ERR_create_lora_frame(char *buffer, size_t size) {
   if (buffer == NULL || size == 0) {
     return false;
   }
-  
+
   Errors err;
   xSemaphoreTake(se.errors_mutex, portMAX_DELAY);
   err = se.errors;
@@ -175,11 +175,11 @@ bool ERR_create_lora_frame(char *buffer, size_t size) {
   byte_data[0] |= (se.errors.sd << 5);
   byte_data[0] |= (se.errors.flash << 3);
   byte_data[0] |= (se.errors.watchdog);
-  //error second byte  
+  //error second byte
   byte_data[1] |= (se.errors.recovery << 6);
   byte_data[1] |= (se.errors.exceptions << 3);
   byte_data[1] |= (se.errors.espnow << 0);
-  //error third byte  
+  //error third byte
   byte_data[2] |= (se.errors.sensors << 2);
   byte_data[2] |= (se.errors.rtos << 0);
 
