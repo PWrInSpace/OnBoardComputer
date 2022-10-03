@@ -133,8 +133,8 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     MCB             mcb = data.mcb;
     xSemaphoreGive(data.mutex);
     //MCB
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f",
-        mcb.state, mcb.uptime, mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
+    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
+        mcb.state, mcb.uptime / 1000, mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
         mcb.batteryVoltage, mcb.gps.latitude, mcb.gps.longitude, mcb.gps.satellites,
         mcb.gps.is_time_valid, (int)mcb.gps.gps_altitude, mcb.temp_mcp); //11
     strcat(buffer, data_buffer);
