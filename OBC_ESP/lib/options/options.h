@@ -36,17 +36,17 @@ bool OPT_get_flash_write(void);
 bool OPT_set_force_launch(bool force_launch);
 bool OPT_get_force_launch(void);
 
-bool OPT_set_data_current_period(TickType_t data_period);
-TickType_t OPT_get_data_current_period(void);
+bool OPT_set_data_current_period(uint32_t data_period);
+uint32_t OPT_get_data_current_period(void);
 
-bool OPT_set_lora_current_period(TickType_t lora_period);
-TickType_t OPT_get_lora_current_period(void);
+bool OPT_set_lora_current_period(uint32_t lora_period);
+uint32_t OPT_get_lora_current_period(void);
 
-bool OPT_set_flash_write_current_period(TickType_t flash_period);
-TickType_t OPT_get_flash_write_current_period(void);
+bool OPT_set_flash_write_current_period(uint32_t flash_period);
+uint32_t OPT_get_flash_write_current_period(void);
 
-bool OPT_set_sd_write_current_period(TickType_t sd_write_period);
-TickType_t OPT_get_sd_write_current_period(void);
+bool OPT_set_sd_write_current_period(uint32_t sd_write_period);
+uint32_t OPT_get_sd_write_current_period(void);
 
 bool OPT_create_lora_frame(char *buffer, size_t size);
 

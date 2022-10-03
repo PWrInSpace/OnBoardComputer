@@ -2,51 +2,51 @@
 #include "../include/structs/stateMachine.h"
 
 const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {  
-  1000 / portTICK_PERIOD_MS, //INIT                  0
-  1000 / portTICK_PERIOD_MS, //IDLE                  1
-  1000 / portTICK_PERIOD_MS, //IDLE
-  1000 / portTICK_PERIOD_MS, //ARM                   2
-  1000 / portTICK_PERIOD_MS,  //FILLING               3
-  2000 / portTICK_PERIOD_MS,  //RTL                   4
-  500 / portTICK_PERIOD_MS,   //COUNTDOWN             5
-  1000 / portTICK_PERIOD_MS,  //flight                6
-  1000 / portTICK_PERIOD_MS,  //first_stage_recov     7
-  1000 / portTICK_PERIOD_MS,  //second_stage_recov    8
-  10000 / portTICK_PERIOD_MS,  //on ground             9
-  10000 / portTICK_PERIOD_MS, //HOLD                  10
-  10000 / portTICK_PERIOD_MS  //ABORT                 11
+  1000, //INIT                  0
+  1000, //IDLE                  1
+  1000, //IDLE
+  1000, //ARM                   2
+  1000,  //FILLING               3
+  2000,  //RTL                   4
+  500,   //COUNTDOWN             5
+  1000,  //flight                6
+  1000,  //first_stage_recov     7
+  1000,  //second_stage_recov    8
+  10000,  //on ground             9
+  10000, //HOLD                  10
+  10000  //ABORT                 11
 };
 
 const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {  
-  10000 / portTICK_PERIOD_MS, //INIT
-  10000 / portTICK_PERIOD_MS, //IDLE
-  10000 / portTICK_PERIOD_MS, //IDLE
-  10000 / portTICK_PERIOD_MS, //ARM
-  1000 / portTICK_PERIOD_MS,  //FILLING
-  2000 / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  150 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  10000 / portTICK_PERIOD_MS, //on ground
-  10000 / portTICK_PERIOD_MS, //HOLD
-  10000 / portTICK_PERIOD_MS //ABORT
+  10000, //INIT
+  10000, //IDLE
+  10000, //IDLE
+  10000, //ARM
+  1000,  //FILLING
+  2000, //RTL
+  500, //COUNTDOWN
+  150, //flight
+  500, //first_stage_recov
+  500, //second_stage_recov
+  10000, //on ground
+  10000, //HOLD
+  10000 //ABORT
 };
 
 const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {  
-  10000 / portTICK_PERIOD_MS , //INIT
-  10000 / portTICK_PERIOD_MS, //IDLE
-  10000 / portTICK_PERIOD_MS, //IDLE
-  10000 / portTICK_PERIOD_MS, //ARM
-  1000 / portTICK_PERIOD_MS, //FILLING
-  2000 / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  500 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  10000 / portTICK_PERIOD_MS, //on ground
-  10000 / portTICK_PERIOD_MS, //HOLD
-  10000 / portTICK_PERIOD_MS //ABORT
+  10000 , //INIT
+  10000, //IDLE
+  10000, //IDLE
+  10000, //ARM
+  1000, //FILLING
+  2000, //RTL
+  500, //COUNTDOWN
+  500, //flight
+  500, //first_stage_recov
+  500, //second_stage_recov
+  10000, //on ground
+  10000, //HOLD
+  10000 //ABORT
 };
 
 /********************************************/

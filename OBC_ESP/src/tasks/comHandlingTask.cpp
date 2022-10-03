@@ -8,18 +8,21 @@ static void R4A_change_state(char * data) {
   sscanf(data, "R4A;STAT;%d;%d", &old_state, &new_state);
 
   if (old_state > States::ABORT || new_state > States::ABORT) {
+    Serial.println("1");
     rc.sendLog("invalid state change command");
     ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
     return;
   }
 
-  if (old_state != SM_getCurrentState() || new_state != States::FLIGHT) {
+  if (old_state != SM_getCurrentState() || new_state == States::FLIGHT) {
+    Serial.println("2");
     rc.sendLog("invalid state change command");
     ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
     return;
   }
 
   if(SM_changeStateRequest((States) new_state) == false){
+      Serial.println("3");
       rc.sendLog("invalid state change request");
       ERR_set_last_exception(INVALID_STATE_CHANGE_EXCEPTION);
   }
@@ -74,6 +77,7 @@ static void handle_R4A_message(char *data) {
     }else if (strstr(data, "HOLD_OUT") != NULL){
         R4A_hold_out();
     }else{
+        Serial.println("Invalid command");
         R4A_invalid_command(data);
     }
 }
@@ -118,7 +122,7 @@ static void R4O_options_flash_write(int value) {
     }
 }
 
-static void R4O_options_(int value) {
+static void R4O_options_force_launch(int value) {
     if (OPT_set_force_launch(value) == false) {
         ERR_set_last_exception(INVALID_OPTION_NUMBER);
     }
@@ -158,40 +162,44 @@ static void R4O_handle_options(char * data){
     int option_number;
     int option_value;
     sscanf(data, "R4O;OPTS;%d;%d", &option_number, &option_value);
-
-     switch (option_number) {
-          case 1:
+    Serial.println("R4O; OPT");
+    Serial.print(option_number);
+    Serial.print("\t");
+    Serial.println(option_value);
+    switch (option_number) {
+        case 1:
             R4O_options_lora_freq(option_value);
             break;
-          case 2:
+        case 2:
             R4O_options_countdown_begin_time(option_value);
             break;
-          case 3:
+        case 3:
             R4O_options_ignition_time(option_value);
             break;
-          case 4:
+        case 4:
             R4O_options_tank_min_pressure(option_value);
             break;
-          case 5:
+        case 5:
             R4O_options_flash_write(option_value);
             break;
-          case 6:
+        case 6:
+            R4O_options_force_launch(option_value);
             break;
-          case 7:
+        case 7:
             R4O_option_data_period(option_value);
             break;
-          case 8:
+        case 8:
            R4O_options_lora_period(option_value);
             break;
-          case 9:
+        case 9:
             R4O_options_flash_period(option_value);
             break;
-          case 10:
+        case 10:
             R4O_options_sd_period(option_value);
             break;
-          default:
+        default:
             R4O_options_invalid();
-          }
+        }
 }
 
 static void R4O_handle_main_valve(char *data) {
@@ -452,7 +460,9 @@ void rxHandlingTask(void *arg){
 
     while(1){
         if (xQueueReceive(rc.hardware.loraRxQueue, (void*)&buffer, 25) == pdTRUE) {
+            Serial.println(buffer);
             if(strncmp(buffer, "R4A", 3) == 0){
+                Serial.println("R4A");
                 rc.restartDisconnectTimer();
                 handle_R4A_message(buffer);
             }else if(strncmp(buffer, "R4O", 3) == 0){

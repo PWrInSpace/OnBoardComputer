@@ -25,6 +25,7 @@ static void ignition_cb(void *arg) {
     if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
       rc.sendLog("Esp send error - IGNITION");
+      // xTimerStart()
     }
     rc.sendLog("IGNITION REQUEST");
   // }
@@ -92,6 +93,7 @@ static void fueling_init(void) {
 static void armed_to_launch_init(void) {
   //wake up
   // TODO:
+  SM_changeStateConfirmation();
 }
 
 static void rdy_to_launch_init(void) {
@@ -260,10 +262,10 @@ static void flight_loop(void) {
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     Serial.println("Main valve open loop");
-    if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-    }
-    //vTaskDelay(25 / portTICK_PERIOD_MS);
+    // if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+    //   ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    // }
+    vTaskDelay(25 / portTICK_PERIOD_MS);
   }
 }
 
@@ -279,9 +281,9 @@ static void first_stage_recovery_loop(void) {
   if(rc.dataFrame.mainValve.valveState != ValveState::Close){
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_CLOSE, 0); 
-    if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-    }
+    // if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+    //   ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    // }
   }
 }
 
@@ -295,9 +297,9 @@ static void second_stage_recovery_loop(void) {
   if(rc.dataFrame.upustValve.valveState != ValveState::Open){
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
-    if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-    } 
+    // if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+    //   ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    // } 
   }
 }
 
@@ -305,7 +307,6 @@ static void on_ground_loop(void) {
   TxDataEspNow txDataEspNow;
   if(rc.dataFrame.mainValve.valveState != ValveState::Open){
     txDataEspNow.setVal(VALVE_OPEN, 0); 
-    Serial.println("Loop odpalenia");
     if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     } 

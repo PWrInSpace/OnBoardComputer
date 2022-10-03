@@ -27,7 +27,6 @@ static bool lora_init(void) {
 
 static void lora_read_message_and_put_on_queue(void) {
   String rxStr = LoRa.readString();
-  Serial.print(rxStr); // DEBUG
 
   if(rxStr.length() < (LORA_FRAME_ARRAY_SIZE/2 - 1)){
     strcpy(task.loraRx, rxStr.c_str());

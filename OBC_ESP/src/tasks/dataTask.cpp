@@ -345,7 +345,7 @@ void dataTask(void *arg){
     if(ET_is_expired(&glob.flash_timer)){
       ET_start(&glob.flash_timer, OPT_get_flash_write_current_period());
       write_data_to_flash();
-      send_data_to_black_box();
+      // send_data_to_black_box();
     }
 
     if(ET_is_expired(&glob.sd_timer)){

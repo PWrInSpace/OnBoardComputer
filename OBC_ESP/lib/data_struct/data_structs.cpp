@@ -121,7 +121,7 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     assert(buffer != NULL);
     assert(size != 0);
     char byte_data[4] = {};
-    char data_buffer[150] = {};
+    char temp_buffer[150] = {};
     xSemaphoreTake(data.mutex, portMAX_DELAY);
     PitotData       pitot = data.pitot;
     MainValveData   main_valve = data.main_valve;
@@ -133,53 +133,57 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     MCB             mcb = data.mcb;
     xSemaphoreGive(data.mutex);
     //MCB
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f",
-        mcb.state, mcb.uptime, mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
+        mcb.state,  mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
         mcb.batteryVoltage, mcb.gps.latitude, mcb.gps.longitude, mcb.gps.satellites,
         mcb.gps.is_time_valid, (int)mcb.gps.gps_altitude, mcb.temp_mcp); //11
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
-    snprintf(data_buffer, sizeof(data_buffer), "%0.1f;%d;%d;",
+    snprintf(temp_buffer, sizeof(temp_buffer), "%0.1f;%d;%d;",
         pitot.vBat, pitot.altitude, (int)pitot.speed); //8
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
-    snprintf(data_buffer, sizeof(data_buffer), "%0.1f;", main_valve.batteryVoltage); //5
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    snprintf(temp_buffer, sizeof(temp_buffer), "%0.1f;", main_valve.batteryVoltage); //5
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
-    snprintf(data_buffer, sizeof(data_buffer), "%0.1f;%0.1f;%d;",
+    snprintf(temp_buffer, sizeof(temp_buffer), "%0.1f;%0.1f;%d;",
       upust_valve.batteryVoltage, upust_valve.tankPressure,
       upust_valve.thermistor); //9
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
       tanwa.tanWaState, tanwa.vbat, tanwa.igniterContinouity[0],
       tanwa.igniterContinouity[1], tanwa.rocketWeight, tanwa.tankWeight,
       tanwa.armButton, tanwa.abortButton);//19
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%0.1f;",
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;%d;%0.1f;",
       payload.isRecording, payload.isRpiOn, payload.vBat);
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
     // Slaves waken up (from top of the rocket):
-    memset(byte_data, 0, 4);
+    memset(byte_data, 0, sizeof(byte_data));
     byte_data[0] |= (pitot.wakenUp     << 0);
     byte_data[0] |= (payload.wakenUp   << 1);
     byte_data[0] |= (black_box.wakeUp   << 2);
     byte_data[0] |= (upust_valve.wakeUp << 3);
     byte_data[0] |= (main_valve.wakeUp  << 4);
 
-    snprintf(data_buffer, sizeof(data_buffer), "%d;", byte_data[0]);
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;", byte_data[0]);
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
-    memset(byte_data, 0, 4);
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;", mcb.connection_status);
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
+
+    memset(byte_data, 0, sizeof(byte_data));
     // Valve states:
     byte_data[0] |= (main_valve.valveState  << 0);
     byte_data[0] |= (upust_valve.valveState << 2);
@@ -191,12 +195,12 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     byte_data[2] |= (tanwa.motorState[3]   << 0);
     byte_data[2] |= (tanwa.motorState[4]   << 3);
 
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;", byte_data[0], byte_data[1], byte_data[2]);
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;%d;%d;", byte_data[0], byte_data[1], byte_data[2]);
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
     //recovery first byte
-    memset(byte_data, 0, 4);
+    memset(byte_data, 0, sizeof(byte_data));
     byte_data[0] |= (recovery.data.isArmed                << 6);
     byte_data[0] |= (recovery.data.firstStageContinouity  << 5);
     byte_data[0] |= (recovery.data.secondStageContinouity << 4);
@@ -213,9 +217,9 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     byte_data[1] |= (recovery.data.secondStageDone      << 0);
     byte_data[0] |= (recovery.data.telemetrumSecondStage  << 0);
 
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;", byte_data[0], byte_data[1]);
-    strcat(buffer, data_buffer);
-    memset(data_buffer, 0 , sizeof(data_buffer));
+    snprintf(temp_buffer, sizeof(temp_buffer), "%d;%d;", byte_data[0], byte_data[1]);
+    strcat(buffer, temp_buffer);
+    memset(temp_buffer, 0 , sizeof(temp_buffer));
 
 }
 
