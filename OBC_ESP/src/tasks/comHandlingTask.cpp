@@ -476,8 +476,8 @@ void rxHandlingTask(void *arg){
         if (xQueueReceive(rc.hardware.espNowQueue, (void*) &esp_device, 25)) {
             esp_now_handle(esp_device);
         }
-    }
 
-    wt.rxHandlingTaskFlag = true;
-    vTaskDelay(50 / portTICK_PERIOD_MS);
+        wt.rxHandlingTaskFlag = true;
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+    }
 }

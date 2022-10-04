@@ -34,7 +34,7 @@ static void check_previous_time(expire_timer_t *timer) {
 void ET_start(expire_timer_t *timer, miliseconds duration) {
     assert(timer != NULL);
     timer->duration_time = duration;
-    timer->start_time = pdTICKS_TO_MS(xTaskGetTickCount());
+    timer->start_time = xTaskGetTickCount() * portTICK_PERIOD_MS;
     timer->end_time = timer->start_time + timer->duration_time;
     overflow_detector(timer);
     check_previous_time(timer);
@@ -42,15 +42,27 @@ void ET_start(expire_timer_t *timer, miliseconds duration) {
 
 bool ET_is_expired(expire_timer_t *timer) {
     assert(timer != NULL);
-    TickType_t start_time_ticks = pdMS_TO_TICKS(timer->start_time);
-    TickType_t duration_ticks = pdMS_TO_TICKS(timer->duration_time);
+    TickType_t start_time_ticks = timer->start_time / portTICK_PERIOD_MS;
+    TickType_t duration_ticks = timer->duration_time / portTICK_PERIOD_MS;
     TickType_t present_ticks = xTaskGetTickCount();
-    TickType_t end_ticks = pdMS_TO_TICKS(timer->end_time);
-    // if (present_ticks - start_time_ticks < duration_ticks) {
-    //     return false;
-    // }
-    if (end_ticks > present_ticks) {
+    TickType_t end_ticks = timer->end_time / portTICK_PERIOD_MS;
+    if (present_ticks > 4000076) {
+        Serial.print("Start time");
+        Serial.println(start_time_ticks);
+        Serial.print("Duration");
+        Serial.println(duration_ticks);
+        Serial.print("Present ticks");
+        Serial.println(present_ticks);
+        Serial.print("Odejmowanie");
+        Serial.println(present_ticks - start_time_ticks);
+    }
+
+    if (present_ticks - start_time_ticks < duration_ticks) {
         return false;
+    }
+
+    if (present_ticks > 4000076) {
+        Serial.println("Timer expired");
     }
 
     return true;
