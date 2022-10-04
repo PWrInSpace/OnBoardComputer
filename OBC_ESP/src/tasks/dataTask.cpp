@@ -218,6 +218,8 @@ static void send_data_via_lora(void) {
   if(xQueueSend(rc.hardware.loraTxQueue, (void*)&glob.lora_buffer, 0) != pdTRUE){
     ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
     rc.sendLog("LoRa quque is full");
+    Serial.println("Reseting device due to timer malfunction");
+    ESP.restart();
   }
 
   ERR_reset(ERROR_RESET_LORA);
@@ -339,6 +341,10 @@ void dataTask(void *arg){
     //LORA
     if(ET_is_expired(&glob.lora_timer) || ulTaskNotifyTake(pdTRUE, 0)){
       ET_start(&glob.lora_timer, OPT_get_lora_current_period());
+      Serial.print("Lora send: ");
+      Serial.print(OPT_get_lora_current_period());
+      Serial.print("\t");
+      Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
       send_data_via_lora();
     }
 
@@ -350,6 +356,10 @@ void dataTask(void *arg){
 
     if(ET_is_expired(&glob.sd_timer)){
       ET_start(&glob.sd_timer, OPT_get_sd_write_current_period());
+      Serial.print("SD write: ");
+      Serial.print(OPT_get_sd_write_current_period());
+      Serial.print("\t");
+      Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
       write_data_to_sd();
     }
 

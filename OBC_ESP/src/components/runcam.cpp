@@ -12,9 +12,9 @@ void RUNCAM_init(uint8_t pin){
 }
 
 void RUNCAM_turn_on(void){
-    digitalWrite(rc.gpio_pin, HIGH);    
+    digitalWrite(rc.gpio_pin, HIGH);
 }
 
 void RUNCAM_turn_off(void){
-    digitalWrite(rc.gpio_pin, LOW);    
+    digitalWrite(rc.gpio_pin, LOW);
 }

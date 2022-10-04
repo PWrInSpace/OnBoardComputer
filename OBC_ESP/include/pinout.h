@@ -13,6 +13,7 @@
 #define LORA_D0 GPIO_NUM_17
 
 #define CAMERA GPIO_NUM_5
+#define BUZZER GPIO_NUM_32
 
 #define I2C1_SDA GPIO_NUM_21
 #define I2C1_SCL GPIO_NUM_22

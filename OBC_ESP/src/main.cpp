@@ -9,17 +9,19 @@
 #include "../include/sensors/imuAPI.h"
 #include "../include/components/runcam.h"
 #include "../include/pysd/gen_pysd.h"
+#include "../include/components/buzzer.h"
 
 WatchdogTimer wt;
 RocketControl rc;
 
 void setup() {
   Serial.begin(115200); //DEBUG
-  Serial.print("Header file size: ");
-  Serial.println(pysd_get_header_size(true));
-  Serial.print("SD frame size: ");
-  pysdmain_DataFrame test;
-  Serial.println(pysd_get_sd_frame_size(test, true));
+
+  BUZZ_init(BUZZER);
+  BUZZ_on();
+  vTaskDelay(pdMS_TO_TICKS(250));
+  BUZZ_off();
+
   SM_init(&rc.hardware.stateTask);
   DF_init();
   OPT_init();
