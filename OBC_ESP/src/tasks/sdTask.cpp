@@ -39,34 +39,45 @@ void sdTask(void *arg){
 
   xSemaphoreGive(rc.hardware.spiMutex);
 
+  uint32_t time = xTaskGetTickCount();
+
   while(1){
 
-    if(xQueueReceive(rc.hardware.sdQueue, (void*)&data, 0) == pdTRUE){
-      xSemaphoreTake(rc.hardware.spiMutex, portMAX_DELAY);
-
-        if(strncmp(data, "LOG", 3) == 0){
-          if(!mySD.write(logPath, data)){
-            ERR_set_sd_error(SD_WRITE_ERROR);
-            sdError = true;
+    if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
+      Serial.println("Semaphore take sd task");
+      if(xQueueReceive(rc.hardware.sdQueue, (void*)&data, 0) == pdTRUE){
+          if(strncmp(data, "LOG", 3) == 0){
+            if(!mySD.write(logPath, data)){
+              ERR_set_sd_error(SD_WRITE_ERROR);
+              sdError = true;
+            }else{
+              ERR_set_sd_error(SD_NO_ERROR);
+              sdError = false;
+            }
           }else{
-            ERR_set_sd_error(SD_NO_ERROR);
-            sdError = false;
+            if(!mySD.write(dataPath, data)){
+              ERR_set_sd_error(SD_WRITE_ERROR);
+              sdError = true;
+            }else{
+              ERR_set_sd_error(SD_NO_ERROR);
+              sdError = false;
+            }
           }
-        }else{
-          if(!mySD.write(dataPath, data)){
-            ERR_set_sd_error(SD_WRITE_ERROR);
-            sdError = true;
-          }else{
-            ERR_set_sd_error(SD_NO_ERROR);
-            sdError = false;
-          }
-        }
 
+      }
       xSemaphoreGive(rc.hardware.spiMutex);
+      Serial.println("Semaphore give sd task");
     }
+
     //FIX temporary
     if(sdError){
       vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+
+
+    if (xTaskGetTickCount() - time > 1000) {
+      time = xTaskGetTickCount();
+      Serial.println("SD task tick");
     }
 
     wt.sdTaskFlag = true;

@@ -422,6 +422,7 @@ static void state_loop(void) {
 void stateTask(void *arg){
   TxDataEspNow txDataEspNow;
   state_machine_init();
+  uint32_t time = xTaskGetTickCount();
 
   while(1){
     if(ulTaskNotifyTake(pdTRUE, 0)){
@@ -433,6 +434,12 @@ void stateTask(void *arg){
       st.loopTimer = xTaskGetTickCount() * portTICK_PERIOD_MS;
       state_loop();
     }
+
+    if (xTaskGetTickCount() - time > 1000) {
+      time = xTaskGetTickCount();
+      Serial.println("State task tick");
+    }
+
     wt.stateTaskFlag = true;
     vTaskDelay(10 / portTICK_PERIOD_MS); //DEBUG TIME
   }

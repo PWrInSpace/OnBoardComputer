@@ -312,7 +312,7 @@ void dataTask(void *arg){
   if (temperature_sensor_init(tempsensor) == false) {
     ESP_LOGW(TAG, "Tempreature sensor init fail");
   }
-
+  uint32_t time = xTaskGetTickCount();
   while(1) {
     if (ET_is_expired(&glob.data_update_timer)) {
       ET_start(&glob.data_update_timer, OPT_get_data_current_period());
@@ -361,6 +361,12 @@ void dataTask(void *arg){
       Serial.print("\t");
       Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
       write_data_to_sd();
+    }
+
+
+    if (xTaskGetTickCount() - time > 1000) {
+      time = xTaskGetTickCount();
+      Serial.println("Data task tick");
     }
 
     vTaskDelay(10/portTICK_PERIOD_MS);

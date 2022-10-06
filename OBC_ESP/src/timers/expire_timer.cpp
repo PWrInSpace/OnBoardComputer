@@ -46,24 +46,24 @@ bool ET_is_expired(expire_timer_t *timer) {
     TickType_t duration_ticks = timer->duration_time / portTICK_PERIOD_MS;
     TickType_t present_ticks = xTaskGetTickCount();
     TickType_t end_ticks = timer->end_time / portTICK_PERIOD_MS;
-    if (present_ticks > 4000076) {
-        Serial.print("Start time");
-        Serial.println(start_time_ticks);
-        Serial.print("Duration");
-        Serial.println(duration_ticks);
-        Serial.print("Present ticks");
-        Serial.println(present_ticks);
-        Serial.print("Odejmowanie");
-        Serial.println(present_ticks - start_time_ticks);
-    }
+    // if (present_ticks > 4000076) {
+    //     Serial.print("Start time");
+    //     Serial.println(start_time_ticks);
+    //     Serial.print("Duration");
+    //     Serial.println(duration_ticks);
+    //     Serial.print("Present ticks");
+    //     Serial.println(present_ticks);
+    //     Serial.print("Odejmowanie");
+    //     Serial.println(present_ticks - start_time_ticks);
+    // }
 
     if (present_ticks - start_time_ticks < duration_ticks) {
         return false;
     }
 
-    if (present_ticks > 4000076) {
-        Serial.println("Timer expired");
-    }
+    // if (present_ticks > 4000076) {
+    //     Serial.println("Timer expired");
+    // }
 
     return true;
 }

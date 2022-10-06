@@ -6,6 +6,7 @@ void flashTask(void *arg){
   DataFrame frame;
   LITTLEFS.begin(true);
   bool wipeFile = true;
+  uint32_t time = xTaskGetTickCount();
 
   while(1){
 
@@ -27,6 +28,12 @@ void flashTask(void *arg){
       }
 
       file.close();
+    }
+
+
+    if (xTaskGetTickCount() - time > 1000) {
+      time = xTaskGetTickCount();
+      Serial.println("Flash task tick");
     }
 
     wt.flashTaskFlag = true;

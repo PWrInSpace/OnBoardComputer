@@ -75,7 +75,7 @@ void setup() {
   //create Tasks
   //pro cpu
   Serial.println("Pro cpu tasks init");
-  xTaskCreatePinnedToCore(loraTask,       "LoRa task",        8192, NULL, 2, &rc.hardware.loraTask,       PRO_CPU_NUM);
+  xTaskCreatePinnedToCore(loraTask,       "LoRa task",        8192, NULL, 5, &rc.hardware.loraTask,       PRO_CPU_NUM);
   xTaskCreatePinnedToCore(rxHandlingTask, "RX handling task", 8192, NULL, 2, &rc.hardware.rxHandlingTask, PRO_CPU_NUM);
 
   //app cpu

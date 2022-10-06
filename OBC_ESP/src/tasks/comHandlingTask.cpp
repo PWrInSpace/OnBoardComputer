@@ -457,6 +457,7 @@ void rxHandlingTask(void *arg){
     char buffer[LORA_FRAME_ARRAY_SIZE];
     EspNowDevice esp_device;
     memset(buffer, 0 ,sizeof(buffer));
+    uint32_t time = xTaskGetTickCount();
 
     while(1){
         if (xQueueReceive(rc.hardware.loraRxQueue, (void*)&buffer, 25) == pdTRUE) {
@@ -475,6 +476,12 @@ void rxHandlingTask(void *arg){
 
         if (xQueueReceive(rc.hardware.espNowQueue, (void*) &esp_device, 25)) {
             esp_now_handle(esp_device);
+        }
+
+
+        if (xTaskGetTickCount() - time > 1000) {
+            time = xTaskGetTickCount();
+            Serial.println("Com handling task tick");
         }
 
         wt.rxHandlingTaskFlag = true;
