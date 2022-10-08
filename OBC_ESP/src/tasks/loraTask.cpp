@@ -79,7 +79,7 @@ void loraTask(void *arg){
 
   while(1){
     if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
-      Serial.println("Semaphore take lora task");
+      // Serial.println("Semaphore take lora task");
       if (LoRa.parsePacket() != 0); {
         Serial.println("Lora parse packet");
         if (LoRa.available()) {
@@ -89,9 +89,34 @@ void loraTask(void *arg){
         Serial.println("Lora clear buffer");
         memset(task.loraRx, 0, sizeof(task.loraRx));
         xSemaphoreGive(rc.hardware.spiMutex);
-        Serial.println("Semaphore give lora task");
+        // Serial.println("Semaphore give lora task");
       }
     }
+
+    // if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
+    //   Serial.println("Semaphore take lora task");
+    //   if (LoRa.parsePacket() != 0); {
+    //     Serial.println("Lora parse packet");
+    //     if (LoRa.available()) {
+    //       Serial.println("Lora read message");
+    //       String rx = LoRa.readString();
+    //       size_t rx_size = rx.length();
+
+    //       if (rx_size < (LORA_FRAME_ARRAY_SIZE / 2 - 1)) {
+    //         memcpy(task.loraRx, rx.c_str(), rx_size);
+    //         Serial.print("C_str: ");
+    //         Serial.println(task.loraRx);
+    //         xQueueSend(rc.hardware.loraRxQueue, (void*)&task.loraRx, 0);
+    //       }
+
+    //     }
+    //     Serial.println("Lora clear buffer");
+    //     memset(task.loraRx, 0, sizeof(task.loraRx));
+    //     xSemaphoreGive(rc.hardware.spiMutex);
+    //     Serial.println("Semaphore give lora task");
+    //   }
+    // }
+    
 
     // if (task.data_to_send == true) {
     //   if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {

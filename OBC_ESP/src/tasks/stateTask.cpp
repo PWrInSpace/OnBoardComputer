@@ -387,7 +387,7 @@ static void state_init(void){
   OPT_set_sd_write_current_period(sdPeriod[SM_getCurrentState()]);
   OPT_set_lora_current_period(loraPeriod[SM_getCurrentState()]);
   OPT_set_flash_write_current_period(flashPeriod[SM_getCurrentState()]);
-          
+
   xTaskNotifyGive(rc.hardware.dataTask); //notify dataTask that state change occure to create new lora frame
   st.stateChangeTimeMark = xTaskGetTickCount() * portTICK_PERIOD_MS;
   //portEXIT_CRITICAL(&rc.stateLock);

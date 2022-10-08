@@ -36,6 +36,7 @@
 //SENSORS ADRESS
 #define PRESSURE_SENSOR_ADRESS  0x5C
 #define GPS_ADRESS              0x42
+#define MCP_ADDRESS             0x18
 
 
 //I2C RECOVERY COMMANDS

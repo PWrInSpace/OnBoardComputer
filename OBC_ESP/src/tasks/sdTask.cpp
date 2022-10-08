@@ -17,7 +17,7 @@ void sdTask(void *arg){
   vTaskDelay(50 / portTICK_RATE_MS);
 
   xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
-
+  Serial.println("Semaphore take sd task");
   while(!mySD.init()){
     ERR_set_sd_error(SD_INIT_ERROR);
     Serial.println("SD INIT ERROR!"); //DEBUG
@@ -28,6 +28,7 @@ void sdTask(void *arg){
 
     xSemaphoreTake(rc.hardware.spiMutex, pdTRUE);
   }
+  Serial.println("SD card initialized");
 
   while(mySD.fileExists(dataPath + String(sd_i) + ".txt")){
     sd_i++;
@@ -44,7 +45,7 @@ void sdTask(void *arg){
   while(1){
 
     if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
-      Serial.println("Semaphore take sd task");
+      // Serial.println("Semaphore take sd task");
       if(xQueueReceive(rc.hardware.sdQueue, (void*)&data, 0) == pdTRUE){
           if(strncmp(data, "LOG", 3) == 0){
             if(!mySD.write(logPath, data)){
@@ -66,7 +67,7 @@ void sdTask(void *arg){
 
       }
       xSemaphoreGive(rc.hardware.spiMutex);
-      Serial.println("Semaphore give sd task");
+      // Serial.println("Semaphore give sd task");
     }
 
     //FIX temporary

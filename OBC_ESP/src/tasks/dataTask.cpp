@@ -124,11 +124,15 @@ static bool pressure_sensor_init(LPS25HB &sensor) {
 static void pressure_sensor_read(LPS25HB &sensor) {
   glob.mcb_data.pressure = sensor.getPressure_hPa();
   glob.mcb_data.temp_lp25 = sensor.getTemperature_degC();
+  Serial.print("LPS25HB pressure: ");
+  Serial.println(glob.mcb_data.pressure);
+  Serial.print("LPS25HB temperature: ");
+  Serial.println(glob.mcb_data.temp_lp25);
 }
 
 
 static bool temperature_sensor_init(Adafruit_MCP9808 &sensor) {
-  if (sensor.begin(0x18, &rc.hardware.i2c2) == false) {
+  if (sensor.begin(MCP_ADDRESS, &rc.hardware.i2c2) == false) {
     rc.sendLog("TEMP SENSOR INIT ERROR");
     ERR_set_sensors_error(TEMP_SENSOR_INIT_ERROR);
     return false;
@@ -306,7 +310,7 @@ void dataTask(void *arg){
   // }
 
   // if (pressure_sensor_init(pressureSensor) == false) {
-  //   ESP_LOGW(TAG, "Pressure sensor init fail");
+  //   Serial.println("Pressure sensor init fail !!!!!!");
   // }
 
   if (temperature_sensor_init(tempsensor) == false) {
