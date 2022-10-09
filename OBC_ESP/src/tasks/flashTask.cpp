@@ -31,10 +31,10 @@ void flashTask(void *arg){
     }
 
 
-    if (xTaskGetTickCount() - time > 1000) {
-      time = xTaskGetTickCount();
-      Serial.println("Flash task tick");
-    }
+    // if (xTaskGetTickCount() - time > 1000) {
+    //   time = xTaskGetTickCount();
+    //   Serial.println("Flash task tick");
+    // }
 
     wt.flashTaskFlag = true;
     vTaskDelay(10 / portTICK_PERIOD_MS);

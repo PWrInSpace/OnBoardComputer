@@ -6,7 +6,7 @@
 #include <stdint.h>
 // #include "../include/structs/stateMachine.h"
 
-#define SD_FRAME_ARRAY_SIZE     512
+#define SD_FRAME_ARRAY_SIZE     1024
 #define LORA_FRAME_ARRAY_SIZE   256
 #define LORA_TX_DATA_PREFIX     "R4D;"
 #define LORA_TX_OPTIONS_PREFIX  "R4C;"

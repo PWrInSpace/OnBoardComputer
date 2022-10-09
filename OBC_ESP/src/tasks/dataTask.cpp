@@ -293,6 +293,10 @@ static void update_disconnect_remaining_time(uint32_t time) {
   glob.mcb_data.disconnect_remaining_time = time;
 }
 
+static void update_connection_status(uint8_t connection_status) {
+  glob.mcb_data.connection_status = connection_status;
+}
+
 void dataTask(void *arg){
   SFE_UBLOX_GNSS gps;
   ImuAPI imu(&rc.hardware.i2c2);
@@ -305,9 +309,9 @@ void dataTask(void *arg){
     block_task_and_print("GPS ERROR");
   }
 
-  // if (imu_init(imu) == false) {
-  //   ESP_LOGW(TAG, "IMU init fail");
-  // }
+  if (imu_init(imu) == false) {
+    ESP_LOGW(TAG, "IMU init fail");
+  }
 
   // if (pressure_sensor_init(pressureSensor) == false) {
   //   Serial.println("Pressure sensor init fail !!!!!!");
@@ -324,31 +328,32 @@ void dataTask(void *arg){
       get_current_state();
       read_battery_voltage();
       gps_read_data(gps);
-      // imu_read_data(imu);
+      imu_read_data(imu);
       // pressure_sensor_read(pressureSensor);
       temperature_sensor_read(tempsensor);
-      // read_recovery_data();
+      read_recovery_data();
       update_current_state(SM_getCurrentState());
       update_mcb_uptime(millis());
       update_mcb_mission_timer(rc.missionTimer.getTime());
       update_disconnect_remaining_time(rc.getDisconnectRemainingTime());
+      update_connection_status(rc.connectedStatus);
 
       //calculations
       check_first_stage_recovery_deploy();
       check_second_stage_recovery_deploy();
       apogee_detection();
 
-      DF_set_mcb_data(&glob.mcb_data);
-      DF_set_recovery_data((RecoveryData*) &glob.recovery.data);
+      DF_set_mcb_data(glob.mcb_data);
+      DF_set_recovery_data(glob.recovery);
     }
 
     //LORA
     if(ET_is_expired(&glob.lora_timer) || ulTaskNotifyTake(pdTRUE, 0)){
       ET_start(&glob.lora_timer, OPT_get_lora_current_period());
-      Serial.print("Lora send: ");
-      Serial.print(OPT_get_lora_current_period());
-      Serial.print("\t");
-      Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
+      // Serial.print("Lora send: ");
+      // Serial.print(OPT_get_lora_current_period());
+      // Serial.print("\t");
+      // Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
       send_data_via_lora();
     }
 
@@ -368,10 +373,14 @@ void dataTask(void *arg){
     }
 
 
-    if (xTaskGetTickCount() - time > 1000) {
-      time = xTaskGetTickCount();
-      Serial.println("Data task tick");
-    }
+    // if (xTaskGetTickCount() - time > 1000) {
+    //   // TxDataEspNow txDataEspNow = {1, 1};
+    //   // if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+    //   //   Serial.println("Unable to send data to TanWa");
+    //   // }
+    //   time = xTaskGetTickCount();
+    //   Serial.println("Data task tick");
+    // }
 
     vTaskDelay(10/portTICK_PERIOD_MS);
   }

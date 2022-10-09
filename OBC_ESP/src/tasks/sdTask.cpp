@@ -76,10 +76,10 @@ void sdTask(void *arg){
     }
 
 
-    if (xTaskGetTickCount() - time > 1000) {
-      time = xTaskGetTickCount();
-      Serial.println("SD task tick");
-    }
+    // if (xTaskGetTickCount() - time > 1000) {
+    //   time = xTaskGetTickCount();
+    //   Serial.println("SD task tick");
+    // }
 
     wt.sdTaskFlag = true;
     vTaskDelay(25 / portTICK_PERIOD_MS);

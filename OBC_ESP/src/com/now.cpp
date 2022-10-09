@@ -43,43 +43,56 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
 
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
 
-  uint8_t adressToQueue = 0;
+  EspNowDevice adressToQueue;
 
   //Serial.println("Odpiur");
 
   if(adressCompare(mac, adressPitot)) {
-
-    memcpy(&rc.dataFrame.pitot, (PitotData*) incomingData, sizeof(rc.dataFrame.pitot));
+    PitotData data;
+    memcpy(&data, (PitotData*) incomingData, sizeof(data));
+    DF_set_pitot_data(data);
     adressToQueue = PITOT;
   }
 
   else if(adressCompare(mac, adressTanWa)) {
-
-    memcpy(&rc.dataFrame.tanWa, (TanWaData*) incomingData, sizeof(rc.dataFrame.tanWa));
+    TanWaData data;
+    memcpy(&data, (TanWaData*) incomingData, sizeof(data));
+    DF_set_tanwa_data(data);
     adressToQueue = TANWA;
   }
 
   else if(adressCompare(mac, adressMValve)) {
-    //Serial.println("MainValve Data");
-    memcpy(&rc.dataFrame.mainValve, (MainValveData*) incomingData, sizeof(rc.dataFrame.mainValve));
+    Serial.println("MainValve Data");
+    MainValveData data;
+    memcpy(&data, (MainValveData*) incomingData, sizeof(data));
+    DF_set_main_valve_data(data);
     adressToQueue = MAIN_VALVE;
   }
 
   else if(adressCompare(mac, adressUpust)) {
-
-    memcpy(&rc.dataFrame.upustValve, (UpustValveData*) incomingData, sizeof(rc.dataFrame.upustValve));
+    Serial.println("Upust Data");
+    UpustValveData data;
+    memcpy(&data, (UpustValveData*) incomingData, sizeof(data));
+    DF_set_upust_valve_data(data);
     adressToQueue = UPUST_VALVE;
   }
 
   else if(adressCompare(mac, adressBlackBox)) {
-
-    memcpy(&rc.dataFrame.blackBox, (SlaveData*) incomingData, sizeof(rc.dataFrame.blackBox));
+    Serial.println("Blackboc Data");
+    SlaveData data;
+    memcpy(&data, (SlaveData*) incomingData, sizeof(data));
+    DF_set_blackbox_data(data);
     adressToQueue = BLACK_BOX;
   }
 
   else if(adressCompare(mac, adressPayLoad)) {
-    memcpy(&rc.dataFrame.payload, (PayloadData*) incomingData, sizeof(rc.dataFrame.payload));
+    Serial.println("Payload Data");
+    PayloadData data;
+    memcpy(&data, (PayloadData*) incomingData, sizeof(data));
+    DF_set_payload_data(data);
     adressToQueue = PAYLOAD;
+  } else {
+    return;
   }
 
   xQueueSend(rc.hardware.espNowQueue, &adressToQueue, portMAX_DELAY);

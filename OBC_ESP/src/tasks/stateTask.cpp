@@ -435,10 +435,10 @@ void stateTask(void *arg){
       state_loop();
     }
 
-    if (xTaskGetTickCount() - time > 1000) {
-      time = xTaskGetTickCount();
-      Serial.println("State task tick");
-    }
+    // if (xTaskGetTickCount() - time > 1000) {
+    //   time = xTaskGetTickCount();
+    //   Serial.println("State task tick");
+    // }
 
     wt.stateTaskFlag = true;
     vTaskDelay(10 / portTICK_PERIOD_MS); //DEBUG TIME

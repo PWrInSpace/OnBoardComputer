@@ -247,6 +247,10 @@ static void R4O_handle_recovery(char *data) {
 static void R4O_handle_tanwa(char *data) {
     TxDataEspNow txDataEspNow;
     sscanf(data, "R4O;TANWA;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
+    Serial.print("Tawa send:\t");
+    Serial.print(txDataEspNow.command);
+    Serial.print("\t");
+    Serial.println(txDataEspNow.commandTime);
     if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     }
@@ -296,6 +300,7 @@ static void handle_R4O_message(char *data){
     }else{
         R4O_handle_invalid(data);
     }
+    
 }
 
 static void handle_invalid_lora_message(char *data) {
@@ -304,24 +309,28 @@ static void handle_invalid_lora_message(char *data) {
     ERR_set_last_exception(INVALID_PREFIX_EXCEPTION);
 }
 
-static void esp_now_check_correctness(void) {
-    // uint16_t sleepTime;
-    // uint8_t currentState = SM_getCurrentState();
+static void esp_now_set_connection_flag(EspNowDevice dev_number) {
+    rc.isConnectedFlags[dev_number] = true;
+}
 
-    // if(currentState >= PERIOD_ARRAY_SIZE){
-    //     rc.sendLog("Out of period array size :C");
-    //     rxEspNumber = 0xff;
-    // }
+static bool esp_now_check_correctness(EspNowDevice dev_number) {
+    uint16_t sleepTime;
+    uint8_t currentState = SM_getCurrentState();
 
-    // if(rxEspNumber < CONNECTION_CHECK_DEVICE_NUMBER){
-    //     //Serial.print("Ustawiam: ");
-    //     //Serial.println(rxEspNumber);
-    //     rc.isConnectedFlags[rxEspNumber] = true;
-    // }
+    if (currentState >= PERIOD_ARRAY_SIZE) {
+        rc.sendLog("Out of period array size :C");
+        return false;
+    }
+
+    if (dev_number >= CONNECTION_CHECK_DEVICE_NUMBER || dev_number < 0) {
+        return false;
+    }
+
+    return true;
 }
 
 static void esp_now_tanwa(void) {
-    Serial.println("TanWa notify"); //DEBUG
+    // Serial.println("TanWa notify"); //DEBUG
 }
 
 static void esp_now_pitot(void) {
@@ -416,6 +425,13 @@ static void esp_now_camera_recovery(void) {
 }
 
 static void esp_now_handle(EspNowDevice esp_device) {
+    if (esp_now_check_correctness(esp_device) == false) {
+        Serial.println("Esp now check fail");
+        return;
+    }
+
+    esp_now_set_connection_flag(esp_device);
+
     switch(esp_device){
         case TANWA:
             esp_now_tanwa();
@@ -479,10 +495,10 @@ void rxHandlingTask(void *arg){
         }
 
 
-        if (xTaskGetTickCount() - time > 1000) {
-            time = xTaskGetTickCount();
-            Serial.println("Com handling task tick");
-        }
+        // if (xTaskGetTickCount() - time > 1000) {
+        //     time = xTaskGetTickCount();
+        //     Serial.println("Com handling task tick");
+        // }
 
         wt.rxHandlingTaskFlag = true;
         vTaskDelay(50 / portTICK_PERIOD_MS);

@@ -81,12 +81,12 @@ void loraTask(void *arg){
     if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
       // Serial.println("Semaphore take lora task");
       if (LoRa.parsePacket() != 0); {
-        Serial.println("Lora parse packet");
+        // Serial.println("Lora parse packet");
         if (LoRa.available()) {
           Serial.println("Lora read message");
           lora_read_message_and_put_on_queue();
         }
-        Serial.println("Lora clear buffer");
+        // Serial.println("Lora clear buffer");
         memset(task.loraRx, 0, sizeof(task.loraRx));
         xSemaphoreGive(rc.hardware.spiMutex);
         // Serial.println("Semaphore give lora task");
@@ -129,20 +129,20 @@ void loraTask(void *arg){
     // }
 
     if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
-      Serial.println("Semaphore take lora send");
+      // Serial.println("Semaphore take lora send");
       if(xQueueReceive(rc.hardware.loraTxQueue, (void*)&task.loraTx, 0) == pdTRUE){
         Serial.println("Lora write");
         lora_write_message((uint8_t*) task.loraTx, sizeof(task.loraTx));
         memset(task.loraTx, 0, sizeof(task.loraTx));
       }
-      Serial.println("Semaphore givelora send");
+      // Serial.println("Semaphore givelora send");
       xSemaphoreGive(rc.hardware.spiMutex);
     }
 
-    if (xTaskGetTickCount() - time > 1000) {
-      time = xTaskGetTickCount();
-      Serial.println("lora task tick");
-    }
+    // if (xTaskGetTickCount() - time > 1000) {
+    //   time = xTaskGetTickCount();
+    //   Serial.println("lora task tick");
+    // }
 
     wt.loraTaskFlag = true;
     vTaskDelay(50 / portTICK_PERIOD_MS);

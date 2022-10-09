@@ -61,59 +61,51 @@ void DF_fill_pysd_struct(pysdmain_DataFrame* frame) {
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_mcb_data(MCB *mcb) {
-    assert(mcb != NULL);
+void DF_set_mcb_data(MCB mcb) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.mcb, mcb, sizeof(*mcb));
+    memcpy(&data.mcb, &mcb, sizeof(mcb));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_pitot_data(PitotData *pitot) {
-    assert(pitot != NULL);
+void DF_set_pitot_data(PitotData pitot) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.pitot, pitot, sizeof(*pitot));
+    memcpy(&data.pitot, &pitot, sizeof(pitot));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_main_valve_data(MainValveData *main_valve) {
-    assert(main_valve != NULL);
+void DF_set_main_valve_data(MainValveData main_valve) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.main_valve, main_valve, sizeof(*main_valve));
+    memcpy(&data.main_valve, &main_valve, sizeof(main_valve));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_tanwa_data(TanWaData *tanwa) {
-    assert(tanwa != NULL);
+void DF_set_tanwa_data(TanWaData tanwa) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.tanwa, tanwa, sizeof(*tanwa));
+    memcpy(&data.tanwa, &tanwa, sizeof(tanwa));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_upust_valve_data(UpustValveData *upust) {
-    assert(upust != NULL);
+void DF_set_upust_valve_data(UpustValveData upust) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.upust_valve, upust, sizeof(*upust));
+    memcpy(&data.upust_valve, &upust, sizeof(upust));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_recovery_data(RecoveryData *recovery) {
-    assert(recovery != NULL);
+void DF_set_recovery_data(RecoveryData recovery) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.recovery, recovery, sizeof(*recovery));
+    memcpy(&data.recovery, &recovery, sizeof(recovery));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_blackbox_data(SlaveData *black_box) {
-    assert(black_box != NULL);
+void DF_set_blackbox_data(SlaveData black_box) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.black_box, black_box, sizeof(*black_box));
+    memcpy(&data.black_box, &black_box, sizeof(black_box));
     xSemaphoreGive(data.mutex);
 }
 
-void DF_set_payload_data(PayloadData *payload) {
-    assert(payload != NULL);
+void DF_set_payload_data(PayloadData payload) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
-    memcpy(&data.payload, payload, sizeof(*payload));
+    memcpy(&data.payload, &payload, sizeof(payload));
     xSemaphoreGive(data.mutex);
 }
 
@@ -133,10 +125,10 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     MCB             mcb = data.mcb;
     xSemaphoreGive(data.mutex);
     //MCB
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
-        mcb.state, mcb.uptime / 1000, mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
+    snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
+        mcb.state, mcb.mission_timer / 1000, mcb.disconnect_remaining_time / 1000,
         mcb.batteryVoltage, mcb.gps.latitude, mcb.gps.longitude, mcb.gps.satellites,
-        mcb.gps.is_time_valid, (int)mcb.gps.gps_altitude, mcb.temp_mcp); //11
+        mcb.gps.is_time_valid, (int)mcb.imu.altitude, mcb.temp_mcp); //11
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
@@ -176,6 +168,11 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     byte_data[0] |= (main_valve.wakeUp  << 4);
 
     snprintf(data_buffer, sizeof(data_buffer), "%d;", byte_data[0]);
+    strcat(buffer, data_buffer);
+    memset(data_buffer, 0 , sizeof(data_buffer));
+
+
+    snprintf(data_buffer, sizeof(data_buffer), "%d;", mcb.connection_status);
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
