@@ -21,6 +21,10 @@ void setup() {
   BUZZ_on();
   vTaskDelay(pdMS_TO_TICKS(250));
   BUZZ_off();
+  vTaskDelay(pdMS_TO_TICKS(100));
+  BUZZ_on();
+  vTaskDelay(pdMS_TO_TICKS(400));
+  BUZZ_off();
 
   SM_init(&rc.hardware.stateTask);
   DF_init();
@@ -38,6 +42,7 @@ void setup() {
   rc.missionTimer.setDisableValue(OPT_get_countdown_begin_time());
   Serial.println("Run cam init");
   RUNCAM_init(CAMERA);
+  RUNCAM_turn_on();
 
   //set esp now
   Serial.println("Now init");

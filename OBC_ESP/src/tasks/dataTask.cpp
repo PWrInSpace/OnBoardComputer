@@ -223,7 +223,7 @@ static void send_data_via_lora(void) {
     ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
     rc.sendLog("LoRa quque is full");
     Serial.println("Reseting device due to timer malfunction");
-    ESP.restart();
+    // ESP.restart();
   }
 
   ERR_reset(ERROR_RESET_LORA);
@@ -320,6 +320,9 @@ void dataTask(void *arg){
   if (temperature_sensor_init(tempsensor) == false) {
     ESP_LOGW(TAG, "Tempreature sensor init fail");
   }
+
+  vTaskDelay(2000 / portTICK_PERIOD_MS);
+
   uint32_t time = xTaskGetTickCount();
   while(1) {
     if (ET_is_expired(&glob.data_update_timer)) {
@@ -331,7 +334,7 @@ void dataTask(void *arg){
       imu_read_data(imu);
       // pressure_sensor_read(pressureSensor);
       temperature_sensor_read(tempsensor);
-      read_recovery_data();
+      // read_recovery_data();  //TODO: DUPA
       update_current_state(SM_getCurrentState());
       update_mcb_uptime(millis());
       update_mcb_mission_timer(rc.missionTimer.getTime());

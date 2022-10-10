@@ -10,11 +10,9 @@ typedef struct {
     float statPress;
     float dynamicPress;
     float temp;
-    uint16_t altitude;
-    uint8_t speed;
-    bool apogee;
-    bool isRecording : 1; // if rpi says it is
-    bool data_collected : 1; // if data is collected
+    float altitude;
+    float speed;
+    bool estimated_apogee;
 } pysd_PitotData;
 
 typedef pysd_PitotData PitotData;
@@ -22,7 +20,8 @@ typedef pysd_PitotData PitotData;
 typedef struct {
     bool wakeUp : 1;
     uint8_t valveState : 2;
-    float thermocouple[2];
+    float thermocoupleOne;
+    float thermocoupleTwo;
     float batteryVoltage;
 } pysd_MainValveData;
 
@@ -30,17 +29,25 @@ typedef pysd_MainValveData MainValveData;
 
 typedef struct {
     uint8_t tanWaState;
+    uint16_t ground_pressure;
     bool tankHeating : 1;
     bool abortButton : 1;
     bool armButton : 1;
-    bool igniterContinouity[2];
+    bool igniterContinouityOne;
+    bool igniterContinouityTwo;
     float vbat;
-    uint8_t motorState[5];
+    uint8_t motor_one;
+    uint8_t motor_two;
+    uint8_t motor_three;
+    uint8_t motor_four;
+    uint8_t motor_five;
     float rocketWeight;
     float tankWeight;
     uint32_t rocketWeightRaw;
     uint32_t tankWeightRaw;
-    float thermocouple[3];
+    float thermocouple_one;
+    float thermocouple_two;
+    float thermocouple_three;
 } pysd_TanWaData;
 
 typedef pysd_TanWaData TanWaData;

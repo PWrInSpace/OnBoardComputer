@@ -48,6 +48,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len) {
   //Serial.println("Odpiur");
 
   if(adressCompare(mac, adressPitot)) {
+    Serial.println("Pitot data");
     PitotData data;
     memcpy(&data, (PitotData*) incomingData, sizeof(data));
     DF_set_pitot_data(data);

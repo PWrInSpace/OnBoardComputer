@@ -70,6 +70,12 @@ void DF_set_mcb_data(MCB mcb) {
 void DF_set_pitot_data(PitotData pitot) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
     memcpy(&data.pitot, &pitot, sizeof(pitot));
+    Serial.print("Pitot data: ");
+    Serial.print(pitot.vBat);
+    Serial.print("\t");
+    Serial.print(pitot.altitude);
+    Serial.print("\t");
+    Serial.println(pitot.speed);
     xSemaphoreGive(data.mutex);
 }
 
@@ -133,7 +139,7 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     memset(data_buffer, 0 , sizeof(data_buffer));
 
     snprintf(data_buffer, sizeof(data_buffer), "%0.1f;%d;%d;",
-        pitot.vBat, pitot.altitude, (int)pitot.speed); //8
+        pitot.vBat, (int)pitot.altitude, (int)pitot.speed); //8
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
@@ -147,9 +153,9 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
 
-    snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
-      tanwa.tanWaState, tanwa.vbat, tanwa.igniterContinouity[0],
-      tanwa.igniterContinouity[1], tanwa.rocketWeight, tanwa.tankWeight,
+    snprintf(data_buffer, sizeof(data_buffer), "%d;%0.1f;%d;%d;%d;%0.2f;%0.2f;%d;%d;",
+      tanwa.tanWaState, tanwa.vbat, tanwa.ground_pressure, tanwa.igniterContinouityOne,
+      tanwa.igniterContinouityTwo, tanwa.rocketWeight, tanwa.tankWeight,
       tanwa.armButton, tanwa.abortButton);//19
     strcat(buffer, data_buffer);
     memset(data_buffer, 0 , sizeof(data_buffer));
@@ -180,13 +186,13 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     // Valve states:
     byte_data[0] |= (main_valve.valveState  << 0);
     byte_data[0] |= (upust_valve.valveState << 2);
-    byte_data[0] |= (tanwa.motorState[0]   << 4);
+    byte_data[0] |= (tanwa.motor_one   << 4);
 
-    byte_data[1] |= (tanwa.motorState[1]   << 0);
-    byte_data[1] |= (tanwa.motorState[2]   << 3);
+    byte_data[1] |= (tanwa.motor_two   << 0);
+    byte_data[1] |= (tanwa.motor_three << 3);
 
-    byte_data[2] |= (tanwa.motorState[3]   << 0);
-    byte_data[2] |= (tanwa.motorState[4]   << 3);
+    byte_data[2] |= (tanwa.motor_four   << 0);
+    byte_data[2] |= (tanwa.motor_five   << 3);
 
     snprintf(data_buffer, sizeof(data_buffer), "%d;%d;%d;", byte_data[0], byte_data[1], byte_data[2]);
     strcat(buffer, data_buffer);
@@ -282,13 +288,13 @@ bool DF_create_pitot_frame(char *buffer, size_t size) {
         return false;
     }
 
-    size_t wrote_data_size;
-    wrote_data_size = snprintf(buffer, size, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;%d;%d;",
-        data.pitot.wakenUp, data.pitot.vBat, data.pitot.statPress, 
-        data.pitot.dynamicPress, data.pitot.temp, data.pitot.altitude,
-        data.pitot.speed, data.pitot.apogee, data.pitot.isRecording, 
-        data.pitot.data_collected);//8
-    assert(wrote_data_size < size);
+    // size_t wrote_data_size;
+    // wrote_data_size = snprintf(buffer, size, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;%d;%d;",
+    //     data.pitot.wakenUp, data.pitot.vBat, data.pitot.statPress, 
+    //     data.pitot.dynamicPress, data.pitot.temp, data.pitot.altitude,
+    //     data.pitot.speed, data.pitot.apogee, data.pitot., 
+    //     data.pitot.data_collected);//8
+    // assert(wrote_data_size < size);
     return true;
 }
 
@@ -302,7 +308,7 @@ bool DF_create_main_valve_frame(char *buffer, size_t size) {
     size_t wrote_data_size;
     wrote_data_size = snprintf(buffer, size, "%d;%0.2f;%d;%0.2f;%0.2f;",
         data.main_valve.wakeUp, data.main_valve.batteryVoltage, data.main_valve.valveState,
-        data.main_valve.thermocouple[0], data.main_valve.thermocouple[1]); //5
+        data.main_valve.thermocoupleOne, data.main_valve.thermocoupleTwo); //5
     assert(wrote_data_size < size);
     return true;
 }
@@ -316,12 +322,12 @@ bool DF_create_tanwa_frame(char *buffer, size_t size) {
 
     size_t wrote_data_size;
     snprintf(buffer, size, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
-        data.tanwa.tanWaState, data.tanwa.vbat, data.tanwa.igniterContinouity[0],
-        data.tanwa.igniterContinouity[1], data.tanwa.motorState[0], data.tanwa.motorState[1],
-        data.tanwa.motorState[2], data.tanwa.motorState[3], data.tanwa.motorState[4],
+        data.tanwa.tanWaState, data.tanwa.vbat, data.tanwa.igniterContinouityOne,
+        data.tanwa.igniterContinouityTwo, data.tanwa.motor_one, data.tanwa.motor_two,
+        data.tanwa.motor_three, data.tanwa.motor_four, data.tanwa.motor_five,
         data.tanwa.rocketWeight, data.tanwa.tankWeight, data.tanwa.rocketWeightRaw, 
-        data.tanwa.tankWeightRaw, data.tanwa.thermocouple[0], data.tanwa.thermocouple[1], 
-        data.tanwa.thermocouple[2], data.tanwa.armButton, 
+        data.tanwa.tankWeightRaw, data.tanwa.thermocouple_one, data.tanwa.thermocouple_two, 
+        data.tanwa.thermocouple_three, data.tanwa.armButton, 
         data.tanwa.abortButton, data.tanwa.tankHeating); //19
     assert(wrote_data_size < size);
     return true;

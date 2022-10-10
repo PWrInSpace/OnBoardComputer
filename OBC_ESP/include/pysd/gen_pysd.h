@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "pysd_data_structs.h"
+#include "/home/kuba/git/OnBoardComputer/OBC_ESP/lib/data_struct/pysd_data_structs.h"
 
 #ifdef __cplusplus
 extern "C" {
