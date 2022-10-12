@@ -42,7 +42,6 @@ void setup() {
   rc.missionTimer.setDisableValue(OPT_get_countdown_begin_time());
   Serial.println("Run cam init");
   RUNCAM_init(CAMERA);
-  RUNCAM_turn_on();
 
   //set esp now
   Serial.println("Now init");

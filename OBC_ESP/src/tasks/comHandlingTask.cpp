@@ -205,6 +205,8 @@ static void R4O_handle_options(char * data){
 static void R4O_handle_main_valve(char *data) {
     assert(data != NULL);
     TxDataEspNow txDataEspNow;
+    Serial.print("ESP main val: ");
+    Serial.println(txDataEspNow.command);
     sscanf(data, "R4O;MVAL;%d;%d", &txDataEspNow.command, &txDataEspNow.commandTime);
     if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
@@ -213,6 +215,8 @@ static void R4O_handle_main_valve(char *data) {
 
 static void R4O_handel_upust_valve(char *data) {
     TxDataEspNow txDataEspNow;
+    Serial.print("ESP upust val: ");
+    Serial.println(txDataEspNow.command);
     sscanf(data, "R4O;UVAL;%d;%d", &txDataEspNow.command, &txDataEspNow.commandTime);
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
         ERR_set_esp_now_error(ESPNOW_SEND_ERROR);

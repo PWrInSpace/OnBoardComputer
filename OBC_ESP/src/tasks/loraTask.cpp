@@ -80,15 +80,8 @@ void loraTask(void *arg){
 
   while(1){
     if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
-      int lora_size = LoRa.parsePacket();
-      Serial.print("Parse packet size: ");
-      Serial.println(lora_size);
-      if (lora_size != 0) {
-        int lora_available = LoRa.available();
-        Serial.print("Lora available: ");
-        Serial.println(lora_available);
-        if (lora_available) {
-          Serial.println("Lora read message");
+      if (LoRa.parsePacket() != 0) {
+        if (LoRa.available()) {
           lora_read_message_and_put_on_queue();
         }
         memset(task.loraRx, 0, sizeof(task.loraRx));
@@ -101,7 +94,6 @@ void loraTask(void *arg){
     if (xSemaphoreTake(rc.hardware.spiMutex, 50) == pdTRUE) {
       // Serial.println("Semaphore take lora send");
       if(xQueueReceive(rc.hardware.loraTxQueue, (void*)&task.loraTx, 0) == pdTRUE){
-        Serial.println("Lora write");
         lora_write_message((uint8_t*) task.loraTx, sizeof(task.loraTx));
         memset(task.loraTx, 0, sizeof(task.loraTx));
       }

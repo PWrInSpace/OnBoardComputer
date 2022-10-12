@@ -334,7 +334,7 @@ void dataTask(void *arg){
       imu_read_data(imu);
       // pressure_sensor_read(pressureSensor);
       temperature_sensor_read(tempsensor);
-      // read_recovery_data();  //TODO: DUPA
+      read_recovery_data();  //TODO: DUPA
       update_current_state(SM_getCurrentState());
       update_mcb_uptime(millis());
       update_mcb_mission_timer(rc.missionTimer.getTime());

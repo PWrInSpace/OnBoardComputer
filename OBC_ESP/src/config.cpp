@@ -77,13 +77,13 @@ static struct {
 }test;
 
 //ESP NOW PERIODS
-uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {  
+uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
-  500, //ARM
-  500, //FILLING
-  500,
-  500, //RTL
+  1500, //ARM
+  1000, //FILLING
+  1500,
+  1500, //RTL
   250, //COUNTDOWN
   250, //flight
   500, //first_stage_recov
@@ -98,8 +98,8 @@ uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
   ESP_NOW_SLEEP_TIME, 
-  ESP_NOW_SLEEP_TIME, //FILLING
-  ESP_NOW_SLEEP_TIME, //RTL
+  1500, //FILLING
+  1500, //RTL
   500, //COUNTDOWN
   500, //flight
   500, //first_stage_recov
@@ -115,8 +115,8 @@ uint16_t espNowDefaultPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, 
   ESP_NOW_SLEEP_TIME, //ARM
-  ESP_NOW_SLEEP_TIME, //FILLING
-  ESP_NOW_SLEEP_TIME, //RTL
+  1500, //FILLING
+  1500, //RTL
   500, //COUNTDOWN
   500, //flight
   500, //first_stage_recov
@@ -131,12 +131,12 @@ uint16_t payloadPeriod[PERIOD_ARRAY_SIZE]{
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
   ESP_NOW_SLEEP_TIME, //FILLING
-  ESP_NOW_SLEEP_TIME, //FILLING
-  2000, //RTL
-  2000, //COUNTDOWN
-  2000, //flight
-  2000, //first_stage_recov
-  2000, //second_stage_recov
+  1500, //ARMEDTOLAUNCH
+  1500, //RTL
+  1500, //COUNTDOWN
+  1500, //flight
+  1500, //first_stage_recov
+  1500, //second_stage_recov
   ESP_NOW_SLEEP_TIME, //on ground
   ESP_NOW_SLEEP_TIME, //HOLD
   ESP_NOW_SLEEP_TIME,//ABORT
