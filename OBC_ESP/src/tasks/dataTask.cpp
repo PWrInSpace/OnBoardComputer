@@ -218,7 +218,7 @@ static void clear_lora_buffer(void) {
 
 static void send_data_via_lora(void) {
   fill_lora_data_buffer();
-  Serial.println(glob.lora_buffer);
+  // Serial.println(glob.lora_buffer);
   if(xQueueSend(rc.hardware.loraTxQueue, (void*)&glob.lora_buffer, 0) != pdTRUE){
     ERR_set_rtos_error(RTOS_LORA_QUEUE_ADD_ERROR);
     rc.sendLog("LoRa quque is full");
@@ -334,7 +334,7 @@ void dataTask(void *arg){
       imu_read_data(imu);
       // pressure_sensor_read(pressureSensor);
       temperature_sensor_read(tempsensor);
-      read_recovery_data();  //TODO: DUPA
+      read_recovery_data();
       update_current_state(SM_getCurrentState());
       update_mcb_uptime(millis());
       update_mcb_mission_timer(rc.missionTimer.getTime());

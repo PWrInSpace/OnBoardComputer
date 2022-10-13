@@ -1,6 +1,16 @@
 #include "../include/tasks/tasks.h"
 #include "../include/components/runcam.h"
 
+
+
+static struct {
+  TickType_t stateChangeTimeMark;
+  TickType_t loopTimer;
+  TimerHandle_t payload_switch_on_rpi;
+  TimerHandle_t turn_off_recording;
+  TimerHandle_t ignition_request;
+}st;
+
 static void payload_swtich_on_cb(void *arg) {
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(PAYLOAD_RECORCD_ON, 0);
@@ -18,26 +28,29 @@ static void turn_off_recording_cb(void *arg) {
 
 static void ignition_cb(void *arg) {
   TxDataEspNow txDataEspNow;
-  Serial.println("***Ignition cb***");
-  // if(rc.missionTimer.getTime() >= rc.options.ignitionTime && rc.dataFrame.tanWa.igniterContinouity[0] == true){
-    txDataEspNow.setVal(IGNITION_COMMAND, 1);
-        //send ignition request
-    if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-      rc.sendLog("Esp send error - IGNITION");
-      // xTimerStart()
-    }
-    rc.sendLog("IGNITION REQUEST");
-  // }
-}
+  static uint8_t request_counter = 0;
+  Serial.println("***Ignition cb  ");
+  Serial.print(request_counter);
+  Serial.println(" ***");
+  request_counter += 1;
 
-static struct {
-  TickType_t stateChangeTimeMark;
-  TickType_t loopTimer;
-  TimerHandle_t payload_switch_on_rpi;
-  TimerHandle_t turn_off_recording;
-  TimerHandle_t ignition_request;
-}st;
+  if (request_counter > 5) {
+    Serial.println("request counter end");
+    return;
+  }
+
+  txDataEspNow.setVal(IGNITION_COMMAND, 1);
+        //send ignition request
+  if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+    ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    rc.sendLog("Esp send error - IGNITION");
+  }
+  xTimerChangePeriod(st.ignition_request, 100/portTICK_PERIOD_MS, portMAX_DELAY);;
+  xTimerStart(st.ignition_request, portMAX_DELAY);
+  rc.sendLog("IGNITION REQUEST");
+
+  Serial.println("Igniter do not have continouity");
+}
 
 static void state_machine_init(void) {
   st.stateChangeTimeMark = 0;
@@ -103,7 +116,7 @@ static void rdy_to_launch_init(void) {
 }
 
 static void countdown_init(void) {
-  if(rc.allDevicesWokenUp() || OPT_get_force_launch() == true){
+  if(DF_all_devices_woken_up() || OPT_get_force_launch() == true){
     //turn on mission timer
     rc.missionTimer.startTimer(OPT_get_countdown_begin_time());
     if(rc.missionTimer.isEnable()){
@@ -129,7 +142,7 @@ static void countdown_init(void) {
 
 static void flight_init(void) {
   TxDataEspNow txDataEspNow;
-  txDataEspNow.setVal(VALVE_OPEN, 0); 
+  txDataEspNow.setVal(VALVE_OPEN, 0);
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     Serial.println("Ignition error");
     ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
@@ -147,7 +160,7 @@ static void first_stage_recovery_init(void) {
 
   //close main valve
   TxDataEspNow txDataEspNow;
-  txDataEspNow.setVal(VALVE_CLOSE, 0); 
+  txDataEspNow.setVal(VALVE_CLOSE, 0);
   if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
   };
@@ -245,7 +258,6 @@ static void abort_init(void) {
   xSemaphoreGive(rc.hardware.i2c1Mutex);
 
   RUNCAM_turn_off();
-
   SM_changeStateConfirmation();
 }
 
@@ -258,7 +270,7 @@ static void countdown_loop(void) {
 
 static void flight_loop(void) {
   //force main valve open until ocnfirmation
-  if(rc.dataFrame.mainValve.valveState != ValveState::Open){
+  if(DF_get_main_valve_state() != ValveState::Open){
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0); 
     Serial.println("Main valve open loop");
@@ -271,48 +283,48 @@ static void flight_loop(void) {
 
 static void first_stage_recovery_loop(void) {
   //force recovery until confirmation
-  if(rc.dataFrame.recovery.firstStageDone == false){
+  if(DF_get_first_stage_recovery_done() == false){
     xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
     rc.recoveryStm.forceFirstStageSeparation();
     xSemaphoreGive(rc.hardware.i2c1Mutex);
   }
-          
+
   //force main valve close until confirmation
-  if(rc.dataFrame.mainValve.valveState != ValveState::Close){
-    TxDataEspNow txDataEspNow;
-    txDataEspNow.setVal(VALVE_CLOSE, 0); 
-    // if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    //   ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-    // }
-  }
+  // if(rc.dataFrame.mainValve.valveState != ValveState::Close){
+  //   TxDataEspNow txDataEspNow;
+  //   txDataEspNow.setVal(VALVE_CLOSE, 0); 
+  //   // if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+  //   //   ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+  //   // }
+  // }
 }
 
 static void second_stage_recovery_loop(void) {
-  if(rc.dataFrame.recovery.secondStageDone == false){
+  if(DF_get_second_stage_recovery_done() == false){
     xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
     rc.recoveryStm.forceSecondStageSeparation();
     xSemaphoreGive(rc.hardware.i2c1Mutex);
   }
 
-  if(rc.dataFrame.upustValve.valveState != ValveState::Open){
+  if(DF_get_upust_valve_state() != ValveState::Open){
     TxDataEspNow txDataEspNow;
-    txDataEspNow.setVal(VALVE_OPEN, 0); 
-    // if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    //   ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-    // } 
+    txDataEspNow.setVal(VALVE_OPEN, 0);
+    if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    }
   }
 }
 
 static void on_ground_loop(void) {
   TxDataEspNow txDataEspNow;
-  if(rc.dataFrame.mainValve.valveState != ValveState::Open){
-    txDataEspNow.setVal(VALVE_OPEN, 0); 
+  if(DF_get_main_valve_state() != ValveState::Open){
+    txDataEspNow.setVal(VALVE_OPEN, 0);
     if(esp_now_send(adressMValve, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
-    } 
+    }
   }
 
-  if(rc.dataFrame.upustValve.valveState != ValveState::Open){
+  if(DF_get_upust_valve_state() != ValveState::Open){
     txDataEspNow.setVal(VALVE_OPEN, 0);
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
       ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
@@ -321,15 +333,13 @@ static void on_ground_loop(void) {
 }
 
 static void abort_loop(void) {
-  if(rc.dataFrame.recovery.isArmed){
-    xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
-    rc.recoveryStm.arm(false);
-    vTaskDelay(25 / portTICK_PERIOD_MS);
-    rc.recoveryStm.setTelemetrum(false);
-    xSemaphoreGive(rc.hardware.i2c1Mutex);
-  }
+  xSemaphoreTake(rc.hardware.i2c1Mutex, portMAX_DELAY);
+  rc.recoveryStm.arm(false);
+  vTaskDelay(25 / portTICK_PERIOD_MS);
+  rc.recoveryStm.setTelemetrum(false);
+  xSemaphoreGive(rc.hardware.i2c1Mutex);
 
-  if(rc.dataFrame.upustValve.valveState != ValveState::Open){
+  if(DF_get_upust_valve_state() != ValveState::Open){
     TxDataEspNow txDataEspNow;
     txDataEspNow.setVal(VALVE_OPEN, 0);
     if(esp_now_send(adressUpust, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){

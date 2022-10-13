@@ -37,6 +37,10 @@ void DF_set_payload_data(PayloadData payload);
 void DF_set_mission_timer(uint32_t mission_time);
 void DF_create_lora_frame(char *buffer, size_t size);
 void DF_create_sd_frame(char *buffer, size_t size);
+bool DF_get_first_stage_recovery_done(void);
+bool DF_get_second_stage_recovery_done(void);
+uint8_t DF_get_main_valve_state(void);
+uint8_t DF_get_upust_valve_state(void);
 
 // THREAD UNSAFE FUNCTIONS
 bool DF_create_mcb_frame(char *buffer, size_t size);
@@ -47,4 +51,5 @@ bool DF_create_upust_valve_frame(char *buffer, size_t size);
 bool DF_create_recovery_frame(char *buffer, size_t size);
 bool DF_create_blackbox_frame(char *buffer, size_t size);
 bool DF_create_payload_frame(char *buffer, size_t size);
+bool DF_all_devices_woken_up(void);
 #endif

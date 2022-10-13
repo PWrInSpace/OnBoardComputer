@@ -85,6 +85,24 @@ void DF_set_main_valve_data(MainValveData main_valve) {
     xSemaphoreGive(data.mutex);
 }
 
+uint8_t DF_get_main_valve_state(void) {
+    uint8_t state;
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    state = data.main_valve.valveState;
+    xSemaphoreGive(data.mutex);
+
+    return state;
+}
+
+uint8_t DF_get_upust_valve_state(void) {
+    uint8_t state;
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    state = data.upust_valve.valveState;
+    xSemaphoreGive(data.mutex);
+
+    return state;
+}
+
 void DF_set_tanwa_data(TanWaData tanwa) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
     memcpy(&data.tanwa, &tanwa, sizeof(tanwa));
@@ -101,6 +119,24 @@ void DF_set_recovery_data(RecoveryData recovery) {
     xSemaphoreTake(data.mutex, portMAX_DELAY);
     memcpy(&data.recovery, &recovery, sizeof(recovery));
     xSemaphoreGive(data.mutex);
+}
+
+bool DF_get_first_stage_recovery_done(void) {
+    bool first_stage_done = false;
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    first_stage_done = data.recovery.data.firstStageDone;
+    xSemaphoreGive(data.mutex);
+
+    return first_stage_done;
+}
+
+bool DF_get_second_stage_recovery_done(void) {
+    bool second_stage_done = false;
+    xSemaphoreTake(data.mutex, portMAX_DELAY);
+    second_stage_done = data.recovery.data.secondStageDone;
+    xSemaphoreGive(data.mutex);
+
+    return second_stage_done;
 }
 
 void DF_set_blackbox_data(SlaveData black_box) {
@@ -394,4 +430,11 @@ bool DF_create_payload_frame(char *buffer, size_t size) {
         data.payload.data, data.payload.isRpiOn);
     assert(wrote_data_size < size);
     return true;
+}
+
+bool DF_all_devices_woken_up(void) {
+    return data.main_valve.wakeUp &&
+            data.upust_valve.wakeUp &&
+            data.pitot.wakenUp &&
+            data.payload.wakenUp;
 }

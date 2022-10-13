@@ -24,7 +24,7 @@
 #define PAYLOAD_RESET       21
 #define PAYLOAD_RECORCD_ON  37
 
-#define PAYLOAD_SWITCH_ON_AFTER_STATE_TIME 10000 / portTICK_PERIOD_MS
+#define PAYLOAD_SWITCH_ON_AFTER_STATE_TIME 60000 / portTICK_PERIOD_MS
 #define CAMERA_TURN_OFF_TIME 30000 / portTICK_PERIOD_MS
 
 //TIMERS
@@ -50,9 +50,9 @@
 
 
 //OPTIONS DEFAULT VALUE (SETUP)
-#define LoRa_FREQUENCY_KHZ  868000
-#define COUNTDOWN_TIME      -45 * 1000
-#define IGNITION_TIME       -15 * 1000
+#define LoRa_FREQUENCY_KHZ  867000
+#define COUNTDOWN_TIME      -45000
+#define IGNITION_TIME       -13500
 #define TANK_MIN_PRESSURE   35 //bar
 #define FLASH_WRITE         false
 #define FORCE_LAUNCH        false
@@ -72,7 +72,7 @@
 #define DATA_PERIOD             100
 #define PERIOD_ARRAY_SIZE       13
 
-#define STATE_TASK_LOOP_INTERVAL 100
+#define STATE_TASK_LOOP_INTERVAL 200
 
 extern const TickType_t loraPeriod[PERIOD_ARRAY_SIZE];
 extern const TickType_t sdPeriod[PERIOD_ARRAY_SIZE];

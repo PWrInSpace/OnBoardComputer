@@ -76,7 +76,7 @@ bool SM_changeStateRequest(States _newState){
   }
 
   //Flight case, prevent rocket block in flight
-  if((currentState > States::FLIGHT && currentState < States::HOLD) &&
+  if((currentState >= States::FLIGHT && currentState < States::HOLD) &&
       (_newState == States::ABORT || _newState == States::HOLD)){
     return false;
   }

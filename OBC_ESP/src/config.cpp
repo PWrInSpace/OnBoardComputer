@@ -80,7 +80,7 @@ static struct {
 uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
-  1500, //ARM
+  ESP_NOW_SLEEP_TIME, //ARM
   1000, //FILLING
   1500,
   1500, //RTL

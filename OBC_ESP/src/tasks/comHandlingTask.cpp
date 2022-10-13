@@ -83,7 +83,7 @@ static void handle_R4A_message(char *data) {
 }
 
 static void R4O_options_lora_freq(int value) {
-    if (OPT_set_lora_freq(value) == false) {
+    if (OPT_set_lora_freq(value * 1000) == false) {
         rc.sendLog("Invalid lora frequency");
         ERR_set_last_exception(INVALID_OPTION_VALUE);
         return;
