@@ -242,15 +242,16 @@ void DF_create_lora_frame(char* buffer, size_t size) {
     byte_data[0] |= (recovery.data.separationSwitch1      << 3);
     byte_data[0] |= (recovery.data.separationSwitch2      << 2);
     byte_data[0] |= (recovery.data.telemetrumFirstStage   << 1);
+    byte_data[0] |= (recovery.data.telemetrumSecondStage  << 0);
 
     //recovery second byte  
+    byte_data[1] |= (recovery.data.isTeleActive         << 6);
     byte_data[1] |= (recovery.data.altimaxFirstStage    << 5);
     byte_data[1] |= (recovery.data.altimaxSecondStage   << 4);
     byte_data[1] |= (recovery.data.apogemixFirstStage   << 3);
     byte_data[1] |= (recovery.data.apogemixSecondStage  << 2);
     byte_data[1] |= (recovery.data.firstStageDone       << 1);
     byte_data[1] |= (recovery.data.secondStageDone      << 0);
-    byte_data[0] |= (recovery.data.telemetrumSecondStage  << 0);
 
     snprintf(data_buffer, sizeof(data_buffer), "%d;%d;", byte_data[0], byte_data[1]);
     strcat(buffer, data_buffer);
