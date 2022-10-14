@@ -218,6 +218,11 @@ static void hold_init(void) {
   rc.missionTimer.turnOffTimer();
   }
 
+  if (xTimerIsTimerActive(st.ignition_request)) {
+    Serial.println("Stop timer");
+    xTimerStop(st.ignition_request, portMAX_DELAY);
+  }
+
   //CLOSE ALL VALVES
   TxDataEspNow txDataEspNow;
   txDataEspNow.setVal(VALVE_CLOSE, 0);
@@ -243,6 +248,11 @@ static void abort_init(void) {
 
   if(rc.missionTimer.isEnable()){
     rc.missionTimer.turnOffTimer();
+  }
+
+  if (xTimerIsTimerActive(st.ignition_request)) {
+    Serial.println("Stop timer");
+    xTimerStop(st.ignition_request, portMAX_DELAY);
   }
 
   //Upust valve open

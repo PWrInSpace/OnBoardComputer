@@ -89,7 +89,7 @@ uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   500, //first_stage_recov
   500, //second_stage_recov
   1800, //on ground
-  ESP_NOW_SLEEP_TIME, //HOLD
+  1000, //HOLD
   10000,//ABORT
 };
 
@@ -97,7 +97,7 @@ uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
-  ESP_NOW_SLEEP_TIME, 
+  ESP_NOW_SLEEP_TIME,
   1500, //FILLING
   1500, //RTL
   500, //COUNTDOWN

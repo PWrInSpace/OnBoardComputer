@@ -226,9 +226,10 @@ static void R4O_handel_upust_valve(char *data) {
 static void R4O_handle_wake_up(void) {
     States tempState = SM_getCurrentState();
     while(tempState < States::COUNTDOWN){
-        valvePeriod[tempState] = 500;
-        pitotPeriod[tempState] = 500;
-        espNowDefaultPeriod[tempState] = 500;
+        valvePeriod[tempState] = 1000;
+        pitotPeriod[tempState] = 1000;
+        payloadPeriod[tempState] = 1000;
+        espNowDefaultPeriod[tempState] = 1000;
         tempState = static_cast<States>(tempState + 1);
     }
 }
@@ -268,6 +269,18 @@ static void R4O_handle_void_command(void) {
     rc.sendLog("VOID command appear");
 }
 
+static void R4O_handle_payload(char *data) {
+    TxDataEspNow txDataEspNow;
+    sscanf(data, "R4O;PAYL;%d;%d", (int*) &txDataEspNow.command, (int*) &txDataEspNow.commandTime);
+    Serial.print("Payload:\t");
+    Serial.print(txDataEspNow.command);
+    Serial.print("\t");
+    Serial.println(txDataEspNow.commandTime);
+    if(esp_now_send(adressPayLoad, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
+      ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
+    }
+}
+
 static void R4O_handle_invalid(char *data) {
     strcat(data, " - INVALID COMMAND");
     rc.sendLog(data);
@@ -301,6 +314,8 @@ static void handle_R4O_message(char *data){
         R4O_handle_soft_reset();
     } else if (strstr(data, "VOID")){
         R4O_handle_void_command();
+    }else if (strstr(data, "PAYL")){
+        R4O_handle_payload(data);
     }else{
         R4O_handle_invalid(data);
     }
