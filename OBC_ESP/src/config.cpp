@@ -21,11 +21,11 @@ const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {
   10000, //INIT
   10000, //IDLE
   10000, //IDLE
-  10000, //ARM
-  1000,  //FILLING
+  500, //ARM
+  1000, //FILLING
   2000, //RTL
   500, //COUNTDOWN
-  150, //flight
+  200, //flight
   500, //first_stage_recov
   500, //second_stage_recov
   10000, //on ground
