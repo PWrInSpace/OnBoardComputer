@@ -8,7 +8,7 @@ const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {
   1000, //ARM                   2
   1000,  //FILLING               3
   2000,  //RTL                   4
-  500,   //COUNTDOWN             5
+  1000,   //COUNTDOWN             5
   1000,  //flight                6
   1000,  //first_stage_recov     7
   1000,  //second_stage_recov    8
@@ -25,7 +25,7 @@ const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {
   1000, //FILLING
   2000, //RTL
   500, //COUNTDOWN
-  200, //flight
+  250, //flight
   500, //first_stage_recov
   500, //second_stage_recov
   10000, //on ground
@@ -84,8 +84,8 @@ uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   1000, //FILLING
   1500,
   1500, //RTL
-  250, //COUNTDOWN
-  250, //flight
+  500, //COUNTDOWN
+  500, //flight
   500, //first_stage_recov
   500, //second_stage_recov
   1800, //on ground
