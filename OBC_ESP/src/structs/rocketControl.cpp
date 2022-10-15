@@ -17,7 +17,7 @@ void RocketControl::sendLog(const char * message){
   static char log[SD_FRAME_ARRAY_SIZE] = {};
   char temp[40] = {};
   strcpy(log, "LOG ");
-  snprintf(temp, 40, " [ %d , %lu ]\n", dataFrame.mcb.state, millis());
+  snprintf(temp, 40, " [ %d , %lu ]\n", SM_getCurrentState(), millis());
   strcat(log, message);
   strcat(log, temp);
 

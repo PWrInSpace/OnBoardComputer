@@ -40,16 +40,13 @@ static void ignition_cb(void *arg) {
   }
 
   txDataEspNow.setVal(IGNITION_COMMAND, 1);
-        //send ignition request
   if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
     ERR_set_esp_now_error(ESPNOW_SEND_ERROR);
     rc.sendLog("Esp send error - IGNITION");
   }
+  rc.sendLog("Ignition request");
   xTimerChangePeriod(st.ignition_request, 100/portTICK_PERIOD_MS, portMAX_DELAY);;
   xTimerStart(st.ignition_request, portMAX_DELAY);
-  rc.sendLog("IGNITION REQUEST");
-
-  Serial.println("Igniter do not have continouity");
 }
 
 static void state_machine_init(void) {
