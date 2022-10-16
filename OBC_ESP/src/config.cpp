@@ -7,30 +7,30 @@ const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {
   1000, //IDLE
   1000, //ARM                   2
   1000,  //FILLING               3
-  2000,  //RTL                   4
+  1000,  //RTL                   4
   1000,   //COUNTDOWN             5
   1000,  //flight                6
   1000,  //first_stage_recov     7
   1000,  //second_stage_recov    8
   10000,  //on ground             9
-  10000, //HOLD                  10
+  1000, //HOLD                  10
   10000  //ABORT                 11
 };
 
 const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {  
   10000, //INIT
   10000, //IDLE
-  10000, //IDLE
-  500, //ARM
-  1000, //FILLING
-  2000, //RTL
-  500, //COUNTDOWN
+  2000, //ARM
+  250, //FILL
+  250, //ARM_TL
+  250, //RTL
+  250, //COUNTDOWN
   250, //flight
-  500, //first_stage_recov
-  500, //second_stage_recov
-  10000, //on ground
-  10000, //HOLD
-  10000 //ABORT
+  250, //first_stage_recov
+  250, //second_stage_recov
+  1000, //on ground
+  250, //HOLD
+  1000, //ABORT
 };
 
 const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {  
