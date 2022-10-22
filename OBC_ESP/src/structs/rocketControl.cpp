@@ -5,7 +5,7 @@
  * 
  */
 void RocketControl::updateCurrentState(){
-  dataFrame.mcb.state = StateMachine::getCurrentState();
+  dataFrame.mcb.state = SM_getCurrentState();
 }
 
 /**
@@ -17,7 +17,7 @@ void RocketControl::sendLog(const char * message){
   static char log[SD_FRAME_ARRAY_SIZE] = {};
   char temp[40] = {};
   strcpy(log, "LOG ");
-  snprintf(temp, 40, " [ %d , %lu ]\n", dataFrame.mcb.state, millis());
+  snprintf(temp, 40, " [ %d , %lu ]\n", SM_getCurrentState(), millis());
   strcat(log, message);
   strcat(log, temp);
 
@@ -88,21 +88,21 @@ bool RocketControl::allDevicesWokenUp(){
  * 
  * @param data data
  */
-void RocketControl::createOptionsFrame(char* data){
+void RocketControl::createOptionsFrame(char* data, Options options){
   size_t optionsSize;
 
   optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod) + 1;
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period) + 1;
 
 
   char opt[optionsSize];
 
   snprintf(opt, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period);
 
 
   strcpy(data, LORA_TX_OPTIONS_PREFIX);
@@ -138,8 +138,9 @@ void RocketControl::createLoRaFrame(char* data){
   //MCB
   sprintf(mcbFrame, "%d;%d;%d;%0.1f;%0.4f;%0.4f;%d;%d;%d;%0.1f;",
     dataFrame.mcb.state, missionTimer.getTime()/1000, getDisconnectRemainingTime()/1000,
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.GPSlal, dataFrame.mcb.GPSlong, dataFrame.mcb.GPSsat, 
-    dataFrame.mcb.GPSsec, (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
+    dataFrame.mcb.batteryVoltage, dataFrame.mcb.gps.latitude, dataFrame.mcb.gps.longitude,
+    dataFrame.mcb.gps.satellites, dataFrame.mcb.gps.is_time_valid,
+    (int)dataFrame.mcb.altitude, dataFrame.mcb.temp_mcp); //11
 
   sprintf(pitotFrame, "%0.1f;%d;%d;",
     dataFrame.pitot.vBat, dataFrame.pitot.altitude, (int)dataFrame.pitot.speed); //8
@@ -150,19 +151,19 @@ void RocketControl::createLoRaFrame(char* data){
     dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.tankPressure,
     dataFrame.upustValve.thermistor); //9
   
-  sprintf(tanwaFrame, "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
-    dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
-    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight,
-    dataFrame.tanWa.armButton, dataFrame.tanWa.abortButton);//19
+  // sprintf(tanwaFrame, "%d;%0.1f;%d;%d;%0.2f;%0.2f;%d;%d;",
+  //   dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
+  //   dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight,
+  //   dataFrame.tanWa.armButton, dataFrame.tanWa.abortButton);//19
   
   sprintf(plFrame, "%d;%d;%0.1f;",
-    dataFrame.pl.isRecording,
-    dataFrame.pl.isRpiOn, dataFrame.pl.vBat);
+    dataFrame.payload.isRecording,
+    dataFrame.payload.isRpiOn, dataFrame.payload.vBat);
 
   // Slaves waken up (from top of the rocket):
   memset(byteData, 0, 4);
   byteData[0] |= (dataFrame.pitot.wakenUp      << 0);
-  byteData[0] |= (dataFrame.pl.wakenUp         << 1);
+  byteData[0] |= (dataFrame.payload.wakenUp         << 1);
   byteData[0] |= (dataFrame.blackBox.wakeUp   << 2);
   byteData[0] |= (dataFrame.upustValve.wakeUp << 3);
   byteData[0] |= (dataFrame.mainValve.wakeUp  << 4);
@@ -173,15 +174,15 @@ void RocketControl::createLoRaFrame(char* data){
 
   // Valve states:
   memset(byteData, 0, 4);
-  byteData[0] |= (dataFrame.mainValve.valveState  << 0);
-  byteData[0] |= (dataFrame.upustValve.valveState << 2);
-  byteData[0] |= (dataFrame.tanWa.motorState[0]   << 4);
+  // byteData[0] |= (dataFrame.mainValve.valveState  << 0);
+  // byteData[0] |= (dataFrame.upustValve.valveState << 2);
+  // byteData[0] |= (dataFrame.tanWa.motorState[0]   << 4);
 
-  byteData[1] |= (dataFrame.tanWa.motorState[1]   << 0);  
-  byteData[1] |= (dataFrame.tanWa.motorState[2]   << 3);
+  // byteData[1] |= (dataFrame.tanWa.motorState[1]   << 0);  
+  // byteData[1] |= (dataFrame.tanWa.motorState[2]   << 3);
 
-  byteData[2] |= (dataFrame.tanWa.motorState[3]   << 0);
-  byteData[2] |= (dataFrame.tanWa.motorState[4]   << 3);
+  // byteData[2] |= (dataFrame.tanWa.motorState[3]   << 0);
+  // byteData[2] |= (dataFrame.tanWa.motorState[4]   << 3);
 
   sprintf(valveStateFrame, "%d;%d;%d;", byteData[0], byteData[1], byteData[2]);
 
@@ -248,47 +249,48 @@ void RocketControl::createLoRaFrame(char* data){
 void RocketControl::createSDFrame(char* data){
   size_t mcbSize, pitotSize, mvSize, uvSize, tanwaSize, bbSize, plSize, optionsSize, recoverySize, errorsSize;
 
-  mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-    dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
-    dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
-    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
-    dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
-    dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
-    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.apogee);
+  // mcbSize = snprintf(NULL, 0, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+  //   dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
+  //   dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
+  //   dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
+  //   dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
+  //   dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
+  //   dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
+  //   dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.apogee);
 
-  pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
-    dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
-    dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
-    dataFrame.pitot.speed, dataFrame.pitot.estimated_apogee) + 1; //8
-  
-  mvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%0.2f;",
-    dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
-    dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]) + 1; //5
+  // pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
+  //   dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
+  //   dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
+  //   dataFrame.pitot.speed, dataFrame.pitot.estimated_apogee) + 1; //8
 
-  uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;",
-    dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
-    dataFrame.upustValve.tankPressure, dataFrame.upustValve.thermistor) + 1;
   
-  tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
-    dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
-    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
-    dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
-    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight, dataFrame.tanWa.rocketWeightRaw, 
-    dataFrame.tanWa.tankWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
-    dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
-    dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
+  // mvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%0.2f;",
+  //   dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
+  //   dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]) + 1; //5
+
+  // uvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%d;",
+  //   dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
+  //   dataFrame.upustValve.tankPressure, dataFrame.upustValve.thermistor) + 1;
+  
+  // tanwaSize = snprintf(NULL, 0, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
+  //   dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
+  //   dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
+  //   dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
+  //   dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight, dataFrame.tanWa.rocketWeightRaw, 
+  //   dataFrame.tanWa.tankWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
+  //   dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
+  //   dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating) + 1; //19
   
   plSize = snprintf(NULL, 0, "%f;%d;%d;%d;%d;",
-    dataFrame.pl.vBat, dataFrame.pl.wakenUp, dataFrame.pl.isRecording,
-    dataFrame.pl.data, dataFrame.pl.isRpiOn) + 1;
+    dataFrame.payload.vBat, dataFrame.payload.wakenUp, dataFrame.payload.isRecording,
+    dataFrame.payload.data, dataFrame.payload.isRpiOn) + 1;
 
   bbSize = snprintf(NULL, 0, "%d;", dataFrame.blackBox.wakeUp) + 1;
 
-  optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod) + 1;
+  optionsSize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period) + 1;
 
   recoverySize = snprintf(NULL, 0, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     dataFrame.recovery.isArmed, dataFrame.recovery.firstStageContinouity, dataFrame.recovery.secondStageContinouity,
@@ -314,49 +316,51 @@ void RocketControl::createSDFrame(char* data){
   char errorsFrame[errorsSize] = {};
 
 
-  //MCB
-  snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
-    dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
-    dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.GPSlal, 
-    dataFrame.mcb.GPSlong, dataFrame.mcb.GPSalt, dataFrame.mcb.GPSsat, dataFrame.mcb.GPSsec,
-    dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
-     dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
-    dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
-    dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
+  // //MCB
+  // snprintf(mcbFrame, mcbSize, "%d;%lu;%d;%d;%0.2f;%d;%0.4f;%0.4f;%0.2f;%d;%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+  //   dataFrame.mcb.state, millis(), missionTimer.getTime(), getDisconnectRemainingTime(),
+  //   dataFrame.mcb.batteryVoltage, dataFrame.mcb.watchdogResets, dataFrame.mcb.latitude, 
+  //   dataFrame.mcb.longitude, dataFrame.mcb.altitude, dataFrame.mcb.satellites, dataFrame.mcb.is_time_valid,
+  //   dataFrame.mcb.temp_lp25, dataFrame.mcb.pressure, dataFrame.mcb.altitude, dataFrame.mcb.velocity,
+  //    dataFrame.mcb.imuData[0], dataFrame.mcb.imuData[1], dataFrame.mcb.imuData[2], dataFrame.mcb.imuData[3],
+  //   dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
+  //   dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
 
-  snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
-    dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress,
-    dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
-    dataFrame.pitot.speed, dataFrame.pitot.estimated_apogee);//8
 
-  snprintf(mvFrame, mvSize, "%d;%0.2f;%d;%0.2f;%0.2f;",
-    dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
-    dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]); //5
+  // snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
+  //   dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress,
+  //   dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
+  //   dataFrame.pitot.speed, dataFrame.pitot.estimated_apogee);//8
+
+
+  // snprintf(mvFrame, mvSize, "%d;%0.2f;%d;%0.2f;%0.2f;",
+  //   dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
+  //   dataFrame.mainValve.thermocouple[0], dataFrame.mainValve.thermocouple[1]); //5
 
   snprintf(uvFrame, uvSize, "%d;%0.2f;%d;%0.2f;%d;",
     dataFrame.upustValve.wakeUp, dataFrame.upustValve.batteryVoltage, dataFrame.upustValve.valveState,
     dataFrame.upustValve.tankPressure, dataFrame.upustValve.thermistor);
   
-  snprintf(tanwaFrame, tanwaSize, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
-    dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
-    dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
-    dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
-    dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight, dataFrame.tanWa.rocketWeightRaw, 
-    dataFrame.tanWa.tankWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
-    dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
-    dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating); //19
+  // snprintf(tanwaFrame, tanwaSize, "%d;%0.2f;%d;%d;%d;%d;%d;%d;%d;%0.2f;%0.2f;%d;%d;%f;%f;%f;%d;%d;%d;",
+  //   dataFrame.tanWa.tanWaState, dataFrame.tanWa.vbat, dataFrame.tanWa.igniterContinouity[0],
+  //   dataFrame.tanWa.igniterContinouity[1], dataFrame.tanWa.motorState[0], dataFrame.tanWa.motorState[1],
+  //   dataFrame.tanWa.motorState[2], dataFrame.tanWa.motorState[3], dataFrame.tanWa.motorState[4],
+  //   dataFrame.tanWa.rocketWeight, dataFrame.tanWa.tankWeight, dataFrame.tanWa.rocketWeightRaw, 
+  //   dataFrame.tanWa.tankWeightRaw, dataFrame.tanWa.thermocouple[0], dataFrame.tanWa.thermocouple[1], 
+  //   dataFrame.tanWa.thermocouple[2], dataFrame.tanWa.armButton, 
+  //   dataFrame.tanWa.abortButton, dataFrame.tanWa.tankHeating); //19
 
   snprintf(plFrame, plSize, "%f;%d;%d;%d;%d;",
-    dataFrame.pl.vBat, dataFrame.pl.wakenUp, dataFrame.pl.isRecording,
-    dataFrame.pl.data, dataFrame.pl.isRpiOn);
+    dataFrame.payload.vBat, dataFrame.payload.wakenUp, dataFrame.payload.isRecording,
+    dataFrame.payload.data, dataFrame.payload.isRpiOn);
 
   snprintf(bbFrame, bbSize, "%d;", dataFrame.blackBox.wakeUp);
 
-  snprintf(optionsFrame, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
-    options.LoRaFrequencyMHz, options.countdownTime, options.ignitionTime,
-    options.tankMinPressure, options.flashWrite, options.forceLaunch, options.dataCurrentPeriod,
-    options.loraCurrentPeriod, options.flashDataCurrentPeriod, options.sdDataCurrentPeriod);
-
+  snprintf(optionsFrame, optionsSize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d",
+    options.lora_freq_khz, options.countdown_begin_time, options.ignition_time,
+    options.tank_min_pressure, options.flash_write, options.force_launch, options.data_current_period,
+    options.lora_current_period, options.flash_write_current_period, options.sd_write_current_period);
+ 
   snprintf(recoveryFrame, recoverySize, "%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;%d;",
     dataFrame.recovery.isArmed, dataFrame.recovery.firstStageContinouity, dataFrame.recovery.secondStageContinouity,
     dataFrame.recovery.separationSwitch1, dataFrame.recovery.separationSwitch2,

@@ -6,6 +6,7 @@ void flashTask(void *arg){
   DataFrame frame;
   LITTLEFS.begin(true);
   bool wipeFile = true;
+  uint32_t time = xTaskGetTickCount();
 
   while(1){
 
@@ -22,12 +23,18 @@ void flashTask(void *arg){
 
         xQueueReceive(rc.hardware.flashQueue, &frame, portMAX_DELAY);
         if(!file.write((uint8_t*) &frame, sizeof(frame))){
-          rc.errors.setFlashError(FLASH_WRITE_ERROR);
+          ERR_set_flash_error(FLASH_WRITE_ERROR);
         }
       }
 
       file.close();
     }
+
+
+    // if (xTaskGetTickCount() - time > 1000) {
+    //   time = xTaskGetTickCount();
+    //   Serial.println("Flash task tick");
+    // }
 
     wt.flashTaskFlag = true;
     vTaskDelay(10 / portTICK_PERIOD_MS);

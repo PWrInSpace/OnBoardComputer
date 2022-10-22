@@ -1,49 +1,52 @@
 #include "config.h"
-
+#include "../include/structs/stateMachine.h"
 
 const TickType_t loraPeriod[PERIOD_ARRAY_SIZE] = {  
-  1000 / portTICK_PERIOD_MS, //INIT                  0
-  1000 / portTICK_PERIOD_MS, //IDLE                  1
-  1000 / portTICK_PERIOD_MS, //ARM                   2
-  1000 / portTICK_PERIOD_MS,  //FILLING               3
-  2000 / portTICK_PERIOD_MS,  //RTL                   4
-  500 / portTICK_PERIOD_MS,   //COUNTDOWN             5
-  1000 / portTICK_PERIOD_MS,  //flight                6
-  1000 / portTICK_PERIOD_MS,  //first_stage_recov     7
-  1000 / portTICK_PERIOD_MS,  //second_stage_recov    8
-  10000 / portTICK_PERIOD_MS,  //on ground             9
-  10000 / portTICK_PERIOD_MS, //HOLD                  10
-  10000 / portTICK_PERIOD_MS  //ABORT                 11
+  1000, //INIT                  0
+  1000, //IDLE                  1
+  1000, //IDLE
+  1000, //ARM                   2
+  1000,  //FILLING               3
+  1000,  //RTL                   4
+  1000,   //COUNTDOWN             5
+  1000,  //flight                6
+  1000,  //first_stage_recov     7
+  1000,  //second_stage_recov    8
+  10000,  //on ground             9
+  1000, //HOLD                  10
+  10000  //ABORT                 11
 };
 
 const TickType_t sdPeriod[PERIOD_ARRAY_SIZE] = {  
-  10000 / portTICK_PERIOD_MS, //INIT
-  10000 / portTICK_PERIOD_MS, //IDLE
-  10000 / portTICK_PERIOD_MS, //ARM
-  1000 / portTICK_PERIOD_MS,  //FILLING
-  2000 / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  150 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  10000 / portTICK_PERIOD_MS, //on ground
-  10000 / portTICK_PERIOD_MS, //HOLD
-  10000 / portTICK_PERIOD_MS //ABORT
+  10000, //INIT
+  10000, //IDLE
+  2000, //ARM
+  250, //FILL
+  250, //ARM_TL
+  250, //RTL
+  250, //COUNTDOWN
+  250, //flight
+  250, //first_stage_recov
+  250, //second_stage_recov
+  1000, //on ground
+  250, //HOLD
+  1000, //ABORT
 };
 
 const TickType_t flashPeriod[PERIOD_ARRAY_SIZE] = {  
-  10000 / portTICK_PERIOD_MS , //INIT
-  10000 / portTICK_PERIOD_MS, //IDLE
-  10000 / portTICK_PERIOD_MS, //ARM
-  1000 / portTICK_PERIOD_MS, //FILLING
-  2000 / portTICK_PERIOD_MS, //RTL
-  500 / portTICK_PERIOD_MS, //COUNTDOWN
-  500 / portTICK_PERIOD_MS, //flight
-  500 / portTICK_PERIOD_MS, //first_stage_recov
-  500 / portTICK_PERIOD_MS, //second_stage_recov
-  10000 / portTICK_PERIOD_MS, //on ground
-  10000 / portTICK_PERIOD_MS, //HOLD
-  10000 / portTICK_PERIOD_MS //ABORT
+  10000 , //INIT
+  10000, //IDLE
+  10000, //IDLE
+  10000, //ARM
+  1000, //FILLING
+  2000, //RTL
+  500, //COUNTDOWN
+  500, //flight
+  500, //first_stage_recov
+  500, //second_stage_recov
+  10000, //on ground
+  10000, //HOLD
+  10000 //ABORT
 };
 
 /********************************************/
@@ -64,19 +67,29 @@ const uint8_t cameraPitot[]     = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO 
 const uint8_t cameraRecovery[]  = {0xE8, 0xDB, 0x84, 0xA5, 0x93, 0x5D}; // TODO poprawny adres!!!
 
 
+typedef struct {
+  States state;
+  uint16_t period;
+} period;
+
+static struct {
+  period dupa[12];
+}test;
+
 //ESP NOW PERIODS
-uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {  
+uint16_t valvePeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
-  500, //ARM
-  500, //FILLING
-  500, //RTL
-  250, //COUNTDOWN
-  250, //flight
+  ESP_NOW_SLEEP_TIME, //ARM
+  1000, //FILLING
+  1500,
+  1500, //RTL
+  500, //COUNTDOWN
+  500, //flight
   500, //first_stage_recov
   500, //second_stage_recov
   1800, //on ground
-  ESP_NOW_SLEEP_TIME, //HOLD
+  1000, //HOLD
   10000,//ABORT
 };
 
@@ -84,8 +97,9 @@ uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
-  ESP_NOW_SLEEP_TIME, //FILLING
-  ESP_NOW_SLEEP_TIME, //RTL
+  ESP_NOW_SLEEP_TIME,
+  1500, //FILLING
+  1500, //RTL
   500, //COUNTDOWN
   500, //flight
   500, //first_stage_recov
@@ -99,9 +113,10 @@ uint16_t pitotPeriod[PERIOD_ARRAY_SIZE] = {
 uint16_t espNowDefaultPeriod[PERIOD_ARRAY_SIZE] = {  
   ESP_NOW_SLEEP_TIME, //INIT
   ESP_NOW_SLEEP_TIME, //IDLE
+  ESP_NOW_SLEEP_TIME, 
   ESP_NOW_SLEEP_TIME, //ARM
-  ESP_NOW_SLEEP_TIME, //FILLING
-  ESP_NOW_SLEEP_TIME, //RTL
+  1500, //FILLING
+  1500, //RTL
   500, //COUNTDOWN
   500, //flight
   500, //first_stage_recov
@@ -116,11 +131,12 @@ uint16_t payloadPeriod[PERIOD_ARRAY_SIZE]{
   ESP_NOW_SLEEP_TIME, //IDLE
   ESP_NOW_SLEEP_TIME, //ARM
   ESP_NOW_SLEEP_TIME, //FILLING
-  2000, //RTL
-  2000, //COUNTDOWN
-  2000, //flight
-  2000, //first_stage_recov
-  2000, //second_stage_recov
+  1500, //ARMEDTOLAUNCH
+  1500, //RTL
+  1500, //COUNTDOWN
+  1500, //flight
+  1500, //first_stage_recov
+  1500, //second_stage_recov
   ESP_NOW_SLEEP_TIME, //on ground
   ESP_NOW_SLEEP_TIME, //HOLD
   ESP_NOW_SLEEP_TIME,//ABORT

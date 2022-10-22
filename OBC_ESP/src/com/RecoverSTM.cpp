@@ -1,5 +1,5 @@
 #include "../include/com/RecoverySTM.h"
-#include "../include/structs/dataStructs.h"
+#include "data_structs.h"
 
 RecoverySTM::RecoverySTM(TwoWire &wirePort, uint8_t i2cAddress) {
 

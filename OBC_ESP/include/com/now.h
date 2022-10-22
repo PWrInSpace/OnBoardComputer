@@ -3,7 +3,7 @@
 
 #include "esp_now.h"
 #include "WiFi.h"
-#include "../include/structs/dataStructs.h"
+#include "data_structs.h"
 #include "../include/structs/rocketControl.h"
 
 // Init:

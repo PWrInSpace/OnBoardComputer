@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <Arduino.h> //DEBUG
+#include "pysd_data_structs.h"
 //loop error
 enum SDError{ //GIT
   SD_NO_ERROR = 0,
@@ -67,8 +68,8 @@ enum LastException{
 };
 
 enum RecoveryError{
-  COM_NO_ERROR = 0,
-  I2C_INIT_ERROR,
+  RECOVERY_NO_ERROR = 0,
+  RECOVERY_I2C_INIT_ERROR,
 };
 
 struct Errors{
@@ -81,18 +82,37 @@ struct Errors{
   LastException exceptions;
   RecoveryError recovery;
   bool newError;
-
-  Errors() = default;
-  void setSDError(SDError error);
-  void setFlashError(FlashError error);
-  void setRTOSError(RTOSError error);
-  void setEspNowError(EspNowError error);
-  void setWatchDogError(WatchDogError error);
-  void setSensorError(SensorsError error);
-  void setLastException(LastException error); 
-  void setRecoveryError(RecoveryError error); 
-  void reset(uint8_t triger);
 };
+
+bool ERR_init(void);
+void ERR_fill_pysd_struct(pysdmain_DataFrame *data);
+void ERR_set_sd_error(SDError error);
+void ERR_set_flash_error(FlashError error);
+void ERR_set_rtos_error(RTOSError error);
+void ERR_set_esp_now_error(EspNowError error);
+void ERR_set_watchdog_error(WatchDogError error);
+void ERR_set_sensors_error(SensorsError error);
+void ERR_set_last_exception(LastException error); 
+void ERR_set_recovery_error(RecoveryError error); 
+void ERR_reset(uint8_t triger);
+bool ERR_create_lora_frame(char* buffer, size_t size);
+bool ERR_create_sd_frame(char* buffer, size_t size);
+Errors ERR_get_struct(void);
+// Next errors struct
+// union {
+//   struct {
+//     uint8_t b0:1;
+//     uint8_t b1:1;
+//     uint8_t b2:1;
+//     uint8_t b3:1;
+//     uint8_t b4:1;
+//     uint8_t b5:1;
+//     uint8_t b6:1;
+//     uint8_t b7:1;
+//   } bits;
+
+//   uint8_t byte;
+// }error_t;
 
 
 #endif

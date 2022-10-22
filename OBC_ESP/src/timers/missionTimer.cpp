@@ -1,18 +1,19 @@
 #include "../include/timers/missionTimer.h"
 
 /**
- * @brief Construct a new Timer object
+ * @brief Construct a new MissionTimer object
  * 
  */
-Timer::Timer(): timer(0), enable(false), disableValue(-999){}
+MissionTimer::MissionTimer(): tzero_time(0), enable(false), disableValue(-999){}
 
 /**
  * @brief turn on timer
  * 
- * @param _timer timer start time
+ * @param countdown_begin_time negative number in miliseconds
  */
-void Timer::startTimer(uint32_t _timer){
-  timer = _timer;
+void MissionTimer::startTimer(int64_t countdown_begin_time){
+  assert(countdown_begin_time < 0);
+  tzero_time = millis() - countdown_begin_time;
   enable = true;
 }
 
@@ -21,9 +22,12 @@ void Timer::startTimer(uint32_t _timer){
  * 
  * @return int32_t return time that has elapsed since startTimer, if timer is enable return disable value
  */
-int Timer::getTime() const{
-  if(enable) return (millis() - timer);
-  else return disableValue;
+int MissionTimer::getTime() const{
+  if (enable == true) {
+    return (millis() - tzero_time);
+  }
+  
+  return disableValue;
 }
 
 /**
@@ -32,7 +36,7 @@ int Timer::getTime() const{
  * @return true timer running
  * @return false timer disable
  */
-bool Timer::isEnable() const{
+bool MissionTimer::isEnable() const{
   return enable;
 }
 
@@ -40,8 +44,8 @@ bool Timer::isEnable() const{
  * @brief turn off timer
  * 
  */
-void Timer::turnOffTimer(){
-  timer = 0;
+void MissionTimer::turnOffTimer(){
+  tzero_time = 0;
   enable = false;
 }
 
@@ -50,6 +54,6 @@ void Timer::turnOffTimer(){
  * 
  * @param _disableValue time or sth
  */
-void Timer::setDisableValue(uint32_t _disableValue){
+void MissionTimer::setDisableValue(int64_t _disableValue){
   disableValue = _disableValue;
 }

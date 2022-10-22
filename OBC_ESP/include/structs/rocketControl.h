@@ -9,7 +9,7 @@
 #include "../include/com/RecoverySTM.h"
 #include "options.h"
 #include "hardwareManagment.h"
-#include "dataStructs.h"
+#include "data_structs.h"
 #include "config.h"
 #include "pinout.h"
 #include "../include/timers/missionTimer.h"
@@ -25,10 +25,19 @@
 
 #define CONNECTION_CHECK_DEVICE_NUMBER 6
 
+enum ValveState{
+  Close = 0,
+  Open = 1,
+  IDK = 2 ,
+  Vent = 3,
+  AttemptToOpen = 4,
+  AttemptToClose = 5
+};
+
 struct RocketControl{
-	Options options;  
+	Options options;
   HardwareManagment hardware;
-  Timer missionTimer;
+  MissionTimer missionTimer;
   Errors errors;
   DataFrame dataFrame;
   bool isConnectedFlags[CONNECTION_CHECK_DEVICE_NUMBER];
@@ -45,10 +54,9 @@ struct RocketControl{
   bool queueSend(xQueueHandle _handle, char *data);
   bool allDevicesWokenUp();
 
-  void createOptionsFrame(char *_array);
+  void createOptionsFrame(char *_array, Options options);
   void createLoRaFrame(char *_array);
   void createSDFrame(char *_array);
-  
 };
 
 #endif

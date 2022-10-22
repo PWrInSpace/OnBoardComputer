@@ -5,14 +5,16 @@
 #include <LoRa.h>
 #include <SparkFun_u-blox_GNSS_Arduino_Library.h>
 
+#include "../include/timers/expire_timer.h"
 #include "../include/structs/rocketControl.h"
-#include "../include/structs/dataStructs.h"
+#include "data_structs.h"
 #include "../include/timers/watchdog.h"
 #include "../include/com/now.h"
 #include "pinout.h"
 #include "../include/components/SDcard.h"
 #include "../include/structs/stateMachine.h"
 #include "SparkFun_LPS25HB_Arduino_Library.h"
+#include "../include/pysd/gen_pysd.h"
 #include "../sensors/imuAPI.h"
 
 extern RocketControl rc;

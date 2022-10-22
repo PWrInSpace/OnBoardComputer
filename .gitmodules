@@ -1,0 +1,3 @@
+[submodule "OBC_ESP/data_decoder"]
+	path = OBC_ESP/data_decoder
+	url = git@github.com:PWrInSpace/data_decoder.git

@@ -1,6 +1,6 @@
 #include "../include/timers/watchdog.h"
 #include "../include/structs/rocketControl.h"
-#include "../include/structs/dataStructs.h"
+#include "data_structs.h"
 #include "../include/structs/stateMachine.h"
 
 extern WatchdogTimer wt;
@@ -10,8 +10,8 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
  //Serial.println("WATCHDOG TIMER"); //DEBUG
   /*
   if(wt.loraTaskFlag == false){
-    if(StateMachine::getCurrentState() < COUNTDOWN || StateMachine::getCurrentState() > FIRST_STAGE_RECOVERY){
-      wt.reset(StateMachine::getCurrentState());
+    if(SM_getCurrentState() < COUNTDOWN || SM_getCurrentState() > FIRST_STAGE_RECOVERY){
+      wt.reset(SM_getCurrentState());
     }else{
       //error handling
       //dataFrame.errors.setWatchDogError(WATCHDOG_LORA_ERROR);
@@ -21,11 +21,11 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
   }
 
   if(wt.rxHandlingTaskFlag == false){
-    if(StateMachine::getCurrentState() < COUNTDOWN){
-      wt.reset(StateMachine::getCurrentState());
-    }else if(StateMachine::getCurrentState() == COUNTDOWN){ //esp now down [*]
+    if(SM_getCurrentState() < COUNTDOWN){
+      wt.reset(SM_getCurrentState());
+    }else if(SM_getCurrentState() == COUNTDOWN){ //esp now down [*]
       //error handling
-      StateMachine::changeStateRequest(States::ABORT);
+      SM_changeStateRequest(States::ABORT);
       //dataFrame.errors.setWatchDogError(WATCHDOG_RX_HANDLING_ERROR);
       
       strcpy(log, "Watchdog timer rxHandling");
@@ -39,15 +39,15 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
   }
 
   if(wt.stateTaskFlag == false){
-    wt.reset(StateMachine::getCurrentState());
+    wt.reset(SM_getCurrentState());
   }
 
   if(wt.dataTaskFlag == false){
-    wt.reset(StateMachine::getCurrentState());
+    wt.reset(SM_getCurrentState());
   }
 
   if(wt.sdTaskFlag == false && wt.flashTaskFlag == false){
-    wt.reset(StateMachine::getCurrentState());
+    wt.reset(SM_getCurrentState());
   }else if(wt.sdTaskFlag == false){
     //dataFrame.errors.setWatchDogError(WATCHDOG_SD_ERROR);
     
@@ -66,7 +66,7 @@ void watchdogTimerCallback(TimerHandle_t xTimer){
 
 void disconnectTimerCallback(TimerHandle_t xTimer){
     
-  if(StateMachine::changeStateRequest(States::ABORT) == false){
+  if(SM_changeStateRequest(States::ABORT) == false){
     rc.sendLog("Disconnect timer abort request rejected");
   }
   
@@ -100,7 +100,7 @@ void espNowConnectionCallback(TimerHandle_t xTimer){
   }
   
   if(rc.isConnectedFlags[PAYLOAD] == false){
-    rc.dataFrame.pl.wakenUp = 0;
+    rc.dataFrame.payload.wakenUp = 0;
     rc.sendLog("Payload not connected");
   }
 
@@ -120,7 +120,6 @@ void espNowConnectionCallback(TimerHandle_t xTimer){
   // for(int i = 0; i < CONNECTION_CHECK_DEVICE_NUMBER; ++i){
   //   Serial.println(rc.isConnectedFlags[i]);
   // }
-
   // Serial.println("---END SET---");
   
 }
