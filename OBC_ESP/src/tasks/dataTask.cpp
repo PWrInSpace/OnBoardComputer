@@ -322,7 +322,6 @@ void dataTask(void *arg){
   }
   vTaskDelay(2000 / portTICK_PERIOD_MS);
 
-  uint32_t time = xTaskGetTickCount();
   while(1) {
     if (ET_is_expired(&glob.data_update_timer)) {
       ET_start(&glob.data_update_timer, OPT_get_data_current_period());
