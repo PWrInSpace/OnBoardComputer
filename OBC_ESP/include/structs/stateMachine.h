@@ -1,7 +1,8 @@
 #ifndef STATE_MACHINE_HH
 #define STATE_MACHINE_HH
 
-// #include "freertos/FreeRTOS.h"
+
+#include "freertos/FreeRTOS.h"
 #include "Arduino.h"
 
 enum States{

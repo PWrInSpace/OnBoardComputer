@@ -115,11 +115,11 @@ void espNowConnectionCallback(TimerHandle_t xTimer){
   
   memset(rc.isConnectedFlags, 0, CONNECTION_CHECK_DEVICE_NUMBER);
   
-  Serial.println("---SET---");
+  // Serial.println("---SET---");
   
-  for(int i = 0; i < CONNECTION_CHECK_DEVICE_NUMBER; ++i){
-    Serial.println(rc.isConnectedFlags[i]);
-  }
-
-  Serial.println("---END SET---");
+  // for(int i = 0; i < CONNECTION_CHECK_DEVICE_NUMBER; ++i){
+  //   Serial.println(rc.isConnectedFlags[i]);
+  // }
+  // Serial.println("---END SET---");
+  
 }

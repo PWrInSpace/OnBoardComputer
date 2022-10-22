@@ -320,7 +320,6 @@ void dataTask(void *arg){
   if (temperature_sensor_init(tempsensor) == false) {
     ESP_LOGW(TAG, "Tempreature sensor init fail");
   }
-
   vTaskDelay(2000 / portTICK_PERIOD_MS);
 
   uint32_t time = xTaskGetTickCount();
@@ -340,7 +339,6 @@ void dataTask(void *arg){
       update_mcb_mission_timer(rc.missionTimer.getTime());
       update_disconnect_remaining_time(rc.getDisconnectRemainingTime());
       update_connection_status(rc.connectedStatus);
-
       //calculations
       check_first_stage_recovery_deploy();
       check_second_stage_recovery_deploy();
@@ -374,17 +372,6 @@ void dataTask(void *arg){
       Serial.println(pdTICKS_TO_MS(xTaskGetTickCount()));
       write_data_to_sd();
     }
-
-
-    // if (xTaskGetTickCount() - time > 1000) {
-    //   // TxDataEspNow txDataEspNow = {1, 1};
-    //   // if(esp_now_send(adressTanWa, (uint8_t*) &txDataEspNow, sizeof(txDataEspNow)) != ESP_OK){
-    //   //   Serial.println("Unable to send data to TanWa");
-    //   // }
-    //   time = xTaskGetTickCount();
-    //   Serial.println("Data task tick");
-    // }
-
     vTaskDelay(10/portTICK_PERIOD_MS);
   }
 }

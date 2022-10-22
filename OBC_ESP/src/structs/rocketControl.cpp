@@ -258,11 +258,10 @@ void RocketControl::createSDFrame(char* data){
   //   dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
   //   dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.apogee);
 
-  // pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;%d;%d;",
+  // pitotSize = snprintf(NULL, 0, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
   //   dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
   //   dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
-  //   dataFrame.pitot.speed, dataFrame.pitot.apogee, dataFrame.pitot.isRecording, 
-  //   dataFrame.pitot.data_collected) + 1; //8
+  //   dataFrame.pitot.speed, dataFrame.pitot.estimated_apogee) + 1; //8
   
   // mvSize = snprintf(NULL, 0, "%d;%0.2f;%d;%0.2f;%0.2f;",
   //   dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
@@ -326,11 +325,10 @@ void RocketControl::createSDFrame(char* data){
   //   dataFrame.mcb.imuData[4], dataFrame.mcb.imuData[5], dataFrame.mcb.imuData[6], dataFrame.mcb.imuData[7],
   //   dataFrame.mcb.imuData[8], dataFrame.mcb.imuData[9], dataFrame.mcb.imuData[10], dataFrame.mcb.imuData[11]);
 
-  // snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;%d;%d;",
-  //   dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress, 
+  // snprintf(pitotFrame, pitotSize, "%d;%0.2f;%0.2f;%0.2f;%0.2f;%d;%d;%d;",
+  //   dataFrame.pitot.wakenUp, dataFrame.pitot.vBat, dataFrame.pitot.statPress,
   //   dataFrame.pitot.dynamicPress, dataFrame.pitot.temp, dataFrame.pitot.altitude,
-  //   dataFrame.pitot.speed, dataFrame.pitot.apogee, dataFrame.pitot.isRecording, 
-  //   dataFrame.pitot.data_collected);//8
+  //   dataFrame.pitot.speed, dataFrame.pitot.estimated_apogee);//8
 
   // snprintf(mvFrame, mvSize, "%d;%0.2f;%d;%0.2f;%0.2f;",
   //   dataFrame.mainValve.wakeUp, dataFrame.mainValve.batteryVoltage, dataFrame.mainValve.valveState,
