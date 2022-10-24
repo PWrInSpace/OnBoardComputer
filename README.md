@@ -1,6 +1,6 @@
 # MainComputer R4 and R4S
 
-Main computer programs for R4 and R4S
+Main computer programs for R4 and R4S :D
 
 # ESP32 Programm
 
@@ -15,3 +15,4 @@ RtOS tasks:
 States:
 
 ![Alt text](./docs/MCB_MaszynaStanów.jpg?raw=true "States")
+\
