@@ -88,6 +88,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
   initAll();
@@ -106,20 +107,6 @@ int main(void)
 		  executeCommand(dataFromComm);
 		  dataFromComm.command = 0;
 	  }
-
-	  if (recData.isArmed) {
-
-		  // Warunki separacji 1 stopnia:
-		  if (!recData.firstStageDone && (recData.altimaxFirstStage ||
-				  (recData.telemetrumFirstStage && recData.isTeleActive)))
-			  doFirstSeparation();
-
-		  // Warunki separacji 2 stopnia:
-		  if (!recData.secondStageDone && recData.firstStageDone &&
-				  (recData.altimaxSecondStage || (recData.telemetrumSecondStage && recData.isTeleActive)))
-			  doSecondSeparation();
-	  }
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
