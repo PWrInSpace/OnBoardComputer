@@ -1,5 +1,11 @@
 #include "Functions.h"
 
+// Global variables:
+DataFromComm dataFromComm;
+uint8_t rxFlag;
+RecoveryData recData;
+__IO uint32_t TimingDelay;
+
 void initAll(void) {
 
 	memset(&recData, 0, sizeof(RecoveryData));

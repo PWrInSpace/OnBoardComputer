@@ -13,10 +13,6 @@ typedef struct {
 
 } DataFromComm;
 
-DataFromComm dataFromComm;
-
-uint8_t rxFlag;
-
 typedef struct {
 
 	bool isArmed :1;
@@ -36,12 +32,14 @@ typedef struct {
 
 } RecoveryData;
 
-RecoveryData recData;
+// Externs:
+extern DataFromComm dataFromComm;
+extern uint8_t rxFlag;
+extern RecoveryData recData;
+extern __IO uint32_t TimingDelay;
 
-__IO uint32_t TimingDelay;
-
+// Functions:
 void initAll(void);
-
 
 void checkComputers(void);
 

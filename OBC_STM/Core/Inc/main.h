@@ -97,6 +97,7 @@ void Error_Handler(void);
 #define TelPilotCheck_GPIO_Port GPIOB
 #define TelDuzyCheck_Pin GPIO_PIN_7
 #define TelDuzyCheck_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
