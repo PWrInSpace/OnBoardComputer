@@ -6,8 +6,8 @@
 
 void setup() {
 
-  DDRB = 0x01;
-  PORTB = 0x10;
+  DDRB = 0x05;
+  PORTB = 0x08;
   TCCR0A |= (1<<COM0A1) | (1<<WGM02) | (1<<WGM01) | (1<<WGM00);
   TCCR0B |= (1<<CS01) | (1<<CS00);
   OCR0A = CLOSED;   
@@ -15,8 +15,8 @@ void setup() {
 }
 
 void loop() {
-
-      if(!(PINB & 0x10)){
+      if((PINB & 0x10) | !(PINB & 0x08)){
         OCR0A = OPEN; 
+        PORTB |= (1<<PB2);
       }  
 }
