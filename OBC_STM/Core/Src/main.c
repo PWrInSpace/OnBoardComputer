@@ -156,10 +156,10 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 
 	HAL_I2C_DisableListen_IT(hi2c);
 	if (!TransferDirection) {
-		HAL_I2C_Slave_Transmit(hi2c, (uint8_t*) &recData, sizeof(recData), 5);
+		HAL_I2C_Slave_Transmit(hi2c, (uint8_t*) &recData, sizeof(recData), 10);
 	}
 	else {
-		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 5);
+		HAL_I2C_Slave_Receive(hi2c, (uint8_t*) &dataFromComm, sizeof(dataFromComm), 10);
 	}
 	HAL_I2C_EnableListen_IT(hi2c);
 }

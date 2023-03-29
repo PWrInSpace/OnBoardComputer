@@ -12,15 +12,13 @@ void initAll(void) {
 	HAL_I2C_EnableListen_IT(&hi2c1);
 }
 
-
 /*****************************************************************/
-
 
 void checkCOTS(void) {
 
 	if (recData.isArmed) {
-		recData.altimaxFirstStage 		= MiniDrogueCheck_GPIO_Port->IDR & MiniDrogueCheck_Pin;
-		recData.altimaxSecondStage 		= MiniBigCheck_GPIO_Port->IDR & MiniBigCheck_Pin;
+		recData.easyMiniFirstStage 		= MiniDrogueCheck_GPIO_Port->IDR & MiniDrogueCheck_Pin;
+		recData.easyMiniSecondStage 	= MiniBigCheck_GPIO_Port->IDR & MiniBigCheck_Pin;
 
 		recData.telemetrumFirstStage 	= TeleDrogueCheck_GPIO_Port->IDR & TeleDrogueCheck_Pin;
 		recData.telemetrumSecondStage 	= TeleBigCheck_GPIO_Port->IDR & TeleBigCheck_Pin;
@@ -31,23 +29,22 @@ void checkCOTS(void) {
 
 void checkComputers(void) {
 
-	// COTSy + Apogemix:
+	// COTSy:
 	checkCOTS();
-	//recData.apogemixFirstStage 		= !(ApogPilotCheck_GPIO_Port->IDR & ApogPilotCheck_Pin); NIEUŻYWANE NA SACU
-	//recData.apogemixSecondStage 	= !(ApogDuzyCheck_GPIO_Port->IDR & ApogDuzyCheck_Pin); NIEUŻYWANE NA SACU
 
-	// Krańcówki + ciągłość:
+	// Krańcówki + ciągłość + ciśnienie:
 	recData.separationSwitch1 		= !(EndStop1_GPIO_Port->IDR & EndStop1_Pin);
 	recData.separationSwitch2 		= !(EndStop2_GPIO_Port->IDR & EndStop2_Pin);
 	recData.firstStageContinouity 	= !(Igni1Cont_GPIO_Port->IDR & Igni1Cont_Pin);
 	recData.secondStageContinouity 	= !(Igni2Cont_GPIO_Port->IDR & Igni2Cont_Pin);
+	recData.pressure1 = 2137; // TODO!!!
+	recData.pressure2 = 2137; // TODO!!!
 }
 
 /*****************************************************************/
 
 void doFirstSeparation(void) {
 
-	_Bool workingSwitch = recData.separationSwitch2; // TODO choose good separation switch
 	Igni1Fire_GPIO_Port->ODR |= Igni1Fire_Pin;
 	ForceServo1_GPIO_Port->ODR |= ForceServo1_Pin;
 	ForceServo2_GPIO_Port->ODR |= ForceServo2_Pin;
@@ -56,9 +53,6 @@ void doFirstSeparation(void) {
 
 		checkComputers();
 		HAL_Delay(20);
-
-		// Jeśli wcześniej była ciągłość głowicy, a teraz jej nie ma, to znaczy, że separacja się udała i można wyłączyć mosfet:
-		if (!recData.separationSwitch2 && workingSwitch) break; // TODO choose good separation switch
 	}
 
 	Igni1Fire_GPIO_Port->ODR &= ~Igni1Fire_Pin;
@@ -96,6 +90,8 @@ void executeCommand(DataFromComm _dataFromComm) {
 	}
 }
 
+/*****************************************************************/
+
 void armDisarm(bool on) {
 
 	if (on) {
@@ -107,10 +103,10 @@ void armDisarm(bool on) {
 
 		SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin;
 		recData.isArmed = 0;
-		recData.altimaxFirstStage = 0;
-		recData.altimaxSecondStage = 0;
 	}
 }
+
+/*****************************************************************/
 
 void teleOnOff(bool on) {
 
@@ -123,7 +119,5 @@ void teleOnOff(bool on) {
 
 		TeleArm_GPIO_Port->ODR &= ~TeleArm_Pin;
 		recData.isTeleActive = 0;
-		recData.telemetrumFirstStage = 0;
-		recData.telemetrumSecondStage = 0;
 	}
 }
