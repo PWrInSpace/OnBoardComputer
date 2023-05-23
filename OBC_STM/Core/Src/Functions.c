@@ -25,11 +25,11 @@ void initAll(void) {
 void checkCOTS(void) {
 
 	if (recData.isArmed) {
-		recData.easyMiniFirstStage 		= MiniDrogueCheck_GPIO_Port->IDR & MiniDrogueCheck_Pin;
-		recData.easyMiniSecondStage 	= MiniBigCheck_GPIO_Port->IDR & MiniBigCheck_Pin;
+		recData.easyMiniFirstStage 		= !(MiniDrogueCheck_GPIO_Port->IDR & MiniDrogueCheck_Pin);
+		recData.easyMiniSecondStage 	= !(MiniBigCheck_GPIO_Port->IDR & MiniBigCheck_Pin);
 
-		recData.telemetrumFirstStage 	= TeleDrogueCheck_GPIO_Port->IDR & TeleDrogueCheck_Pin;
-		recData.telemetrumSecondStage 	= TeleBigCheck_GPIO_Port->IDR & TeleBigCheck_Pin;
+		recData.telemetrumFirstStage 	= !(TeleDrogueCheck_GPIO_Port->IDR & TeleDrogueCheck_Pin);
+		recData.telemetrumSecondStage 	= !(TeleBigCheck_GPIO_Port->IDR & TeleBigCheck_Pin);
 	}
 }
 
@@ -47,23 +47,19 @@ void checkParameters(void) {
 	recData.secondStageContinouity 	= !(Igni2Cont_GPIO_Port->IDR & Igni2Cont_Pin);
 	recData.pressure1 = adc_tab[0];
 	recData.pressure2 = adc_tab[1];
+
+	// Attiny (jeśli odpali jedno, to ma też odpalić drugie):
+	if (AttTest1_GPIO_Port->IDR & AttTest1_Pin) doServoSeparation();
+	else if (AttTest2_GPIO_Port->IDR & AttTest2_Pin) doServoSeparation();
 }
 
 /*****************************************************************/
 
-void doFirstSeparation(void) {
+void doServoSeparation(void) {
 
-	Igni1Fire_GPIO_Port->ODR |= Igni1Fire_Pin;
+	// Only servos, no pyro!
 	ForceServo1_GPIO_Port->ODR |= ForceServo1_Pin;
 	ForceServo2_GPIO_Port->ODR |= ForceServo2_Pin;
-
-	for (uint16_t i = 0; i < 100; i++) {
-
-		checkParameters();
-		HAL_Delay(20);
-	}
-
-	Igni1Fire_GPIO_Port->ODR &= ~Igni1Fire_Pin;
 	recData.firstStageDone = 1;
 }
 
@@ -93,7 +89,7 @@ void executeCommand(DataFromComm _dataFromComm) {
 	case 2: 	armDisarm(0); 			break;
 	case 3:		teleOnOff(1);			break;
 	case 4: 	teleOnOff(0); 			break;
-	case 165: 	doFirstSeparation(); 	break;
+	case 165: 	doServoSeparation(); 	break;
 	case 90: 	doSecondSeparation(); 	break;
 	}
 }

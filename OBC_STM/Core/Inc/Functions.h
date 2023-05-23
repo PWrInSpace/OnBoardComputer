@@ -45,7 +45,7 @@ void initAll(void);
 
 void checkParameters(void);
 
-void doFirstSeparation(void);
+void doServoSeparation(void);
 
 void doSecondSeparation(void);
 
