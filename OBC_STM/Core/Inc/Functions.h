@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "gpio.h"
 #include "i2c.h"
+#include "adc.h"
 
 typedef struct {
 
@@ -42,7 +43,7 @@ extern __IO uint32_t TimingDelay;
 // Functions:
 void initAll(void);
 
-void checkComputers(void);
+void checkParameters(void);
 
 void doFirstSeparation(void);
 

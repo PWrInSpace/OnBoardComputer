@@ -57,8 +57,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define LED_Pin GPIO_PIN_13
-#define LED_GPIO_Port GPIOC
+#define SR_OE_Pin GPIO_PIN_13
+#define SR_OE_GPIO_Port GPIOC
+#define SR_CLR_Pin GPIO_PIN_14
+#define SR_CLR_GPIO_Port GPIOC
+#define SR_RCLK_Pin GPIO_PIN_15
+#define SR_RCLK_GPIO_Port GPIOC
+#define SR_TeleArm_Pin GPIO_PIN_0
+#define SR_TeleArm_GPIO_Port GPIOD
+#define SR_TeleClk_Pin GPIO_PIN_1
+#define SR_TeleClk_GPIO_Port GPIOD
+#define LED_Pin GPIO_PIN_0
+#define LED_GPIO_Port GPIOA
 #define ForceServo1_Pin GPIO_PIN_1
 #define ForceServo1_GPIO_Port GPIOA
 #define ForceServo2_Pin GPIO_PIN_2
@@ -71,14 +81,14 @@ void Error_Handler(void);
 #define Igni1Fire_GPIO_Port GPIOA
 #define Igni2Fire_Pin GPIO_PIN_6
 #define Igni2Fire_GPIO_Port GPIOA
+#define Pressure1_Pin GPIO_PIN_0
+#define Pressure1_GPIO_Port GPIOB
+#define Pressure2_Pin GPIO_PIN_1
+#define Pressure2_GPIO_Port GPIOB
 #define Mos1_Pin GPIO_PIN_13
 #define Mos1_GPIO_Port GPIOB
 #define Mos2_Pin GPIO_PIN_14
 #define Mos2_GPIO_Port GPIOB
-#define TeleArm_Pin GPIO_PIN_15
-#define TeleArm_GPIO_Port GPIOB
-#define SoftArm_Pin GPIO_PIN_8
-#define SoftArm_GPIO_Port GPIOA
 #define TeleBigCheck_Pin GPIO_PIN_9
 #define TeleBigCheck_GPIO_Port GPIOA
 #define TeleDrogueCheck_Pin GPIO_PIN_10
@@ -87,10 +97,14 @@ void Error_Handler(void);
 #define MiniBigCheck_GPIO_Port GPIOA
 #define MiniDrogueCheck_Pin GPIO_PIN_12
 #define MiniDrogueCheck_GPIO_Port GPIOA
+#define SR_EasyArm_Pin GPIO_PIN_15
+#define SR_EasyArm_GPIO_Port GPIOA
 #define EndStop1_Pin GPIO_PIN_3
 #define EndStop1_GPIO_Port GPIOB
 #define EndStop2_Pin GPIO_PIN_4
 #define EndStop2_GPIO_Port GPIOB
+#define SR_EasyClk_Pin GPIO_PIN_7
+#define SR_EasyClk_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

@@ -6,10 +6,18 @@ uint8_t rxFlag;
 RecoveryData recData;
 __IO uint32_t TimingDelay;
 
+# define ADC_LEN 2
+uint16_t adc_tab[ADC_LEN];
+
 void initAll(void) {
 
 	memset(&recData, 0, sizeof(RecoveryData));
 	HAL_I2C_EnableListen_IT(&hi2c1);
+	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_tab, ADC_LEN);
+
+	LED_GPIO_Port->ODR |= LED_Pin;
+	HAL_Delay(100);
+	LED_GPIO_Port->ODR &= ~LED_Pin;
 }
 
 /*****************************************************************/
@@ -27,7 +35,7 @@ void checkCOTS(void) {
 
 /*****************************************************************/
 
-void checkComputers(void) {
+void checkParameters(void) {
 
 	// COTSy:
 	checkCOTS();
@@ -37,8 +45,8 @@ void checkComputers(void) {
 	recData.separationSwitch2 		= !(EndStop2_GPIO_Port->IDR & EndStop2_Pin);
 	recData.firstStageContinouity 	= !(Igni1Cont_GPIO_Port->IDR & Igni1Cont_Pin);
 	recData.secondStageContinouity 	= !(Igni2Cont_GPIO_Port->IDR & Igni2Cont_Pin);
-	recData.pressure1 = 2137; // TODO!!!
-	recData.pressure2 = 2137; // TODO!!!
+	recData.pressure1 = adc_tab[0];
+	recData.pressure2 = adc_tab[1];
 }
 
 /*****************************************************************/
@@ -51,7 +59,7 @@ void doFirstSeparation(void) {
 
 	for (uint16_t i = 0; i < 100; i++) {
 
-		checkComputers();
+		checkParameters();
 		HAL_Delay(20);
 	}
 
@@ -67,7 +75,7 @@ void doSecondSeparation(void) {
 
 	for (uint16_t i = 0; i < 100; i++) {
 
-		checkComputers();
+		checkParameters();
 		HAL_Delay(20);
 	}
 
@@ -95,13 +103,16 @@ void executeCommand(DataFromComm _dataFromComm) {
 void armDisarm(bool on) {
 
 	if (on) {
-		SoftArm_GPIO_Port->ODR |= SoftArm_Pin;
+
+		// TODO!!! Shift Registers!
+
 		HAL_Delay(10);
 		recData.isArmed = 1;
 	}
 	else {
 
-		SoftArm_GPIO_Port->ODR &= ~SoftArm_Pin;
+		// TODO!!! Shift Registers!
+
 		recData.isArmed = 0;
 	}
 }
@@ -111,13 +122,16 @@ void armDisarm(bool on) {
 void teleOnOff(bool on) {
 
 	if (on) {
-		TeleArm_GPIO_Port->ODR |= TeleArm_Pin;
+
+		// TODO!!! Shift Registers!
+
 		HAL_Delay(10);
 		recData.isTeleActive = 1;
 	}
 	else {
 
-		TeleArm_GPIO_Port->ODR &= ~TeleArm_Pin;
+		// TODO!!! Shift Registers!
+
 		recData.isTeleActive = 0;
 	}
 }
