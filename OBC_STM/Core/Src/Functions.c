@@ -104,12 +104,14 @@ void armDisarm(bool on) {
 
 		HAL_Delay(10);
 		recData.isArmed = 1;
+		LED_GPIO_Port->ODR |= LED_Pin ;
 	}
 	else {
 
 		// TODO!!! Shift Registers!
 
 		recData.isArmed = 0;
+		LED_GPIO_Port->ODR &= ~LED_Pin;
 	}
 }
 
