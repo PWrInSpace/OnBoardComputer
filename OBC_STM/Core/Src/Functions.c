@@ -102,7 +102,6 @@ void armDisarm(bool on) {
 
 		// TODO!!! Shift Registers!
 
-		HAL_Delay(10);
 		recData.isArmed = 1;
 		LED_GPIO_Port->ODR |= LED_Pin ;
 	}
@@ -123,7 +122,6 @@ void teleOnOff(bool on) {
 
 		// TODO!!! Shift Registers!
 
-		HAL_Delay(10);
 		recData.isTeleActive = 1;
 	}
 	else {
