@@ -99,15 +99,31 @@ void executeCommand(DataFromComm _dataFromComm) {
 void armDisarm(bool on) {
 
 	if (on) {
-
-		// TODO!!! Shift Registers!
+	  	HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_SET);
+ 	 	HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port,SR_TeleArm_Pin,GPIO_PIN_SET);
+  		HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port,SR_EasyArm_Pin,GPIO_PIN_SET);
+  		HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port,SR_TeleClk_Pin,GPIO_PIN_SET);
+  		HAL_GPIO_WritePin(SR_EasyClk_GPIO_Port,SR_EasyClk_Pin,GPIO_PIN_SET);
+  		HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port,SR_TeleClk_Pin,GPIO_PIN_RESET);
+  		HAL_GPIO_WritePin(SR_EasyClk_GPIO_Port,SR_EasyClk_Pin,GPIO_PIN_RESET);
+  		HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_SET);
+		HAL_Delay(2);
+		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_RESET);
 
 		recData.isArmed = 1;
 		LED_GPIO_Port->ODR |= LED_Pin ;
 	}
 	else {
 
-		// TODO!!! Shift Registers!
+		HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port,SR_TeleArm_Pin,GPIO_PIN_RESET);
+  		HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port,SR_EasyArm_Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_RESET);
 
 		recData.isArmed = 0;
 		LED_GPIO_Port->ODR &= ~LED_Pin;
