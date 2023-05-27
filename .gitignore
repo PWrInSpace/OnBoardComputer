@@ -33,7 +33,6 @@
 
 # Cube
 Debug/
-Drivers/
 .settings/
 
 .pio
