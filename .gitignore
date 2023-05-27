@@ -38,3 +38,4 @@ Drivers/
 
 .pio
 .vscode
+OBC_STM/build/*
