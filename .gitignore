@@ -38,3 +38,4 @@ Debug/
 .pio
 .vscode
 OBC_STM/build/*
+.DS_Store
