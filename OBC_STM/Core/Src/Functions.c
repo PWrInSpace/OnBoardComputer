@@ -1,4 +1,5 @@
 #include "Functions.h"
+#include "iwdg.h"
 
 // Global variables:
 DataFromComm dataFromComm;
@@ -10,7 +11,6 @@ __IO uint32_t TimingDelay;
 uint16_t adc_tab[ADC_LEN];
 
 void initAll(void) {
-
 	memset(&recData, 0, sizeof(RecoveryData));
 	HAL_I2C_EnableListen_IT(&hi2c1);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_tab, ADC_LEN);
@@ -101,13 +101,10 @@ void armDisarm(bool on) {
 	if (on) {
 	  	HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_SET);
  	 	HAL_Delay(2);
-  		HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port,SR_TeleArm_Pin,GPIO_PIN_SET);
   		HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port,SR_EasyArm_Pin,GPIO_PIN_SET);
   		HAL_Delay(2);
-  		HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port,SR_TeleClk_Pin,GPIO_PIN_SET);
   		HAL_GPIO_WritePin(SR_EasyClk_GPIO_Port,SR_EasyClk_Pin,GPIO_PIN_SET);
   		HAL_Delay(2);
-  		HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port,SR_TeleClk_Pin,GPIO_PIN_RESET);
   		HAL_GPIO_WritePin(SR_EasyClk_GPIO_Port,SR_EasyClk_Pin,GPIO_PIN_RESET);
   		HAL_Delay(2);
   		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_SET);
@@ -121,7 +118,6 @@ void armDisarm(bool on) {
 
 		HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_SET);
-		HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port,SR_TeleArm_Pin,GPIO_PIN_RESET);
   		HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port,SR_EasyArm_Pin,GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_RESET);
 
@@ -136,13 +132,28 @@ void teleOnOff(bool on) {
 
 	if (on) {
 
-		// TODO!!! Shift Registers!
+		HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_SET);
+ 	 	HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port,SR_TeleArm_Pin,GPIO_PIN_SET);
+  		HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port,SR_TeleClk_Pin,GPIO_PIN_SET);
+  		HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port,SR_TeleClk_Pin,GPIO_PIN_RESET);
+  		HAL_Delay(2);
+  		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_SET);
+		HAL_Delay(2);
+		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_RESET);
 
 		recData.isTeleActive = 1;
 	}
 	else {
 
-		// TODO!!! Shift Registers!
+		HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_SET);
+		HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port,SR_TeleArm_Pin,GPIO_PIN_RESET);
+  		HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port,SR_EasyArm_Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_SET);
 
 		recData.isTeleActive = 0;
 	}
