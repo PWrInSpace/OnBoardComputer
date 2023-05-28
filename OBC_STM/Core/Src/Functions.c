@@ -1,4 +1,5 @@
 #include "Functions.h"
+#include "iwdg.h"
 
 // Global variables:
 DataFromComm dataFromComm;
@@ -10,7 +11,6 @@ __IO uint32_t TimingDelay;
 uint16_t adc_tab[ADC_LEN];
 
 void initAll(void) {
-
 	memset(&recData, 0, sizeof(RecoveryData));
 	HAL_I2C_EnableListen_IT(&hi2c1);
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_tab, ADC_LEN);
