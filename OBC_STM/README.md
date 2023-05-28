@@ -20,7 +20,7 @@
   for debug build or:  
   `cmake ..  -DCMAKE_TOOLCHAIN_FILE=CMake/arm-none-eabi-gcc.cmake -DCMAKE_BUILD_TYPE=Release`  
    for Release build
-3. Run `make -j12` in the root directory
+3. Run `make -j12` or `cmake --build .` in the /build directory
 4. The binary will be located in `build/OBC_STM32.bin`
 
 For additional information on building the firmware, contact @JPerlinski.
