@@ -19,6 +19,7 @@ set(STM32CUBEMX_GENERATED_FILES
   Core/Src/adc.c 
   Core/Src/dma.c 
   Core/Src/i2c.c 
+  Core/Src/iwdg.c 
   Core/Src/Functions.c 
   Core/Src/stm32f1xx_it.c 
   Core/Src/stm32f1xx_hal_msp.c 
@@ -38,6 +39,8 @@ set(STM32CUBEMX_GENERATED_FILES
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_i2c.c 
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim.c 
   Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_tim_ex.c 
+  Drivers/STM32F1xx_HAL_Driver/Src/stm32f1xx_hal_iwdg.c
+  
   Core/Src/system_stm32f1xx.c
 
   startup_stm32f103xb.s
