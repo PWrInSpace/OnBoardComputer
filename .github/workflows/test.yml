@@ -1,6 +1,9 @@
-name: cppcheck
-on: [push]
-
+name: "Build STM32 and ESP32 binaries"
+on:
+  push:
+    branches:
+      - "*"
+      
 jobs:
   # cppcheck:
   #   name: cppcheck
@@ -22,7 +25,7 @@ jobs:
   #     #   env:
   #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   #     #     BRANCH_NAME: 'main' # your branch name goes here
-  build:
+  esp-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,3 +50,23 @@ jobs:
         pip install --upgrade platformio
     - name: Run PlatformIO
       run: pio run -d /home/runner/work/OnBoardComputer/OnBoardComputer/OBC_ESP/
+  stm32-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y \
+            	build-essential \
+              gcc-arm-none-eabi \
+              binutils-arm-none-eabi \
+              cmake ninja-build \
+              git \
+              stlink-tools \
+              xz-utils curl
+      - name: Checkout Files
+        uses: actions/checkout@v3
+
+      - name: Build Init
+        run: |
+          cd "OBC_STM"
+          make
