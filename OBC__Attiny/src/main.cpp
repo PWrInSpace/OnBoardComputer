@@ -31,12 +31,18 @@ void loop() {
        *                  LUB                                 *
        * !(PINB & 0x08) -> STAN NASKI NA PB3                  *
        ********************************************************/ 
-
       if((PINB & 0x10) | !(PINB & 0x08)){
         
-        OCR0A = OPEN; // ZMIANA WARTOSCI LICZNIKA, ZMINIA WYPELNIENIE PWM
-        
         PORTB |= (1<<PB2); // STAN PB2 USTAWIANY JAKO WYSOKI
+
+        for(int i =0; i<9; i++){
+          OCR0A = OPEN;
+          delay(2000);
+          OCR0A = CLOSED;
+          delay(2000);
+        }
+        
+        OCR0A = OPEN; // ZMIANA WARTOSCI LICZNIKA, ZMINIA WYPELNIENIE PWM
       
       }  
 }
