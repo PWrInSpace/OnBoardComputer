@@ -1,0 +1,27 @@
+name: "Build STM32 and ESP32 binaries"
+on:
+  push:
+    branches:
+      - "*"
+      
+jobs:
+  stm32-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt install -y \
+            	build-essential \
+              gcc-arm-none-eabi \
+              binutils-arm-none-eabi \
+              cmake ninja-build \
+              git \
+              stlink-tools \
+              xz-utils curl
+      - name: Checkout Files
+        uses: actions/checkout@v3
+
+      - name: Build Init
+        run: |
+          cd "OBC_STM"
+          make
