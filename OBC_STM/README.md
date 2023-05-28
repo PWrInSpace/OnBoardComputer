@@ -1,5 +1,5 @@
-# OBC STM32 Firmware
-## This folder contains the firmware for the OBC module STM32 microcontroller. The code is written in C and is based on the [STM32CubeF1](https://www.st.com/en/embedded-software/stm32cubef1.html) HAL library.
+# OBC STM32 Firmware [![Build STM32 and ESP32 binaries](https://github.com/PWrInSpace/OnBoardComputer/actions/workflows/test.yml/badge.svg?branch=STM32_SAC23_dev_suchy&event=push)](https://github.com/PWrInSpace/OnBoardComputer/actions/workflows/test.yml)
+## This folder contains the firmware for the OBC module STM32 microcontroller. The code is written in C and is based on the [STM32CubeF1](https://www.st.com/en/embedded-software/stm32cubef1.html) HAL library. 
 
 ## Building
 ### Prerequisites
