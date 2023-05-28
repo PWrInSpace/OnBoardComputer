@@ -85,8 +85,6 @@ void Error_Handler(void);
 #define Pressure1_GPIO_Port GPIOB
 #define Pressure2_Pin GPIO_PIN_1
 #define Pressure2_GPIO_Port GPIOB
-#define AttTest1_Pin GPIO_PIN_10
-#define AttTest1_GPIO_Port GPIOB
 #define Mos1_Pin GPIO_PIN_13
 #define Mos1_GPIO_Port GPIOB
 #define Mos2_Pin GPIO_PIN_14
@@ -105,6 +103,8 @@ void Error_Handler(void);
 #define EndStop1_GPIO_Port GPIOB
 #define EndStop2_Pin GPIO_PIN_4
 #define EndStop2_GPIO_Port GPIOB
+#define AttTest1_Pin GPIO_PIN_5
+#define AttTest1_GPIO_Port GPIOB
 #define AttTest2_Pin GPIO_PIN_6
 #define AttTest2_GPIO_Port GPIOB
 #define SR_EasyClk_Pin GPIO_PIN_7
