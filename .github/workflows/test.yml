@@ -1,4 +1,4 @@
-name: "Build STM32 and ESP32 binaries"
+name: "Build ESP32 binary"
 on:
   push:
     branches:
