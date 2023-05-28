@@ -1,6 +1,6 @@
-# MainComputer R4 and R4S
+# MainComputer R5
 
-Main computer programs for R4 and R4S :D
+Main computer programs for R5 :D
 
 # ESP32 Programm
 
