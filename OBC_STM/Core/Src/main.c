@@ -114,7 +114,7 @@ int main(void)
 		  dataFromComm.command = 0;
 	  }
     /* USER CODE END WHILE */
-   // HAL_Delay(300);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

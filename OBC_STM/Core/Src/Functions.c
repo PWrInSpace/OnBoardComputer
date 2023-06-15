@@ -16,7 +16,7 @@ void initAll(void) {
 	HAL_ADC_Start_DMA(&hadc1, (uint32_t*) adc_tab, ADC_LEN);
 
 	LED_GPIO_Port->ODR |= LED_Pin;
-	HAL_Delay(100);
+	HAL_Delay(50);
 	LED_GPIO_Port->ODR &= ~LED_Pin;
 }
 
@@ -24,13 +24,11 @@ void initAll(void) {
 
 void checkCOTS(void) {
 
-	if (recData.isArmed) {
-		recData.easyMiniFirstStage 		= !(MiniDrogueCheck_GPIO_Port->IDR & MiniDrogueCheck_Pin);
-		recData.easyMiniSecondStage 	= !(MiniBigCheck_GPIO_Port->IDR & MiniBigCheck_Pin);
+	recData.easyMiniFirstStage 		|= !(MiniDrogueCheck_GPIO_Port->IDR & MiniDrogueCheck_Pin);
+	recData.easyMiniSecondStage 	|= !(MiniBigCheck_GPIO_Port->IDR & MiniBigCheck_Pin);
 
-		recData.telemetrumFirstStage 	= !(TeleDrogueCheck_GPIO_Port->IDR & TeleDrogueCheck_Pin);
-		recData.telemetrumSecondStage 	= !(TeleBigCheck_GPIO_Port->IDR & TeleBigCheck_Pin);
-	}
+	recData.telemetrumFirstStage 	|= !(TeleDrogueCheck_GPIO_Port->IDR & TeleDrogueCheck_Pin);
+	recData.telemetrumSecondStage 	|= !(TeleBigCheck_GPIO_Port->IDR & TeleBigCheck_Pin);
 }
 
 /*****************************************************************/
@@ -43,7 +41,10 @@ void checkParameters(void) {
 	// Krańcówki + ciągłość + ciśnienie:
 	recData.separationSwitch1 		= !(EndStop1_GPIO_Port->IDR & EndStop1_Pin);
 	recData.separationSwitch2 		= !(EndStop2_GPIO_Port->IDR & EndStop2_Pin);
-	recData.firstStageContinouity 	= !(Igni1Cont_GPIO_Port->IDR & Igni1Cont_Pin);
+
+	// Nie używane w rakiecie R5 Aurora:
+	// recData.firstStageContinouity 	= !(Igni1Cont_GPIO_Port->IDR & Igni1Cont_Pin);
+
 	recData.secondStageContinouity 	= !(Igni2Cont_GPIO_Port->IDR & Igni2Cont_Pin);
 	recData.pressure1 = adc_tab[0];
 	recData.pressure2 = adc_tab[1];
@@ -122,6 +123,7 @@ void armDisarm(bool on) {
 		HAL_GPIO_WritePin(SR_RCLK_GPIO_Port,SR_RCLK_Pin,GPIO_PIN_RESET);
 
 		recData.isArmed = 0;
+		recData.isTeleActive = 0; // Ponieważ pin RS_CLR_Pin jest wspólny dla Telemetrum i EasyMini
 		LED_GPIO_Port->ODR &= ~LED_Pin;
 	}
 }
@@ -156,5 +158,6 @@ void teleOnOff(bool on) {
 		HAL_GPIO_WritePin(SR_CLR_GPIO_Port,SR_CLR_Pin,GPIO_PIN_SET);
 
 		recData.isTeleActive = 0;
+		recData.isArmed = 0; // Ponieważ pin RS_CLR_Pin jest wspólny dla Telemetrum i EasyMini
 	}
 }
