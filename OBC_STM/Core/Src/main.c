@@ -107,6 +107,7 @@ int main(void)
   while (1)
   {
     // Watchdog refresh:
+    //! /TODO na ile to jest
     HAL_IWDG_Refresh(&hiwdg);
 
     // Hardware reads:
@@ -118,6 +119,7 @@ int main(void)
 		  executeCommand(dataFromComm);
 		  dataFromComm.command = 0;
 	  }
+    //!/TODO delay ?
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
