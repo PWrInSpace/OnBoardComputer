@@ -3,21 +3,21 @@
 
 void setup() {
 
-  DDRB = 0x05;  // PORTY PB0 I PB2 USTAWIANE JAKO OUTPUT
-  PORTB = 0x08; // PORT PB3 USTAWIONY JAKO INPUT_PULLUP, PB4 JAKO INPUT
+  DDRB |= (1 << PB2) | (1 << PB0);  // Pins PB2 and PB0 are outputs,
+  PORTB = 0x08; // Pin PB3 is pulled up input, PB4 is floating input.
 }
 
 void loop() {
 
-  /*******************************************************
-  * (PINB & 0x10) -> GDY NA PB4 POJAWI SIE STAN WYSOKI   *
-  *                  LUB                                 *
-  * !(PINB & 0x08) -> STAN NASKI NA PB3                  *
-  *******************************************************/
+  /**************************************
+  * (PINB & 0x10) -> if PB4 goes high   *
+  *                  or                 *
+  * !(PINB & 0x08) -> if PB3 goes low   *
+  **************************************/
 
   if((PINB & 0x10) | !(PINB & 0x08)){
 
-    PORTB |= (1 << PB2) | (1 << PB0); // STAN PB2 ORAZ PB0 USTAWIANY JAKO WYSOKI
+    PORTB |= (1 << PB2) | (1 << PB0); // Set PB0 and PB2 to high state.
     delay(9000);
     PORTB &= ~(1 << PB0);
   }
