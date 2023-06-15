@@ -7,6 +7,7 @@
 #include "i2c.h"
 #include "adc.h"
 
+// Structs:
 typedef struct {
 
 	uint32_t command;
@@ -46,7 +47,6 @@ void initAll(void);
 void checkParameters(void);
 
 void doServoSeparation(void);
-
 void doSecondSeparation(void);
 
 void executeCommand(DataFromComm dataFromComm);

@@ -43,22 +43,22 @@ void checkCOTS(void) {
 
 void checkParameters(void) {
 
-	// COTSy:
+	// COTS:
 	checkCOTS();
 
-	// Przerywane kabelki od głowicy:
+	// Nose cone breaking wire continuity:
 	recData.separationSwitch1 		= !HAL_GPIO_ReadPin(EndStop1_GPIO_Port, EndStop1_Pin);
 	recData.separationSwitch2 		= !HAL_GPIO_ReadPin(EndStop2_GPIO_Port, EndStop2_Pin);
 
 	// Nie używane w rakiecie R5 Aurora:
 	// recData.firstStageContinouity 	= !(Igni1Cont_GPIO_Port->IDR & Igni1Cont_Pin);
 
-	// Ciągłość i ciśnienie:
+	// EasyMini igniter continuity and pressure from both valves:
 	recData.secondStageContinouity 	= !HAL_GPIO_ReadPin(Igni2Cont_GPIO_Port, Igni2Cont_Pin);
 	recData.pressure1 = adc_tab[0];
 	recData.pressure2 = adc_tab[1];
 
-	// Attiny (jeśli odpali jedno, to ma też odpalić drugie):
+	// Attiny (if one runs valve, the other will run too):
 	if (HAL_GPIO_ReadPin(AttTest1_GPIO_Port, AttTest1_Pin))		 doServoSeparation();
 	else if (HAL_GPIO_ReadPin(AttTest2_GPIO_Port, AttTest2_Pin)) doServoSeparation();
 }
@@ -83,7 +83,7 @@ void doSecondSeparation(void) {
 
 		HAL_Delay(100);
 
-		// Odświerzanie watchdoga:
+		// Watchdog refresh:
     	HAL_IWDG_Refresh(&hiwdg);
 	}
 

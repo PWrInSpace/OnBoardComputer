@@ -106,13 +106,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // Odświerzanie watchdoga:
+    // Watchdog refresh:
     HAL_IWDG_Refresh(&hiwdg);
 
-    // Obsługa odczytu hardware'u:
+    // Hardware reads:
 	  checkParameters();
 
-	  // Obsługa danych przychodzących z i2c:
+	  // I2C incomming commands handling:
 	  if (dataFromComm.command > 0 && dataFromComm.command < 255) {
 
 		  executeCommand(dataFromComm);
