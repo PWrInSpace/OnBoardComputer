@@ -90,8 +90,8 @@ void doSecondSeparation(void) {
 		// Watchdog refresh:
     	HAL_IWDG_Refresh(&hiwdg);
 	}
-	// /TODO na pewno tutaj force servo a nie igni2fire?
-	HAL_GPIO_WritePin(ForceServo1_GPIO_Port, ForceServo1_Pin, 0);
+
+	HAL_GPIO_WritePin(Igni2Fire_GPIO_Port, Igni2Fire_Pin, 0);
 	recData.secondStageDone = 1;
 }
 
