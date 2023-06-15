@@ -1,6 +1,10 @@
 #include "Functions.h"
 #include "iwdg.h"
 
+// Private functions declarations:
+void sr_clk_reset(GPIO_TypeDef *cotsClkPort, uint16_t cotsClkPin);
+void sr_clr_set(GPIO_TypeDef *cotsClrPort, uint16_t cotsClrPin);
+
 // Global variables:
 DataFromComm dataFromComm;
 uint8_t rxFlag;
@@ -110,17 +114,8 @@ void executeCommand(DataFromComm _dataFromComm) {
 
 void easyArm() {
 
-	HAL_GPIO_WritePin(SR_CLR_GPIO_Port, SR_CLR_Pin, 1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port, SR_EasyArm_Pin, 1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_EasyClk_GPIO_Port, SR_EasyClk_Pin,1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_EasyClk_GPIO_Port, SR_EasyClk_Pin, 0);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin,1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin, 0);
+	sr_clr_set(SR_EasyArm_GPIO_Port, SR_EasyArm_Pin);
+	sr_clk_reset(SR_EasyClk_GPIO_Port, SR_EasyClk_Pin);
 
 	recData.isArmed = 1;
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
@@ -134,6 +129,7 @@ void disarm() {
 	HAL_GPIO_WritePin(SR_CLR_GPIO_Port, SR_CLR_Pin, 0);
 	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin, 1);
 	HAL_GPIO_WritePin(SR_EasyArm_GPIO_Port, SR_EasyArm_Pin, 0);
+	HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port, SR_TeleArm_Pin, 0);
 	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin, 0);
 
 	recData.isArmed = 0;
@@ -145,18 +141,34 @@ void disarm() {
 
 void teleArm() {
 
-	HAL_GPIO_WritePin(SR_CLR_GPIO_Port, SR_CLR_Pin, 1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_TeleArm_GPIO_Port, SR_TeleArm_Pin, 1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port, SR_TeleClk_Pin, 1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_TeleClk_GPIO_Port, SR_TeleClk_Pin, 0);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin, 1);
-	HAL_Delay(2);
-	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin, 0);
+	sr_clr_set(SR_TeleArm_GPIO_Port, SR_TeleArm_Pin);
+	sr_clk_reset(SR_TeleClk_GPIO_Port, SR_TeleClk_Pin);
 
 	recData.isTeleActive = 1;
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
+}
+
+/****************************************************************
+* SR functions:
+****************************************************************/
+
+void sr_clk_reset(GPIO_TypeDef *cotsClkPort, uint16_t cotsClkPin) {
+
+	HAL_GPIO_WritePin(cotsClkPort, cotsClkPin,1);
+	HAL_Delay(2);
+	HAL_GPIO_WritePin(cotsClkPort, cotsClkPin, 0);
+	HAL_Delay(2);
+	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin,1);
+	HAL_Delay(2);
+	HAL_GPIO_WritePin(SR_RCLK_GPIO_Port, SR_RCLK_Pin, 0);
+}
+
+/*****************************************************************/
+
+void sr_clr_set(GPIO_TypeDef *cotsClrPort, uint16_t cotsClrPin) {
+
+	HAL_GPIO_WritePin(SR_CLR_GPIO_Port, SR_CLR_Pin, 1);
+	HAL_Delay(2);
+	HAL_GPIO_WritePin(cotsClrPort, cotsClrPin, 1);
+	HAL_Delay(2);
 }
