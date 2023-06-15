@@ -95,6 +95,8 @@ int main(void)
   MX_I2C1_Init();
   MX_IWDG_Init();
   /* USER CODE BEGIN 2 */
+
+  // Funkcje inicjalizujące:
   HAL_IWDG_Refresh(&hiwdg);
   initAll();
 
@@ -104,7 +106,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // Odświerzanie watchdoga:
     HAL_IWDG_Refresh(&hiwdg);
+
+    // Obsługa odczytu hardware'u:
 	  checkParameters();
 
 	  // Obsługa danych przychodzących z i2c:

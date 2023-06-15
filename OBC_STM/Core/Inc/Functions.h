@@ -51,8 +51,8 @@ void doSecondSeparation(void);
 
 void executeCommand(DataFromComm dataFromComm);
 
-void armDisarm(bool on);
-
-void teleOnOff(bool on);
+void easyArm();
+void teleArm();
+void disarm();
 
 #endif /* INC_FUNCTIONS_H_ */
