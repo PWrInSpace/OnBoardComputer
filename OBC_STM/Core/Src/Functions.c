@@ -5,6 +5,8 @@
 void sr_clk_reset(GPIO_TypeDef *cotsClkPort, uint16_t cotsClkPin);
 void sr_clr_set(GPIO_TypeDef *cotsClrPort, uint16_t cotsClrPin);
 
+bool wasContEasy2 = 0;
+
 // Global variables:
 DataFromComm dataFromComm;
 uint8_t rxFlag;
@@ -36,7 +38,7 @@ void checkCOTS(void) {
 	// Seconds stage check:
 	if (recData.firstStageDone && !recData.secondStageDone) {
 
-		recData.easyMiniSecondStage 	|= !recData.secondStageContinouity; // Continuity check hack.
+		recData.easyMiniSecondStage 	|= (!recData.secondStageContinouity) && wasContEasy2; // Continuity check hack.
 		recData.telemetrumSecondStage 	|= !HAL_GPIO_ReadPin(TeleBigCheck_GPIO_Port, TeleBigCheck_Pin);
 
 		// If telemetrum done the second stage recovery, force it on backup second stage ignition:
@@ -62,6 +64,7 @@ void checkParameters(void) {
 
 	// EasyMini igniter continuity and pressure from both valves:
 	recData.secondStageContinouity 	= !HAL_GPIO_ReadPin(Igni2Cont_GPIO_Port, Igni2Cont_Pin);
+	wasContEasy2 |= recData.secondStageContinouity; // Continuity check hack.
 	recData.pressure1 = adc_tab[0];
 	recData.pressure2 = adc_tab[1];
 
@@ -174,5 +177,4 @@ void sr_clr_set(GPIO_TypeDef *cotsClrPort, uint16_t cotsClrPin) {
 	HAL_Delay(2);
 	HAL_GPIO_WritePin(cotsClrPort, cotsClrPin, 1);
 	HAL_Delay(2);
-	// /TODO to nic nie robi lub czegos brakuje
 }

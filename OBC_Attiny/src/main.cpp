@@ -18,7 +18,11 @@ void loop() {
   if((PINB & 0x10) | !(PINB & 0x08)){
 
     PORTB |= (1 << PB2) | (1 << PB0); // Set PB0 and PB2 to high state.
-    delay(9000);
+    delay(19000);
     PORTB &= ~(1 << PB0);
+
+    while(1) {
+      delay(1);
+    }
   }
 }
