@@ -29,17 +29,20 @@ void initAll(void) {
 
 void checkCOTS(void) {
 
+	// First stage check:
 	recData.easyMiniFirstStage 		|= !HAL_GPIO_ReadPin(MiniDrogueCheck_GPIO_Port, MiniDrogueCheck_Pin);
-	recData.easyMiniSecondStage 	|= !HAL_GPIO_ReadPin(MiniBigCheck_GPIO_Port, MiniBigCheck_Pin);
-
 	recData.telemetrumFirstStage 	|= !HAL_GPIO_ReadPin(TeleDrogueCheck_GPIO_Port, TeleDrogueCheck_Pin);
-	recData.telemetrumSecondStage 	|= !HAL_GPIO_ReadPin(TeleBigCheck_GPIO_Port, TeleBigCheck_Pin);
 
-	// Check if the second recovery happened:
-	if (recData.firstStageDone && !recData.secondStageDone &&
-		(recData.telemetrumSecondStage || recData.easyMiniSecondStage)) {
+	// Seconds stage check:
+	if (recData.firstStageDone && !recData.secondStageDone) {
 
-		doSecondSeparation();
+		recData.easyMiniSecondStage 	|= !recData.secondStageContinouity; // Continuity check hack.
+		recData.telemetrumSecondStage 	|= !HAL_GPIO_ReadPin(TeleBigCheck_GPIO_Port, TeleBigCheck_Pin);
+
+		// If telemetrum done the second stage recovery, force it on backup second stage ignition:
+		if (recData.telemetrumSecondStage) {
+			doSecondSeparation();
+		}
 	}
 }
 
