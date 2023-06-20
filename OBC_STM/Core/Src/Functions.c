@@ -4,6 +4,7 @@
 // Private functions declarations:
 void sr_clk_reset(GPIO_TypeDef *cotsClkPort, uint16_t cotsClkPin);
 void sr_clr_set(GPIO_TypeDef *cotsClrPort, uint16_t cotsClrPin);
+float adcPressure2Bars(uint16_t adcReadings);
 
 bool wasContEasy2 = 0;
 
@@ -65,8 +66,8 @@ void checkParameters(void) {
 	// EasyMini igniter continuity and pressure from both valves:
 	recData.secondStageContinouity 	= !HAL_GPIO_ReadPin(Igni2Cont_GPIO_Port, Igni2Cont_Pin);
 	wasContEasy2 |= recData.secondStageContinouity; // Continuity check hack.
-	recData.pressure1 = adc_tab[0];
-	recData.pressure2 = adc_tab[1];
+	recData.pressure1 = adcPressure2Bars(adc_tab[0]);
+	recData.pressure2 = adcPressure2Bars(adc_tab[1]);
 
 	// Attiny (if one runs valve, the other will run too):
 	if (HAL_GPIO_ReadPin(AttTest1_GPIO_Port, AttTest1_Pin))		 doServoSeparation();
@@ -152,6 +153,17 @@ void teleArm() {
 
 	recData.isTeleActive = 1;
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, 1);
+}
+
+/*****************************************************************/
+
+#define MIN_RAW_PRESSURE 300
+#define MAX_RAW_PRESSURE 4095
+#define MAX_PRESSURE_BAR 80
+
+float adcPressure2Bars(uint16_t adcReadings) {
+
+	return (adcReadings - MIN_RAW_PRESSURE) * MAX_PRESSURE_BAR / (MAX_RAW_PRESSURE - MIN_RAW_PRESSURE);
 }
 
 /****************************************************************
